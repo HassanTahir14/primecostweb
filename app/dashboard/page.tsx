@@ -50,8 +50,8 @@ export default function Dashboard() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-6 mb-6">
-            <div className="bg-red-50 p-4 sm:p-5 md:p-6 rounded-2xl shadow-sm">
-              <div className="bg-red-400 w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center mb-3 md:mb-4">
+            <div className="bg-[#FFE6E6] p-4 sm:p-5 md:p-6 rounded-2xl shadow-lg">
+              <div className="bg-[#FF6B6B] w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center mb-3 md:mb-4">
                 <BarChart3 className="w-5 h-5 md:w-6 md:h-6 text-white" />
               </div>
               <h2 className="text-lg md:text-xl lg:text-2xl font-bold mb-1">42</h2>
@@ -59,8 +59,8 @@ export default function Dashboard() {
               <p className="text-blue-500 text-xs md:text-sm">+8% from yesterday</p>
             </div>
 
-            <div className="bg-orange-50 p-4 sm:p-5 md:p-6 rounded-2xl shadow-sm">
-              <div className="bg-orange-400 w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center mb-3 md:mb-4">
+            <div className="bg-[#FFF2E6] p-4 sm:p-5 md:p-6 rounded-2xl shadow-lg">
+              <div className="bg-[#FF9F6B] w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center mb-3 md:mb-4">
                 <Box className="w-5 h-5 md:w-6 md:h-6 text-white" />
               </div>
               <h2 className="text-lg md:text-xl lg:text-2xl font-bold mb-1">300</h2>
@@ -68,8 +68,8 @@ export default function Dashboard() {
               <p className="text-blue-500 text-xs md:text-sm">+5% from yesterday</p>
             </div>
 
-            <div className="bg-[#E8FFFE] p-4 sm:p-5 md:p-6 rounded-2xl shadow-sm">
-              <div className="bg-[#339A89] w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center mb-3 md:mb-4">
+            <div className="bg-[#E6FFE6] p-4 sm:p-5 md:p-6 rounded-2xl shadow-lg">
+              <div className="bg-[#4CD964] w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center mb-3 md:mb-4">
                 <PenTool className="w-5 h-5 md:w-6 md:h-6 text-white" />
               </div>
               <h2 className="text-lg md:text-xl lg:text-2xl font-bold mb-1">SAR 400.5</h2>
@@ -77,8 +77,8 @@ export default function Dashboard() {
               <p className="text-blue-500 text-xs md:text-sm">+1.2% from yesterday</p>
             </div>
 
-            <div className="bg-purple-50 p-4 sm:p-5 md:p-6 rounded-2xl shadow-sm">
-              <div className="bg-purple-400 w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center mb-3 md:mb-4">
+            <div className="bg-[#F2E6FF] p-4 sm:p-5 md:p-6 rounded-2xl shadow-lg">
+              <div className="bg-[#B66BFF] w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center mb-3 md:mb-4">
                 <Users className="w-5 h-5 md:w-6 md:h-6 text-white" />
               </div>
               <h2 className="text-lg md:text-xl lg:text-2xl font-bold mb-1">8</h2>
