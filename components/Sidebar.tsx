@@ -22,13 +22,13 @@ export default function Sidebar({ isOpen, onOpenChange }: SidebarProps) {
     { icon: '/assets/svgs/purchaseOrder.svg', label: 'Purchase Orders', href: '/purchase-orders' },
     { icon: '/assets/svgs/transfers.svg', label: 'Transfers', href: '#' },
     { icon: '/assets/svgs/kitchenEmployees.svg', label: 'Kitchen Employees', href: '#' },
-    { icon: '/assets/svgs/suppliers.svg', label: 'Suppliers', href: '#' },
+    { icon: '/assets/svgs/suppliers.svg', label: 'Suppliers', href: '/suppliers' },
   ];
 
   const moreItems = [
     { icon: '/assets/svgs/serviceLevelAgreements.svg', label: 'Service Level Agreement', href: '#' },
     { icon: '/assets/svgs/branches.svg', label: 'Branches', href: '#' },
-    { icon: '/assets/svgs/taxes.svg', label: 'Taxes', href: '#' },
+    { icon: '/assets/svgs/taxes.svg', label: 'Taxes', href: '/taxes' },
     { icon: '/assets/svgs/inventory.svg', label: 'Inventory', href: '#' },
     { icon: '/assets/svgs/tokens.svg', label: 'Tokens', href: '#' },
   ];
@@ -141,7 +141,7 @@ export default function Sidebar({ isOpen, onOpenChange }: SidebarProps) {
               <Image src="/assets/svgs/kitchenEmployees.svg" alt="Kitchen Employees" width={20} height={20} className="brightness-0" />
               <span className="text-xs md:text-sm text-gray-700">Kitchen Employees</span>
             </Link>
-            <Link href="#" className="bg-gray-100 rounded-xl p-2 md:p-3 inline-flex items-center gap-2 w-fit">
+            <Link href="/suppliers" className={`bg-gray-100 rounded-xl p-2 md:p-3 inline-flex items-center gap-2 w-fit ${pathname === '/suppliers' ? 'bg-[#E8FFFE]' : ''}`}>
               <Image src="/assets/svgs/suppliers.svg" alt="Suppliers" width={20} height={20} className="brightness-0" />
               <span className="text-xs md:text-sm text-gray-700">Suppliers</span>
             </Link>
@@ -161,7 +161,7 @@ export default function Sidebar({ isOpen, onOpenChange }: SidebarProps) {
 
           {/* Bottom row */}
           <div className="flex flex-wrap gap-2 md:gap-3">
-            <Link href="#" className="bg-gray-100 rounded-xl p-2 md:p-3 inline-flex items-center gap-2 w-fit">
+            <Link href="/taxes" className={`bg-gray-100 rounded-xl p-2 md:p-3 inline-flex items-center gap-2 w-fit ${pathname === '/taxes' ? 'bg-[#E8FFFE]' : ''}`}>
               <Image src="/assets/svgs/taxes.svg" alt="Taxes" width={20} height={20} className="brightness-0" />
               <span className="text-xs md:text-sm text-gray-700">Taxes</span>
             </Link>
