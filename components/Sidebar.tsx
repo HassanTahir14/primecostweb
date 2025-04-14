@@ -18,7 +18,7 @@ export default function Sidebar({ isOpen, onOpenChange }: SidebarProps) {
     { icon: '/assets/svgs/fishSimple.svg', label: 'Items Master List', href: '/items' },
     { icon: '/assets/svgs/recipes.svg', label: 'Recipes', href: '#' },
     { icon: '/assets/svgs/scales.svg', label: 'Serving Size', href: '/serving-size' },
-    { icon: '/assets/svgs/assign_order.svg', label: 'Assign Order', href: '#' },
+    { icon: '/assets/svgs/assign_order.svg', label: 'Assign Order', href: '/assign-order' },
     { icon: '/assets/svgs/purchaseOrder.svg', label: 'Purchase Orders', href: '#' },
     { icon: '/assets/svgs/transfers.svg', label: 'Transfers', href: '#' },
     { icon: '/assets/svgs/kitchenEmployees.svg', label: 'Kitchen Employees', href: '#' },
@@ -117,7 +117,7 @@ export default function Sidebar({ isOpen, onOpenChange }: SidebarProps) {
               <Image src="/assets/svgs/scales.svg" alt="Serving Size" width={20} height={20} className="brightness-0" />
               <span className="text-xs md:text-sm text-gray-700">Serving Size</span>
             </Link>
-            <Link href="#" className="bg-gray-100 rounded-xl p-2 md:p-3 inline-flex items-center gap-2 w-fit">
+            <Link href="/assign-order" className={`bg-gray-100 rounded-xl p-2 md:p-3 inline-flex items-center gap-2 w-fit ${pathname === '/assign-order' ? 'bg-[#E8FFFE]' : ''}`}>
               <Image src="/assets/svgs/assign_order.svg" alt="Assign Order" width={20} height={20} className="brightness-0" />
               <span className="text-xs md:text-sm text-gray-700">Assign Order</span>
             </Link>
