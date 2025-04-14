@@ -29,7 +29,7 @@ export default function Sidebar({ isOpen, onOpenChange }: SidebarProps) {
     { icon: '/assets/svgs/serviceLevelAgreements.svg', label: 'Service Level Agreement', href: '#' },
     { icon: '/assets/svgs/branches.svg', label: 'Branches', href: '#' },
     { icon: '/assets/svgs/taxes.svg', label: 'Taxes', href: '/taxes' },
-    { icon: '/assets/svgs/inventory.svg', label: 'Inventory', href: '#' },
+    { icon: '/assets/svgs/inventory.svg', label: 'Inventory', href: '/inventory' },
     { icon: '/assets/svgs/tokens.svg', label: 'Tokens', href: '#' },
   ];
 
@@ -165,7 +165,7 @@ export default function Sidebar({ isOpen, onOpenChange }: SidebarProps) {
               <Image src="/assets/svgs/taxes.svg" alt="Taxes" width={20} height={20} className="brightness-0" />
               <span className="text-xs md:text-sm text-gray-700">Taxes</span>
             </Link>
-            <Link href="#" className="bg-gray-100 rounded-xl p-2 md:p-3 inline-flex items-center gap-2 w-fit">
+            <Link href="/inventory" className={`bg-gray-100 rounded-xl p-2 md:p-3 inline-flex items-center gap-2 w-fit ${pathname === '/inventory' ? 'bg-[#E8FFFE]' : ''}`}>
               <Image src="/assets/svgs/inventory.svg" alt="Inventory" width={20} height={20} className="brightness-0" />
               <span className="text-xs md:text-sm text-gray-700">Inventory</span>
             </Link>
