@@ -20,7 +20,7 @@ export default function Dashboard() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   return (
-    <div className="flex min-h-screen bg-[#f8fdf9]">
+    <div className="flex min-h-screen bg-[#f1fff7]">
       <Sidebar isOpen={isSidebarOpen} onOpenChange={setIsSidebarOpen} />
       
       <div className={`flex-1 flex flex-col min-h-screen ${isSidebarOpen ? 'lg:pl-[400px]' : 'pl-16 md:pl-20'}`}>
@@ -68,8 +68,8 @@ export default function Dashboard() {
               <p className="text-blue-500 text-xs md:text-sm">+5% from yesterday</p>
             </div>
 
-            <div className="bg-green-50 p-4 sm:p-5 md:p-6 rounded-2xl shadow-sm">
-              <div className="bg-green-400 w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center mb-3 md:mb-4">
+            <div className="bg-[#E8FFFE] p-4 sm:p-5 md:p-6 rounded-2xl shadow-sm">
+              <div className="bg-[#339A89] w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center mb-3 md:mb-4">
                 <PenTool className="w-5 h-5 md:w-6 md:h-6 text-white" />
               </div>
               <h2 className="text-lg md:text-xl lg:text-2xl font-bold mb-1">SAR 400.5</h2>
@@ -99,7 +99,7 @@ export default function Dashboard() {
                   <Legend wrapperStyle={{ fontSize: '10px' }} />
                   <Bar dataKey="profit" name="Profit Margin" fill="#2196F3" />
                   <Bar dataKey="cost" name="Total Cost" fill="#f44336" />
-                  <Bar dataKey="ideal" name="Ideal Selling Price" fill="#4CAF50" />
+                  <Bar dataKey="ideal" name="Ideal Selling Price" fill="#339A89" />
                   <Bar dataKey="menu" name="Menu Price" fill="#9C27B0" />
                 </BarChart>
               </ResponsiveContainer>
@@ -118,7 +118,7 @@ export default function Dashboard() {
               ].map((report) => (
                 <button
                   key={report}
-                  className="bg-emerald-600 text-white px-4 md:px-6 py-1.5 md:py-2 rounded-full hover:bg-emerald-700 transition-colors text-xs md:text-sm"
+                  className="bg-[#339A89] text-white px-4 md:px-6 py-1.5 md:py-2 rounded-full hover:bg-[#2b8274] transition-colors text-xs md:text-sm"
                 >
                   {report}
                 </button>
@@ -130,7 +130,7 @@ export default function Dashboard() {
             <div className="bg-white p-4 sm:p-6 md:p-8 rounded-2xl shadow-sm">
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4 md:mb-6">
                 <h2 className="text-base md:text-lg font-bold">Top Suppliers by Trade</h2>
-                <button className="bg-emerald-600 text-white px-4 md:px-6 py-1.5 md:py-2 rounded-full hover:bg-emerald-700 transition-colors text-xs md:text-sm w-full sm:w-auto">
+                <button className="bg-[#339A89] text-white px-4 md:px-6 py-1.5 md:py-2 rounded-full hover:bg-[#2b8274] transition-colors text-xs md:text-sm w-full sm:w-auto">
                   View Report
                 </button>
               </div>
@@ -143,13 +143,13 @@ export default function Dashboard() {
                 <div key={supplier.name} className="mb-4 last:mb-0">
                   <div className="flex justify-between mb-2">
                     <span className="text-xs md:text-sm">{index + 1}. {supplier.name}</span>
-                    <span className="text-emerald-600 rounded-full border border-emerald-600 px-3 md:px-4 py-1 text-xs md:text-sm">
+                    <span className="text-[#339A89] rounded-full border border-[#339A89] px-3 md:px-4 py-1 text-xs md:text-sm">
                       {supplier.percentage}%
                     </span>
                   </div>
                   <div className="w-full bg-gray-100 rounded-full h-1.5 md:h-2">
                     <div
-                      className="bg-emerald-600 h-1.5 md:h-2 rounded-full"
+                      className="bg-[#339A89] h-1.5 md:h-2 rounded-full"
                       style={{ width: `${supplier.percentage}%` }}
                     />
                   </div>
@@ -160,7 +160,7 @@ export default function Dashboard() {
             <div className="bg-white p-4 sm:p-6 md:p-8 rounded-2xl shadow-sm">
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4 md:mb-6">
                 <h2 className="text-base md:text-lg font-bold">Items by Country Origin</h2>
-                <button className="bg-emerald-600 text-white px-4 md:px-6 py-1.5 md:py-2 rounded-full hover:bg-emerald-700 transition-colors text-xs md:text-sm w-full sm:w-auto">
+                <button className="bg-[#339A89] text-white px-4 md:px-6 py-1.5 md:py-2 rounded-full hover:bg-[#2b8274] transition-colors text-xs md:text-sm w-full sm:w-auto">
                   View Report
                 </button>
               </div>

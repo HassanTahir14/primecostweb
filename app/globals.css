@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 :root {
-  --primary: #00B8A9;
+  --primary: #339A89;
   --primary-light: #E8FFFE;
   --text-primary: #1A2B3C;
   --text-secondary: #64748B;
@@ -73,7 +73,7 @@
 /* Custom focus styles */
 input:focus, button:focus {
   outline: none;
-  @apply ring-2 ring-[#00B8A9] ring-opacity-50;
+  @apply ring-2 ring-[#339A89] ring-opacity-50;
 }
 
 /* Custom scrollbar */
@@ -86,7 +86,7 @@ input:focus, button:focus {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #00B8A9;
+  background: #339A89;
   border-radius: 4px;
 }
 

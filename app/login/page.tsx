@@ -17,7 +17,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen w-full relative bg-[#00B8A9] flex items-center justify-center p-4 sm:p-6 md:p-8">
+    <div className="min-h-screen w-full relative bg-[#339A89] flex items-center justify-center p-4 sm:p-6 md:p-8">
       <div className="absolute inset-0">
         <Image
           src="/assets/images/login-bg.jpeg"
@@ -56,7 +56,7 @@ export default function LoginPage() {
               id="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#00B8A9] focus:border-transparent text-sm sm:text-base"
+              className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#339A89] focus:border-transparent text-sm sm:text-base"
               placeholder="Enter email"
               required
             />
@@ -72,7 +72,7 @@ export default function LoginPage() {
                 id="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#00B8A9] focus:border-transparent text-sm sm:text-base"
+                className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#339A89] focus:border-transparent text-sm sm:text-base"
                 placeholder="Enter password"
                 required
               />
@@ -92,7 +92,7 @@ export default function LoginPage() {
 
           <button
             type="submit"
-            className="w-full bg-[#00B8A9] text-white py-2.5 sm:py-3 rounded-lg font-medium text-sm sm:text-base hover:bg-[#00a598] transition-colors"
+            className="w-full bg-[#339A89] text-white py-2.5 sm:py-3 rounded-lg font-medium text-sm sm:text-base hover:bg-[#339A89] transition-colors"
           >
             SIGN IN
           </button>
@@ -100,7 +100,7 @@ export default function LoginPage() {
           <div className="text-center pt-1">
             <a 
               href="#" 
-              className="text-[#00B8A9] text-xs sm:text-sm hover:underline hover:text-[#00a598] transition-colors"
+              className="text-[#339A89] text-xs sm:text-sm hover:underline hover:text-[#339A89] transition-colors"
             >
               Forgot Password?
             </a>

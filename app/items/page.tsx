@@ -79,7 +79,7 @@ export default function ItemsMasterList() {
   const [showAddForm, setShowAddForm] = useState(false);
 
   return (
-    <div className="flex min-h-screen bg-[#f8fdf9]">
+    <div className="flex min-h-screen bg-[#f1fff7]">
       <Sidebar isOpen={isSidebarOpen} onOpenChange={setIsSidebarOpen} />
       
       <div className={`flex-1 flex flex-col min-h-screen ${isSidebarOpen ? 'lg:pl-[400px]' : 'pl-16 md:pl-20'}`}>

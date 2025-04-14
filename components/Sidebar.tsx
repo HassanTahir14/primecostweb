@@ -35,7 +35,7 @@ export default function Sidebar({ isOpen, onOpenChange }: SidebarProps) {
 
   if (!isOpen) {
     return (
-      <div className="fixed h-screen bg-emerald-600 w-16 md:w-20 flex flex-col items-center py-4 z-50 left-0">
+      <div className="fixed h-screen bg-[#339A89] w-16 md:w-20 flex flex-col items-center py-4 z-50 left-0">
         <button
           onClick={() => onOpenChange(true)}
           className="text-white mb-8"
@@ -48,7 +48,7 @@ export default function Sidebar({ isOpen, onOpenChange }: SidebarProps) {
             <Link
               key={index}
               href={item.href}
-              className={`text-white hover:bg-emerald-700 p-2 rounded-lg ${pathname === item.href ? 'bg-emerald-700' : ''}`}
+              className={`text-white hover:bg-[#2b8274] p-2 rounded-lg ${pathname === item.href ? 'bg-[#2b8274]' : ''}`}
               onClick={(e) => {
                 e.stopPropagation();
               }}
@@ -83,7 +83,7 @@ export default function Sidebar({ isOpen, onOpenChange }: SidebarProps) {
         onClick={() => onOpenChange(false)}
       />
       
-      <div className="fixed h-screen bg-emerald-600 w-[85%] sm:w-[320px] lg:w-[400px] p-4 md:p-6 z-50 left-0 overflow-y-auto">
+      <div className="fixed h-screen bg-[#339A89] w-[85%] sm:w-[320px] lg:w-[400px] p-4 md:p-6 z-50 left-0 overflow-y-auto">
         <div className="flex items-center gap-2 text-white mb-6 md:mb-8">
           <button
             onClick={() => onOpenChange(false)}
@@ -97,11 +97,11 @@ export default function Sidebar({ isOpen, onOpenChange }: SidebarProps) {
         <div className="flex flex-col space-y-3 md:space-y-4">
           {/* First row */}
           <div className="flex flex-wrap gap-2 md:gap-3">
-            <Link href="/" className={`bg-gray-100 rounded-xl p-2 md:p-3 inline-flex items-center gap-2 w-fit ${pathname === '/' ? 'bg-emerald-100' : ''}`}>
+            <Link href="/" className={`bg-gray-100 rounded-xl p-2 md:p-3 inline-flex items-center gap-2 w-fit ${pathname === '/' ? 'bg-[#E8FFFE]' : ''}`}>
               <Image src="/assets/svgs/home.svg" alt="Home" width={20} height={20} className="brightness-0" />
               <span className="text-xs md:text-sm text-gray-700">Home</span>
             </Link>
-            <Link href="/items" className={`bg-gray-100 rounded-xl p-2 md:p-3 inline-flex items-center gap-2 w-fit ${pathname === '/items' ? 'bg-emerald-100' : ''}`}>
+            <Link href="/items" className={`bg-gray-100 rounded-xl p-2 md:p-3 inline-flex items-center gap-2 w-fit ${pathname === '/items' ? 'bg-[#E8FFFE]' : ''}`}>
               <Image src="/assets/svgs/fishSimple.svg" alt="Items" width={20} height={20} className="brightness-0" />
               <span className="text-xs md:text-sm text-gray-700">Items Master List</span>
             </Link>
