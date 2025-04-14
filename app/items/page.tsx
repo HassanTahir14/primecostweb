@@ -6,6 +6,7 @@ import { Users, ChevronDown } from 'lucide-react';
 import Button from '@/components/ui/button';
 import SearchInput from '@/components/ui/SearchInput';
 import AddItemForm from '@/components/AddItemForm';
+import Categories from '@/components/Categories';
 
 interface Item {
   name: string;
@@ -77,6 +78,7 @@ const items: Item[] = [
 export default function ItemsMasterList() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [showAddForm, setShowAddForm] = useState(false);
+  const [showCategories, setShowCategories] = useState(false);
 
   return (
     <div className="flex min-h-screen bg-[#f1fff7]">
@@ -97,6 +99,8 @@ export default function ItemsMasterList() {
         <main className="flex-1 p-4 sm:p-6 md:p-8">
           {showAddForm ? (
             <AddItemForm onClose={() => setShowAddForm(false)} />
+          ) : showCategories ? (
+            <Categories onClose={() => setShowCategories(false)} />
           ) : (
             <>
               <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-6">
@@ -107,13 +111,13 @@ export default function ItemsMasterList() {
                 <SearchInput placeholder="Search items..." />
                 <div className="flex gap-3">
                   <Button onClick={() => setShowAddForm(true)}>Add Item</Button>
-                  <Button>Category</Button>
+                  <Button onClick={() => setShowCategories(true)}>Category</Button>
                 </div>
               </div>
 
-              <div className="bg-white p-4 sm:p-6 md:p-8 rounded-2xl shadow-sm">
+              <div className="bg-white bg-opacity-50 p-4 sm:p-6 md:p-8 rounded-2xl shadow-lg">
                 <h2 className="text-base md:text-lg font-bold mb-4">Items List</h2>
-                <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+                <div className="bg-white bg-opacity-50 rounded-xl shadow-lg overflow-hidden">
                   <div className="overflow-x-auto">
                     <table className="w-full">
                       <thead className="bg-gray-50">

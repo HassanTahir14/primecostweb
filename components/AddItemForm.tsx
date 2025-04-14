@@ -106,18 +106,18 @@ export default function AddItemForm({ onClose }: AddItemFormProps) {
 
   return (
     <div className="flex-1 flex flex-col">
-      <div className="flex items-center gap-4 mb-6">
+      <div className="flex items-center gap-2 mb-4 md:mb-6">
         <button onClick={onClose} className="text-gray-600 hover:text-gray-800">
           <ArrowLeft className="w-5 h-5" />
         </button>
         <h1 className="text-xl font-semibold">Add New Item</h1>
       </div>
 
-      <div className="flex mb-6">
+      <div className="flex mb-4 md:mb-6">
         <button
-          className={`flex-1 py-3 text-center ${
+          className={`flex-1 py-3 text-center font-medium rounded-none ${
             currentTab === "details"
-              ? "bg-emerald-600 text-white"
+              ? "bg-[#339A89] text-white"
               : "bg-gray-200 text-gray-700"
           }`}
           onClick={() => setCurrentTab("details")}
@@ -125,9 +125,9 @@ export default function AddItemForm({ onClose }: AddItemFormProps) {
           Details
         </button>
         <button
-          className={`flex-1 py-3 text-center ${
+          className={`flex-1 py-3 text-center font-medium rounded-none ${
             currentTab === "costing"
-              ? "bg-emerald-600 text-white"
+              ? "bg-[#339A89] text-white"
               : "bg-gray-200 text-gray-700"
           }`}
           onClick={() => setCurrentTab("costing")}
@@ -136,10 +136,10 @@ export default function AddItemForm({ onClose }: AddItemFormProps) {
         </button>
       </div>
 
-      <form onSubmit={handleSubmit} className="flex-1 bg-white rounded-lg p-6">
+      <form onSubmit={handleSubmit} className="flex-1 bg-white rounded-lg p-4 md:p-6">
         {currentTab === "details" ? (
-          <div className="space-y-6">
-            <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Input
                 label="Item Name"
                 name="itemName"
@@ -164,15 +164,17 @@ export default function AddItemForm({ onClose }: AddItemFormProps) {
                   value={formData.itemCode}
                   onChange={handleInputChange}
                   placeholder="Enter value"
-                  className="pr-40"
+                  className="pr-4 md:pr-40"
                 />
-                <button
-                  type="button"
-                  onClick={generateItemCode}
-                  className="absolute right-2 bottom-1.5 px-4 py-1.5 bg-emerald-600 text-white text-sm rounded-full hover:bg-emerald-700 transition-colors"
-                >
-                  Generate Item Code
-                </button>
+                <div className="mt-2 md:mt-0 md:absolute md:right-2 md:bottom-1.5">
+                  <button
+                    type="button"
+                    onClick={generateItemCode}
+                    className="w-full md:w-auto px-4 py-1.5 bg-[#339A89] text-white text-sm rounded-full hover:bg-[#2b8274] transition-colors"
+                  >
+                    Generate Item Code
+                  </button>
+                </div>
               </div>
 
               <Select
@@ -220,9 +222,9 @@ export default function AddItemForm({ onClose }: AddItemFormProps) {
               />
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-3 mt-6">
               <h3 className="font-medium">Units of Measurement</h3>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Select
                   label="Primary unit"
                   name="primaryUnit"
@@ -256,14 +258,14 @@ export default function AddItemForm({ onClose }: AddItemFormProps) {
               </div>
             </div>
 
-            <div className="flex justify-end">
+            <div className="flex justify-end mt-6">
               <Button type="button" onClick={() => setCurrentTab("costing")}>
                 Next
               </Button>
             </div>
           </div>
         ) : (
-          <div className="space-y-6">
+          <div className="space-y-5">
             <Select
               label="TAX Type"
               name="taxType"
@@ -321,7 +323,7 @@ export default function AddItemForm({ onClose }: AddItemFormProps) {
                   setFormData((prev) => ({ ...prev, images: files }));
                 }}
               />
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                 {formData.images.map((file, index) => (
                   <div
                     key={index}
@@ -337,7 +339,7 @@ export default function AddItemForm({ onClose }: AddItemFormProps) {
               </div>
             </div>
 
-            <div className="flex justify-end">
+            <div className="flex justify-end mt-6">
               <Button type="submit">Add Product</Button>
             </div>
           </div>
