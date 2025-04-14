@@ -19,7 +19,7 @@ export default function Sidebar({ isOpen, onOpenChange }: SidebarProps) {
     { icon: '/assets/svgs/recipes.svg', label: 'Recipes', href: '#' },
     { icon: '/assets/svgs/scales.svg', label: 'Serving Size', href: '/serving-size' },
     { icon: '/assets/svgs/assign_order.svg', label: 'Assign Order', href: '/assign-order' },
-    { icon: '/assets/svgs/purchaseOrder.svg', label: 'Purchase Orders', href: '#' },
+    { icon: '/assets/svgs/purchaseOrder.svg', label: 'Purchase Orders', href: '/purchase-orders' },
     { icon: '/assets/svgs/transfers.svg', label: 'Transfers', href: '#' },
     { icon: '/assets/svgs/kitchenEmployees.svg', label: 'Kitchen Employees', href: '#' },
     { icon: '/assets/svgs/suppliers.svg', label: 'Suppliers', href: '#' },
@@ -125,7 +125,7 @@ export default function Sidebar({ isOpen, onOpenChange }: SidebarProps) {
 
           {/* Purchase Orders and Transfers */}
           <div className="flex flex-wrap gap-2 md:gap-3">
-            <Link href="#" className="bg-gray-100 rounded-xl p-2 md:p-3 inline-flex items-center gap-2 w-fit">
+            <Link href="/purchase-orders" className={`bg-gray-100 rounded-xl p-2 md:p-3 inline-flex items-center gap-2 w-fit ${pathname === '/purchase-orders' ? 'bg-[#E8FFFE]' : ''}`}>
               <Image src="/assets/svgs/purchaseOrder.svg" alt="Purchase Orders" width={20} height={20} className="brightness-0" />
               <span className="text-xs md:text-sm text-gray-700">Purchase Orders</span>
             </Link>
