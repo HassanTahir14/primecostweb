@@ -26,7 +26,7 @@ export default function Sidebar({ isOpen, onOpenChange }: SidebarProps) {
   ];
 
   const moreItems = [
-    { icon: '/assets/svgs/serviceLevelAgreements.svg', label: 'Service Level Agreement', href: '#' },
+    { icon: '/assets/svgs/serviceLevelAgreements.svg', label: 'Service Level Agreement', href: '/sla-report' },
     { icon: '/assets/svgs/branches.svg', label: 'Branches', href: '/branches' },
     { icon: '/assets/svgs/taxes.svg', label: 'Taxes', href: '/taxes' },
     { icon: '/assets/svgs/inventory.svg', label: 'Inventory', href: '/inventory' },
@@ -149,7 +149,7 @@ export default function Sidebar({ isOpen, onOpenChange }: SidebarProps) {
 
           {/* Service Level Agreement and Branches */}
           <div className="flex flex-wrap gap-2 md:gap-3">
-            <Link href="#" className="bg-gray-100 rounded-xl p-2 md:p-3 inline-flex items-center gap-2 w-fit">
+            <Link href="/sla-report" className={`bg-gray-100 rounded-xl p-2 md:p-3 inline-flex items-center gap-2 w-fit ${pathname === '/sla-report' ? 'bg-[#E8FFFE]' : ''}`}>
               <Image src="/assets/svgs/serviceLevelAgreements.svg" alt="Service Level Agreement" width={20} height={20} className="brightness-0" />
               <span className="text-xs md:text-sm text-gray-700">Service Level Agreement</span>
             </Link>
