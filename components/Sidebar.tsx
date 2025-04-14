@@ -17,7 +17,7 @@ export default function Sidebar({ isOpen, onOpenChange }: SidebarProps) {
     { icon: '/assets/svgs/home.svg', label: 'Home', href: '/' },
     { icon: '/assets/svgs/fishSimple.svg', label: 'Items Master List', href: '/items' },
     { icon: '/assets/svgs/recipes.svg', label: 'Recipes', href: '#' },
-    { icon: '/assets/svgs/scales.svg', label: 'Serving Size', href: '#' },
+    { icon: '/assets/svgs/scales.svg', label: 'Serving Size', href: '/serving-size' },
     { icon: '/assets/svgs/assign_order.svg', label: 'Assign Order', href: '#' },
     { icon: '/assets/svgs/purchaseOrder.svg', label: 'Purchase Orders', href: '#' },
     { icon: '/assets/svgs/transfers.svg', label: 'Transfers', href: '#' },
@@ -113,7 +113,7 @@ export default function Sidebar({ isOpen, onOpenChange }: SidebarProps) {
 
           {/* Serving Size and Assign Order */}
           <div className="flex flex-wrap gap-2 md:gap-3">
-            <Link href="#" className="bg-gray-100 rounded-xl p-2 md:p-3 inline-flex items-center gap-2 w-fit">
+            <Link href="/serving-size" className={`bg-gray-100 rounded-xl p-2 md:p-3 inline-flex items-center gap-2 w-fit ${pathname === '/serving-size' ? 'bg-[#E8FFFE]' : ''}`}>
               <Image src="/assets/svgs/scales.svg" alt="Serving Size" width={20} height={20} className="brightness-0" />
               <span className="text-xs md:text-sm text-gray-700">Serving Size</span>
             </Link>

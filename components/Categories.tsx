@@ -2,10 +2,10 @@
 
 import { useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
-import Button from '@/components/ui/button';
 import { CreateCategoryModal } from './CreateCategoryModal';
 import Modal from './ui/Modal';
 import Input from './ui/input';
+import Button from './ui/button';
 
 interface Category {
   id: string;
@@ -57,40 +57,40 @@ export default function Categories({ onClose }: { onClose: () => void }) {
   };
 
   return (
-    <div className="flex-1 flex flex-col bg-[#f1fff7] min-h-screen px-4 py-4 md:px-8 md:py-6">
-      <div className="flex items-center justify-between mb-6">
+    <div className="flex-1 flex flex-col bg-[#f1fff7] min-h-screen px-3 py-3 sm:px-4 md:px-8 sm:py-4 md:py-6">
+      <div className="flex items-center justify-between mb-4 sm:mb-6">
         <div className="flex items-center gap-2">
           <button onClick={onClose} className="text-gray-600 hover:text-gray-800">
             <ArrowLeft className="w-5 h-5" />
           </button>
-          <h1 className="text-2xl font-bold">Categories</h1>
+          <h1 className="text-xl sm:text-2xl font-bold">Categories</h1>
         </div>
 
         <Button 
           onClick={() => setIsCreateModalOpen(true)}
-          className="rounded-full bg-[#339A89]"
+          className="rounded-full bg-[#339A89] text-xs sm:text-sm px-3 py-1.5 sm:px-4 sm:py-2"
         >
           Create New
         </Button>
       </div>
 
-      <div className="bg-white rounded-xl shadow-lg p-6 flex-1">
-        <div className="border-b pb-4 mb-4">
-          <h2 className="text-gray-500 text-sm">Category Name</h2>
+      <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6 flex-1">
+        <div className="border-b pb-3 sm:pb-4 mb-3 sm:mb-4">
+          <h2 className="text-gray-500 text-xs sm:text-sm">Category Name</h2>
         </div>
 
-        <div className="space-y-6">
+        <div className="space-y-3 sm:space-y-4">
           {categories.map((category) => (
             <div 
               key={category.id} 
-              className="flex items-center justify-between py-4 border-b"
+              className="flex items-center justify-between py-3 sm:py-4 border-b"
             >
-              <span className="text-gray-800">{category.name}</span>
+              <span className="text-gray-800 text-sm sm:text-base">{category.name}</span>
               <div className="flex gap-2">
                 <Button 
                   variant="default" 
                   size="sm" 
-                  className="rounded-full bg-[#339A89]"
+                  className="rounded-full bg-[#339A89] text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-1.5"
                   onClick={() => openEditModal(category)}
                 >
                   Edit
@@ -98,7 +98,7 @@ export default function Categories({ onClose }: { onClose: () => void }) {
                 <Button 
                   variant="destructive" 
                   size="sm" 
-                  className="rounded-full bg-red-500"
+                  className="rounded-full bg-red-500 text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-1.5"
                   onClick={() => handleDeleteCategory(category.id)}
                 >
                   Delete
@@ -127,31 +127,31 @@ export default function Categories({ onClose }: { onClose: () => void }) {
           if (currentCategory && editCategoryName.trim()) {
             handleEditCategory(currentCategory.id, editCategoryName);
           }
-        }}>
-          <div className="mb-6">
-            <label className="block text-gray-700 mb-2">Category Name</label>
+        }} className="w-full">
+          <div className="mb-4 sm:mb-6">
+            <label className="block text-gray-700 mb-2 text-sm sm:text-base">Category Name</label>
             <Input
               type="text"
               value={editCategoryName}
               onChange={(e) => setEditCategoryName(e.target.value)}
               placeholder="Enter Category Name"
-              className="w-full bg-white"
+              className="w-full bg-white text-sm sm:text-base"
             />
           </div>
           
-          <div className="flex justify-between">
+          <div className="flex justify-between gap-3 mt-6">
             <Button
               type="button"
               variant="outline"
               onClick={() => setIsEditModalOpen(false)}
-              className="border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
+              className="border-gray-300 bg-white text-gray-700 hover:bg-gray-50 text-xs sm:text-sm py-2 px-3 sm:px-4"
             >
               Cancel
             </Button>
             
             <Button
               type="submit"
-              className="bg-[#339A89] text-white hover:bg-[#2b8274]"
+              className="bg-[#339A89] text-white hover:bg-[#2b8274] text-xs sm:text-sm py-2 px-3 sm:px-4"
             >
               Update
             </Button>

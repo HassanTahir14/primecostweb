@@ -33,31 +33,31 @@ export function CreateCategoryModal({ isOpen, onClose, onAddCategory }: CreateCa
       onClose={handleClose}
       title="New Category"
     >
-      <form onSubmit={handleSubmit}>
-        <div className="mb-6">
-          <label className="block text-gray-700 mb-2">Category Name</label>
+      <form onSubmit={handleSubmit} className="w-full">
+        <div className="mb-4 sm:mb-6">
+          <label className="block text-gray-700 mb-2 text-sm sm:text-base">Category Name</label>
           <Input
             type="text"
             value={categoryName}
             onChange={(e) => setCategoryName(e.target.value)}
             placeholder="Enter Category Name"
-            className="w-full bg-white"
+            className="w-full bg-white text-sm sm:text-base"
           />
         </div>
         
-        <div className="flex justify-between">
+        <div className="flex justify-between gap-3 mt-6">
           <Button
             type="button"
             variant="outline"
             onClick={handleClose}
-            className="border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
+            className="border-gray-300 bg-white text-gray-700 hover:bg-gray-50 text-xs sm:text-sm py-2 px-3 sm:px-4"
           >
             Discard
           </Button>
           
           <Button
             type="submit"
-            className="bg-[#339A89] text-white hover:bg-[#2b8274]"
+            className="bg-[#339A89] text-white hover:bg-[#2b8274] text-xs sm:text-sm py-2 px-3 sm:px-4"
           >
             ADD
           </Button>
