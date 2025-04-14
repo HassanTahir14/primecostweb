@@ -16,7 +16,7 @@ export default function Sidebar({ isOpen, onOpenChange }: SidebarProps) {
   const menuItems = [
     { icon: '/assets/svgs/home.svg', label: 'Home', href: '/' },
     { icon: '/assets/svgs/fishSimple.svg', label: 'Items Master List', href: '/items' },
-    { icon: '/assets/svgs/recipes.svg', label: 'Recipes', href: '#' },
+    { icon: '/assets/svgs/recipes.svg', label: 'Recipes', href: '/recipes' },
     { icon: '/assets/svgs/scales.svg', label: 'Serving Size', href: '/serving-size' },
     { icon: '/assets/svgs/assign_order.svg', label: 'Assign Order', href: '/assign-order' },
     { icon: '/assets/svgs/purchaseOrder.svg', label: 'Purchase Orders', href: '/purchase-orders' },
@@ -105,7 +105,7 @@ export default function Sidebar({ isOpen, onOpenChange }: SidebarProps) {
               <Image src="/assets/svgs/fishSimple.svg" alt="Items" width={20} height={20} className="brightness-0" />
               <span className="text-xs md:text-sm text-gray-700">Items Master List</span>
             </Link>
-            <Link href="#" className="bg-gray-100 rounded-xl p-2 md:p-3 inline-flex items-center gap-2 w-fit">
+            <Link href="/recipes" className={`bg-gray-100 rounded-xl p-2 md:p-3 inline-flex items-center gap-2 w-fit ${pathname === '/recipes' ? 'bg-[#E8FFFE]' : ''}`}>
               <Image src="/assets/svgs/recipes.svg" alt="Recipes" width={20} height={20} className="brightness-0" />
               <span className="text-xs md:text-sm text-gray-700">Recipes</span>
             </Link>
