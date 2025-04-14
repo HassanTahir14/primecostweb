@@ -21,7 +21,7 @@ export default function Sidebar({ isOpen, onOpenChange }: SidebarProps) {
     { icon: '/assets/svgs/assign_order.svg', label: 'Assign Order', href: '/assign-order' },
     { icon: '/assets/svgs/purchaseOrder.svg', label: 'Purchase Orders', href: '/purchase-orders' },
     { icon: '/assets/svgs/transfers.svg', label: 'Transfers', href: '#' },
-    { icon: '/assets/svgs/kitchenEmployees.svg', label: 'Kitchen Employees', href: '#' },
+    { icon: '/assets/svgs/kitchenEmployees.svg', label: 'Kitchen Employees', href: '/employees' },
     { icon: '/assets/svgs/suppliers.svg', label: 'Suppliers', href: '/suppliers' },
   ];
 
@@ -47,8 +47,8 @@ export default function Sidebar({ isOpen, onOpenChange }: SidebarProps) {
           {menuItems.map((item, index) => (
             <Link
               key={index}
-              href={item.href}
-              className={`text-white hover:bg-[#2b8274] p-2 rounded-lg ${pathname === item.href ? 'bg-[#2b8274]' : ''}`}
+              href={item.href === '#' && item.label === 'Kitchen Employees' ? '/employees' : item.href}
+              className={`text-white hover:bg-[#2b8274] p-2 rounded-lg ${pathname === (item.href === '#' && item.label === 'Kitchen Employees' ? '/employees' : item.href) ? 'bg-[#2b8274]' : ''}`}
               onClick={(e) => {
                 e.stopPropagation();
               }}
@@ -137,7 +137,7 @@ export default function Sidebar({ isOpen, onOpenChange }: SidebarProps) {
 
           {/* Kitchen Employees and Suppliers */}
           <div className="flex flex-wrap gap-2 md:gap-3">
-            <Link href="#" className="bg-gray-100 rounded-xl p-2 md:p-3 inline-flex items-center gap-2 w-fit">
+            <Link href="/employees" className={`bg-gray-100 rounded-xl p-2 md:p-3 inline-flex items-center gap-2 w-fit ${pathname === '/employees' ? 'bg-[#E8FFFE]' : ''}`}>
               <Image src="/assets/svgs/kitchenEmployees.svg" alt="Kitchen Employees" width={20} height={20} className="brightness-0" />
               <span className="text-xs md:text-sm text-gray-700">Kitchen Employees</span>
             </Link>
