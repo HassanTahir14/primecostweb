@@ -2,15 +2,6 @@
     "version": 2,
     "buildCommand": "next build",
     "devCommand": "next dev",
-    "outputDirectory": ".next",
-    "routes": [
-      {
-        "src": "/assets/(.*)",
-        "dest": "/assets/$1"
-      },
-      {
-        "src": "/(.*)",
-        "dest": "/$1"
-      }
-    ]
+    "installCommand": "npm install",
+    "outputDirectory": ".next"
   }

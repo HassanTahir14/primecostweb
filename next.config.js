@@ -1,6 +1,5 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Keep output: 'standalone' as it's needed for production
   output: 'standalone',
   reactStrictMode: true,
   swcMinify: true,
@@ -19,8 +18,7 @@ const nextConfig = {
       },
     ],
   },
-  // Simplified configuration
-  trailingSlash: true,
+  trailingSlash: false, // Changed from true to false
   basePath: '',
 };
 
