@@ -30,7 +30,7 @@ export default function Sidebar({ isOpen, onOpenChange }: SidebarProps) {
     { icon: '/assets/svgs/branches.svg', label: 'Branches', href: '#' },
     { icon: '/assets/svgs/taxes.svg', label: 'Taxes', href: '/taxes' },
     { icon: '/assets/svgs/inventory.svg', label: 'Inventory', href: '/inventory' },
-    { icon: '/assets/svgs/tokens.svg', label: 'Tokens', href: '#' },
+    { icon: '/assets/svgs/tokens.svg', label: 'Tokens', href: '/tokens' },
   ];
 
   if (!isOpen) {
@@ -169,7 +169,7 @@ export default function Sidebar({ isOpen, onOpenChange }: SidebarProps) {
               <Image src="/assets/svgs/inventory.svg" alt="Inventory" width={20} height={20} className="brightness-0" />
               <span className="text-xs md:text-sm text-gray-700">Inventory</span>
             </Link>
-            <Link href="#" className="bg-gray-100 rounded-xl p-2 md:p-3 inline-flex items-center gap-2 w-fit">
+            <Link href="/tokens" className={`bg-gray-100 rounded-xl p-2 md:p-3 inline-flex items-center gap-2 w-fit ${pathname === '/tokens' ? 'bg-[#E8FFFE]' : ''}`}>
               <Image src="/assets/svgs/tokens.svg" alt="Tokens" width={20} height={20} className="brightness-0" />
               <span className="text-xs md:text-sm text-gray-700">Tokens</span>
             </Link>
