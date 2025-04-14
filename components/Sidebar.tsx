@@ -27,7 +27,7 @@ export default function Sidebar({ isOpen, onOpenChange }: SidebarProps) {
 
   const moreItems = [
     { icon: '/assets/svgs/serviceLevelAgreements.svg', label: 'Service Level Agreement', href: '#' },
-    { icon: '/assets/svgs/branches.svg', label: 'Branches', href: '#' },
+    { icon: '/assets/svgs/branches.svg', label: 'Branches', href: '/branches' },
     { icon: '/assets/svgs/taxes.svg', label: 'Taxes', href: '/taxes' },
     { icon: '/assets/svgs/inventory.svg', label: 'Inventory', href: '/inventory' },
     { icon: '/assets/svgs/tokens.svg', label: 'Tokens', href: '/tokens' },
@@ -153,7 +153,7 @@ export default function Sidebar({ isOpen, onOpenChange }: SidebarProps) {
               <Image src="/assets/svgs/serviceLevelAgreements.svg" alt="Service Level Agreement" width={20} height={20} className="brightness-0" />
               <span className="text-xs md:text-sm text-gray-700">Service Level Agreement</span>
             </Link>
-            <Link href="#" className="bg-gray-100 rounded-xl p-2 md:p-3 inline-flex items-center gap-2 w-fit">
+            <Link href="/branches" className={`bg-gray-100 rounded-xl p-2 md:p-3 inline-flex items-center gap-2 w-fit ${pathname === '/branches' ? 'bg-[#E8FFFE]' : ''}`}>
               <Image src="/assets/svgs/branches.svg" alt="Branches" width={20} height={20} className="brightness-0" />
               <span className="text-xs md:text-sm text-gray-700">Branches</span>
             </Link>
