@@ -1,5 +1,16 @@
 {
+    "version": 2,
+    "buildCommand": "next build",
+    "devCommand": "next dev",
+    "outputDirectory": ".next",
     "routes": [
-      { "src": "/(.*)", "dest": "/" }
+      {
+        "src": "/assets/(.*)",
+        "dest": "/assets/$1"
+      },
+      {
+        "src": "/(.*)",
+        "dest": "/$1"
+      }
     ]
   }
