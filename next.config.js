@@ -15,20 +15,13 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'primecostwebapp.vercel.app',
-      },
-      {
-        protocol: 'https',
         hostname: '*',
       },
     ],
   },
-  // Add trailing slashes to help with routing
+  // Simplified configuration
   trailingSlash: true,
-  // Ensure proper handling of base path
   basePath: '',
-  // Add asset prefix for production
-  assetPrefix: process.env.NODE_ENV === 'production' ? 'https://primecostwebapp.vercel.app' : '',
 };
 
 module.exports = nextConfig;
