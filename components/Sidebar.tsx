@@ -20,7 +20,7 @@ export default function Sidebar({ isOpen, onOpenChange }: SidebarProps) {
     { icon: '/assets/svgs/scales.svg', label: 'Serving Size', href: '/serving-size' },
     { icon: '/assets/svgs/assign_order.svg', label: 'Assign Order', href: '/assign-order' },
     { icon: '/assets/svgs/purchaseOrder.svg', label: 'Purchase Orders', href: '/purchase-orders' },
-    { icon: '/assets/svgs/transfers.svg', label: 'Transfers', href: '#' },
+    { icon: '/assets/svgs/transfers.svg', label: 'Transfers', href: '/transfers' },
     { icon: '/assets/svgs/kitchenEmployees.svg', label: 'Kitchen Employees', href: '/employees' },
     { icon: '/assets/svgs/suppliers.svg', label: 'Suppliers', href: '/suppliers' },
   ];
@@ -129,7 +129,7 @@ export default function Sidebar({ isOpen, onOpenChange }: SidebarProps) {
               <Image src="/assets/svgs/purchaseOrder.svg" alt="Purchase Orders" width={20} height={20} className="brightness-0" />
               <span className="text-xs md:text-sm text-gray-700">Purchase Orders</span>
             </Link>
-            <Link href="#" className="bg-gray-100 rounded-xl p-2 md:p-3 inline-flex items-center gap-2 w-fit">
+            <Link href="/transfers" className={`bg-gray-100 rounded-xl p-2 md:p-3 inline-flex items-center gap-2 w-fit ${pathname === '/transfers' ? 'bg-[#E8FFFE]' : ''}`}>
               <Image src="/assets/svgs/transfers.svg" alt="Transfers" width={20} height={20} className="brightness-0" />
               <span className="text-xs md:text-sm text-gray-700">Transfers</span>
             </Link>
