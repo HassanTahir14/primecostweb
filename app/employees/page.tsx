@@ -42,8 +42,7 @@ export default function EmployeesPage() {
 
       {/* Main Content Area */}
       <div className="bg-white rounded-lg shadow-sm p-6 space-y-6">
-        <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-          <h1 className="text-3xl font-semibold text-gray-900">Employees</h1>
+        <div className="flex flex-col md:flex-row justify-end items-center gap-4">
           <div className="flex gap-2 flex-shrink-0">
             <Link href="/employees/create">
               <Button>Create new employee</Button>

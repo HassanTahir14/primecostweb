@@ -26,9 +26,7 @@ export default function BranchesPage() {
     <PageLayout title="Branches">
       <div className="bg-white rounded-lg shadow-sm p-6">
         <div className="flex flex-col space-y-6">
-          <div className="flex justify-between items-center">
-            <h1 className="text-3xl font-semibold text-gray-900">Branches</h1>
-            
+          <div className="flex justify-end items-center">
             <div className="flex space-x-4">
               <Button onClick={() => setIsCreateModalOpen(true)}>
                 Create New

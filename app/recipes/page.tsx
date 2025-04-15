@@ -27,11 +27,10 @@ export default function RecipesPage() {
     <PageLayout title="All Recipes">
       <div className="bg-white rounded-lg shadow-sm p-6 space-y-6">
         <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-          <h1 className="text-3xl font-semibold text-gray-900">All Recipes</h1>
-          
-          <div className="flex items-center gap-4 w-full md:w-auto flex-wrap">
+          {/* <h1 className="text-3xl font-semibold text-gray-900">All Recipes</h1> */}
+          <div className="flex items-center gap-4 w-full md:w-auto flex-wrap justify-end">
             {/* Search Input */}
-            <div className="relative flex-grow min-w-[200px]">
+            <div className="relative flex-grow min-w-[200px] max-w-xs">
               <input
                 type="text"
                 placeholder="Search Recipe"

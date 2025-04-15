@@ -1,38 +1,96 @@
 'use client';
 
-import { ReactNode, useState } from 'react';
-import Sidebar from '@/components/Sidebar';
-import { Users, ChevronDown } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import Sidebar from './Sidebar';
+import { Bell, ChevronDown } from 'lucide-react';
+import Link from 'next/link';
 
 interface PageLayoutProps {
+  children: React.ReactNode;
   title: string;
-  children: ReactNode;
 }
 
-export default function PageLayout({ title, children }: PageLayoutProps) {
+export default function PageLayout({ children, title }: PageLayoutProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const userMenuRef = useRef<HTMLDivElement>(null);
+
+  // Close user menu when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+        setIsUserMenuOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [userMenuRef]);
+
+  const handleLogout = () => {
+      // TODO: Implement actual logout logic (clear session, redirect)
+      console.log("Logout clicked");
+      setIsUserMenuOpen(false);
+      // Example redirect: router.push('/login'); 
+  }
 
   return (
-    <div className="flex min-h-screen bg-[#f1fff7]">
+    <div className="flex h-screen bg-[#F4F7FA]">
       <Sidebar isOpen={isSidebarOpen} onOpenChange={setIsSidebarOpen} />
-      
-      <div className={`flex-1 flex flex-col min-h-screen ${isSidebarOpen ? 'lg:pl-[400px]' : 'pl-16 md:pl-20'}`}>
-        {/* Navbar */}
-        <nav className="h-14 md:h-16 border-b bg-white flex items-center justify-between px-4 md:px-8 sticky top-0 z-30">
-          <h1 className="text-xl font-semibold text-gray-800">{title}</h1>
-          <div className="flex items-center gap-2 cursor-pointer">
-            <div className="w-7 h-7 md:w-8 md:h-8 bg-gray-200 rounded-full flex items-center justify-center">
-              <Users className="w-4 h-4 md:w-5 md:h-5 text-gray-600" />
-            </div>
-            <span className="text-gray-700 text-xs md:text-sm">Walid Sulieman</span>
-            <ChevronDown className="w-3 h-3 md:w-4 md:h-4 text-gray-600" />
+      <div className={`flex-1 flex flex-col transition-all duration-300 ${isSidebarOpen ? 'ml-[85%] sm:ml-[320px] lg:ml-[400px]' : 'ml-16 md:ml-20'}`}>
+        {/* Header */}
+        <header className="bg-white shadow-sm px-4 sm:px-6 py-3 flex justify-between items-center sticky top-0 z-30">
+          {/* Left side - Display Page Title */}
+          <div className="flex items-center">
+             <h1 className="text-lg sm:text-xl font-semibold text-gray-800">{title}</h1>
           </div>
-        </nav>
 
-        <main className="flex-1 p-4 sm:p-6 md:p-8">
+          {/* Right side - User Info & Actions */}
+          <div className="flex items-center gap-3 sm:gap-4">
+            <button className="relative text-gray-500 hover:text-gray-700">
+              <Bell size={20} />
+              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-semibold">12</span>
+            </button>
+            
+            {/* User Dropdown */}
+            <div className="relative" ref={userMenuRef}>
+              <button 
+                onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                className="flex items-center gap-1 sm:gap-2 text-sm text-gray-700 hover:text-gray-900"
+              >
+                <span>Sulieman.walid@gmail.com</span>
+                <ChevronDown size={16} className={`transition-transform ${isUserMenuOpen ? 'rotate-180' : ''}`} />
+              </button>
+
+              {/* Dropdown Menu */}
+              {isUserMenuOpen && (
+                <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-40 ring-1 ring-black ring-opacity-5">
+                  <Link 
+                    href="/settings" 
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    onClick={() => setIsUserMenuOpen(false)} // Close menu on click
+                  >
+                    Settings
+                  </Link>
+                  <button 
+                    onClick={handleLogout}
+                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  >
+                    Logout
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </header>
+
+        {/* Main Content Area */}
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6">
+          {/* Title removed from here, now handled in header */}
           {children}
         </main>
       </div>
     </div>
   );
-} 
+}
