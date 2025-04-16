@@ -3,7 +3,7 @@ import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 // Define a service using a base URL and expected endpoints
 export const apiSlice = createApi({
   reducerPath: 'api',
-  baseQuery: fetchBaseQuery({ baseUrl: 'http://13.61.61.180:8080/api/v1' }),
+  baseQuery: fetchBaseQuery({ baseUrl: 'http://13.61.61.180:8080/v1' }),
   tagTypes: ['Auth'], // Define tag types if needed for caching
   endpoints: (builder) => ({}), // Endpoints will be injected here
 });
