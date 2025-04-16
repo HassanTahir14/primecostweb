@@ -4,11 +4,9 @@ import { useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { Eye, EyeOff } from 'lucide-react';
-import { 
-  useLoginMutation, 
-  useForgotPasswordMutation, 
-  useResetPasswordMutation 
-} from '@/store/authApi';
+import { useDispatch, useSelector } from 'react-redux';
+import { login, forgotPassword, resetPassword, selectAuthStatus, selectAuthError } from '@/store/authSlice';
+import { AppDispatch } from '@/store/store';
 import ConfirmationModal from '@/components/common/ConfirmationModal';
 import { toast } from 'react-hot-toast';
 import Loader from '@/components/common/Loader';
@@ -23,6 +21,9 @@ export default function LoginPage() {
   const [resetCode, setResetCode] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const router = useRouter();
+  const dispatch = useDispatch<AppDispatch>();
+  const status = useSelector(selectAuthStatus);
+  const error = useSelector(selectAuthError);
 
   const [modalState, setModalState] = useState<{
     isOpen: boolean;
@@ -32,33 +33,27 @@ export default function LoginPage() {
     onConfirm?: () => void;
   }>({ isOpen: false, title: '', message: '', isAlert: false });
 
-  const [login, { isLoading: isLoggingIn, error: loginError }] = useLoginMutation();
-  const [forgotPassword, { isLoading: isSendingCode, error: forgotPasswordError }] = useForgotPasswordMutation();
-  const [resetPassword, { isLoading: isResetting, error: resetPasswordError }] = useResetPasswordMutation();
-
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const loginData = await login({ userName: email, password }).unwrap();
-      console.log("Login successful:", loginData);
+      const result = await dispatch(login({ userName: email, password })).unwrap();
+      console.log("Login successful:", result);
       setModalState({
         isOpen: true,
         title: 'Login Successful',
         message: 'Welcome! You will be redirected to the dashboard.',
         isAlert: true,
         onConfirm: () => {
-          localStorage.setItem('authToken', loginData.token);
           setModalState({ isOpen: false, title: '', message: '', isAlert: false });
           router.push('/dashboard');
         }
       });
     } catch (err: any) {
-      console.error("Login failed raw error object:", err);
-      console.error("Login failed error data:", err?.data);
+      console.error("Login failed:", err);
       setModalState({
         isOpen: true,
         title: 'Login Failed',
-        message: err?.data?.description || 'Login failed. Please check your credentials or try again later.',
+        message: err || 'Login failed. Please check your credentials or try again later.',
         isAlert: true,
       });
     }
@@ -67,12 +62,12 @@ export default function LoginPage() {
   const handleForgotPasswordEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const result = await forgotPassword({ userName: email }).unwrap();
+      const result = await dispatch(forgotPassword({ userName: email })).unwrap();
       console.log("Forgot password request result:", result);
       setModalState({
         isOpen: true,
         title: 'Reset Code Sent',
-        message: result?.description || 'A reset code has been sent to your email (if the email exists in our system). Please check your inbox.',
+        message: result?.message || 'A reset code has been sent to your email (if the email exists in our system). Please check your inbox.',
         isAlert: true,
         onConfirm: () => {
           setModalState({ isOpen: false, title: '', message: '', isAlert: false });
@@ -84,7 +79,7 @@ export default function LoginPage() {
       setModalState({
         isOpen: true,
         title: 'Request Failed',
-        message: err?.data?.description || 'Failed to send reset code. Please check the email and try again.',
+        message: err || 'Failed to send reset code. Please check the email and try again.',
         isAlert: true,
       });
     }
@@ -93,12 +88,12 @@ export default function LoginPage() {
   const handleResetPasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const result = await resetPassword({ resetCode, newPassword }).unwrap();
+      const result = await dispatch(resetPassword({ resetCode, newPassword })).unwrap();
       console.log("Reset password result:", result);
       setModalState({
         isOpen: true,
         title: 'Password Reset Successful',
-        message: result?.description || 'Your password has been successfully reset. You can now log in with your new password.',
+        message: result?.message || 'Your password has been successfully reset. You can now log in with your new password.',
         isAlert: true,
         onConfirm: () => {
           setModalState({ isOpen: false, title: '', message: '', isAlert: false });
@@ -114,13 +109,13 @@ export default function LoginPage() {
       setModalState({
         isOpen: true,
         title: 'Reset Failed',
-        message: err?.data?.description || 'Failed to reset password. Please check the code and try again.',
+        message: err || 'Failed to reset password. Please check the code and try again.',
         isAlert: true,
       });
     }
   };
 
-  const isLoading = isLoggingIn || isSendingCode || isResetting;
+  const isLoading = status === 'loading';
 
   const renderLoginForm = () => (
     <form onSubmit={handleLoginSubmit} className="space-y-4 sm:space-y-6">
@@ -175,7 +170,7 @@ export default function LoginPage() {
         className="w-full bg-[#339A89] text-white py-2.5 sm:py-3 rounded-lg font-medium text-sm sm:text-base hover:bg-[#2b8274] transition-colors disabled:opacity-75 disabled:cursor-not-allowed"
         disabled={isLoading}
       >
-        {isLoggingIn ? 'SIGNING IN...' : 'SIGN IN'}
+        {isLoading ? 'SIGNING IN...' : 'SIGN IN'}
       </button>
 
       <div className="text-center pt-1">
@@ -214,7 +209,7 @@ export default function LoginPage() {
         className="w-full bg-[#339A89] text-white py-2.5 sm:py-3 rounded-lg font-medium text-sm sm:text-base hover:bg-[#2b8274] transition-colors disabled:opacity-75 disabled:cursor-not-allowed"
         disabled={isLoading}
       >
-         {isSendingCode ? 'SENDING...' : 'Submit'}
+         {isLoading ? 'SENDING...' : 'Submit'}
       </button>
        <div className="text-center pt-1">
         <button 
@@ -266,7 +261,7 @@ export default function LoginPage() {
         className="w-full bg-[#339A89] text-white py-2.5 sm:py-3 rounded-lg font-medium text-sm sm:text-base hover:bg-[#2b8274] transition-colors disabled:opacity-75 disabled:cursor-not-allowed"
          disabled={isLoading}
       >
-        {isResetting ? 'RESETTING...' : 'Submit'}
+        {isLoading ? 'RESETTING...' : 'Submit'}
       </button>
        <div className="text-center pt-1">
         <button 
