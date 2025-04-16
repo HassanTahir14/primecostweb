@@ -1,17 +1,38 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import Button from '@/components/common/button';
 import Modal from './common/Modal';
 import Input from './common/input';
 import Select from './common/select';
 import { toast } from 'react-hot-toast';
+import { useDispatch, useSelector } from 'react-redux';
+import { AppDispatch } from '@/store/store';
+import api from '@/store/api';
+import {
+  fetchAllServingSizes,
+  addServingSize,
+  updateServingSize,
+  deleteServingSize,
+  selectAllServingSizes,
+  selectServingSizeStatus,
+  selectServingSizeError
+} from '@/store/servingSizeSlice';
+import ConfirmationModal from './common/ConfirmationModal';
+
+interface UnitOfMeasurement {
+  unitOfMeasurementId: number;
+  unitName: string;
+  unitDescription: string;
+  createdAt: string;
+  updatedAt: string | null;
+}
 
 interface ServingSize {
-  id: string;
+  servingSizeId: number;
   name: string;
-  unit: string;
+  unitOfMeasurementId: number;
 }
 
 const UNITS_OPTIONS = [
@@ -22,44 +43,60 @@ const UNITS_OPTIONS = [
   { label: "ML", value: "ml" },
 ];
 
+
 export default function ServingSize({ onClose }: { onClose: () => void }) {
+  const dispatch = useDispatch<AppDispatch>();
+  const servingSizes = useSelector(selectAllServingSizes);
+  const isLoading = useSelector(selectServingSizeStatus);
+  const error = useSelector(selectServingSizeError);
+
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [currentServingSize, setCurrentServingSize] = useState<ServingSize | null>(null);
   const [servingSizeName, setServingSizeName] = useState('');
   const [servingSizeUnit, setServingSizeUnit] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
   const [nameError, setNameError] = useState('');
   const [unitError, setUnitError] = useState('');
-  
-  const [servingSizes, setServingSizes] = useState<ServingSize[]>([]);
+  const [unitsOfMeasurement, setUnitsOfMeasurement] = useState<UnitOfMeasurement[]>([]);
+
+  // Confirmation modal states
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [selectedServingSize, setSelectedServingSize] = useState<ServingSize | null>(null);
+  const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
+  const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+
+  useEffect(() => {
+    api.get('/units-of-measurement/all').then((response) => {
+      if (response.data?.unitsOfMeasurement) {
+        setUnitsOfMeasurement(response.data.unitsOfMeasurement);
+      }
+    }).catch(error => {
+      setErrorMessage('Failed to load units of measurement');
+      setIsErrorModalOpen(true);
+    });
+  }, []);
+
+  // Transform units of measurement for the select component
+  const unitOptions = useMemo(() => 
+    unitsOfMeasurement.map(unit => ({
+      label: `${unit.unitName} - ${unit.unitDescription}`,
+      value: unit.unitOfMeasurementId.toString()
+    })), [unitsOfMeasurement]
+  );
 
   useEffect(() => {
     fetchServingSizes();
-  }, []);
+  }, [dispatch]);
 
   const fetchServingSizes = async () => {
-    setIsLoading(true);
     try {
-      // In a real application, replace with actual API call
-      // const response = await fetch('/api/serving-sizes');
-      // const data = await response.json();
-      // setServingSizes(data);
-      
-      // Mock data for demonstration
-      setTimeout(() => {
-        setServingSizes([
-          { id: '1', name: 'Small', unit: 'grams' },
-          { id: '2', name: 'Medium', unit: 'kg' },
-          { id: '3', name: 'Large', unit: 'kg' },
-          { id: '4', name: 'Extra Large', unit: 'pieces' },
-        ]);
-        setIsLoading(false);
-      }, 500);
-    } catch (error) {
-      console.error('Error fetching serving sizes:', error);
-      toast.error('Failed to load serving sizes');
-      setIsLoading(false);
+      const result = await dispatch(fetchAllServingSizes()).unwrap();
+      console.log('Serving sizes response:', result);
+    } catch (error: any) {
+      setErrorMessage(error.message || 'Failed to fetch serving sizes');
+      setIsErrorModalOpen(true);
     }
   };
 
@@ -86,85 +123,58 @@ export default function ServingSize({ onClose }: { onClose: () => void }) {
   const handleAddServingSize = async (name: string, unit: string) => {
     if (!validateForm()) return;
     
-    setIsLoading(true);
     try {
-      // In a real application, replace with actual API call
-      // const response = await fetch('/api/serving-sizes', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ name, unit }),
-      // });
-      // const newServingSize = await response.json();
-      
-      // Mock API response
-      const newServingSize = {
-        id: Math.random().toString(36).substring(2, 9),
-        name,
-        unit,
+      const servingSizeData = {
+        name: name.trim(),
+        unitOfMeasurementId: parseInt(unit)
       };
+
+      if (currentServingSize) {
+        await dispatch(updateServingSize({
+          ...servingSizeData,
+          servingSizeId: currentServingSize?.servingSizeId
+        })).unwrap();
+        setSuccessMessage('Serving size updated successfully!');
+      } else {
+        await dispatch(addServingSize(servingSizeData)).unwrap();
+        setSuccessMessage('Serving size added successfully!');
+      }
       
-      setServingSizes([...servingSizes, newServingSize]);
       setIsCreateModalOpen(false);
-      toast.success('Serving size added successfully');
-    } catch (error) {
-      console.error('Error adding serving size:', error);
-      toast.error('Failed to add serving size');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleEditServingSize = async (id: string, newName: string, newUnit: string) => {
-    if (!validateForm()) return;
-    
-    setIsLoading(true);
-    try {
-      // In a real application, replace with actual API call
-      // await fetch(`/api/serving-sizes/${id}`, {
-      //   method: 'PUT',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ name: newName, unit: newUnit }),
-      // });
-      
-      setServingSizes(
-        servingSizes.map(size => 
-          size.id === id ? { ...size, name: newName, unit: newUnit } : size
-        )
-      );
       setIsEditModalOpen(false);
-      toast.success('Serving size updated successfully');
-    } catch (error) {
-      console.error('Error updating serving size:', error);
-      toast.error('Failed to update serving size');
-    } finally {
-      setIsLoading(false);
+      setIsSuccessModalOpen(true);
+      resetForm();
+    } catch (error: any) {
+      setErrorMessage(error.message || 'Failed to save serving size');
+      setIsErrorModalOpen(true);
     }
   };
 
-  const handleDeleteServingSize = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this serving size?')) return;
+  const handleDeleteClick = (servingSize: ServingSize) => {
+    setSelectedServingSize(servingSize);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!selectedServingSize) return;
     
-    setIsLoading(true);
     try {
-      // In a real application, replace with actual API call
-      // await fetch(`/api/serving-sizes/${id}`, {
-      //   method: 'DELETE',
-      // });
-      
-      setServingSizes(servingSizes.filter(size => size.id !== id));
-      toast.success('Serving size deleted successfully');
-    } catch (error) {
-      console.error('Error deleting serving size:', error);
-      toast.error('Failed to delete serving size');
-    } finally {
-      setIsLoading(false);
+      await dispatch(deleteServingSize({ servingSizeId: selectedServingSize?.servingSizeId })).unwrap();
+      setIsDeleteModalOpen(false);
+      setSuccessMessage('Serving size deleted successfully!');
+      setIsSuccessModalOpen(true);
+    } catch (error: any) {
+      setErrorMessage(error.message || 'Failed to delete serving size');
+      setIsDeleteModalOpen(false);
+      setIsErrorModalOpen(true);
     }
   };
 
   const openEditModal = (servingSize: ServingSize) => {
+    console.log('Opening edit modal with serving size:', servingSize);
     setCurrentServingSize(servingSize);
     setServingSizeName(servingSize.name);
-    setServingSizeUnit(servingSize.unit);
+    setServingSizeUnit(servingSize.unitOfMeasurementId ? servingSize.unitOfMeasurementId.toString() : '');
     setNameError('');
     setUnitError('');
     setIsEditModalOpen(true);
@@ -175,6 +185,7 @@ export default function ServingSize({ onClose }: { onClose: () => void }) {
     setServingSizeUnit('');
     setNameError('');
     setUnitError('');
+    setCurrentServingSize(null);
   };
 
   return (
@@ -218,11 +229,13 @@ export default function ServingSize({ onClose }: { onClose: () => void }) {
           <div className="space-y-3 sm:space-y-4">
             {servingSizes.map((size) => (
               <div 
-                key={size.id} 
+                key={size?.servingSizeId} 
                 className="grid grid-cols-3 items-center py-3 sm:py-4 border-b"
               >
                 <span className="text-gray-800 text-sm sm:text-base">{size.name}</span>
-                <span className="text-gray-800 text-sm sm:text-base">{size.unit}</span>
+                <span className="text-gray-800 text-sm sm:text-base">
+                  {unitsOfMeasurement.find(u => u.unitOfMeasurementId === size.unitOfMeasurementId)?.unitDescription || ''}
+                </span>
                 <div className="flex justify-end gap-2">
                   <Button 
                     variant="default" 
@@ -237,7 +250,7 @@ export default function ServingSize({ onClose }: { onClose: () => void }) {
                     variant="destructive" 
                     size="sm" 
                     className="rounded-full bg-red-500 text-white text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-1.5"
-                    onClick={() => handleDeleteServingSize(size.id)}
+                    onClick={() => handleDeleteClick(size)}
                     disabled={isLoading}
                   >
                     Delete
@@ -284,8 +297,7 @@ export default function ServingSize({ onClose }: { onClose: () => void }) {
                 setServingSizeUnit(e.target.value);
                 if (e.target.value) setUnitError('');
               }}
-              options={UNITS_OPTIONS}
-              placeholder="Select primary unit"
+              options={unitOptions}
               className={`w-full bg-white ${unitError ? 'border-red-500' : ''}`}
               disabled={isLoading}
             />
@@ -329,7 +341,7 @@ export default function ServingSize({ onClose }: { onClose: () => void }) {
         <form onSubmit={(e) => {
           e.preventDefault();
           if (currentServingSize) {
-            handleEditServingSize(currentServingSize.id, servingSizeName, servingSizeUnit);
+            handleAddServingSize(servingSizeName, servingSizeUnit);
           }
         }} className="w-full">
           <div className="mb-4">
@@ -356,8 +368,7 @@ export default function ServingSize({ onClose }: { onClose: () => void }) {
                 setServingSizeUnit(e.target.value);
                 if (e.target.value) setUnitError('');
               }}
-              options={UNITS_OPTIONS}
-              placeholder="Select primary unit"
+              options={unitOptions}
               className={`w-full bg-white ${unitError ? 'border-red-500' : ''}`}
               disabled={isLoading}
             />
@@ -385,6 +396,34 @@ export default function ServingSize({ onClose }: { onClose: () => void }) {
           </div>
         </form>
       </Modal>
+
+      <ConfirmationModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={handleDeleteConfirm}
+        title="Delete Serving Size"
+        message={`Are you sure you want to delete ${selectedServingSize?.name}? This action cannot be undone.`}
+        confirmText="Delete"
+        cancelText="Cancel"
+      />
+
+      <ConfirmationModal
+        isOpen={isSuccessModalOpen}
+        onClose={() => setIsSuccessModalOpen(false)}
+        title="Success"
+        message={successMessage}
+        isAlert={true}
+        okText="OK"
+      />
+
+      <ConfirmationModal
+        isOpen={isErrorModalOpen}
+        onClose={() => setIsErrorModalOpen(false)}
+        title="Error"
+        message={errorMessage}
+        isAlert={true}
+        okText="OK"
+      />
     </div>
   );
 } 

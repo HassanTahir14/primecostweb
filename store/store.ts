@@ -4,6 +4,7 @@ import recipeReducer from './recipeSlice';
 import recipeCategoryReducer from './recipeCategorySlice';
 import subRecipeReducer from './subRecipeSlice';
 import subRecipeCategoryReducer from './subRecipeCategorySlice';
+import servingSizeReducer from './servingSizeSlice';
 
 export const store = configureStore({
   reducer: {
@@ -12,6 +13,7 @@ export const store = configureStore({
     recipeCategory: recipeCategoryReducer,
     subRecipe: subRecipeReducer,
     subRecipeCategory: subRecipeCategoryReducer,
+    servingSize: servingSizeReducer,
   },
 });
 
