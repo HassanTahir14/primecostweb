@@ -1,65 +1,81 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Button from '@/components/common/button';
 import Input from '@/components/common/input';
-import { toast } from 'react-hot-toast';
+import { addSupplier, updateSupplier, fetchAllSuppliers } from '@/store/supplierSlice';
+import type { RootState } from '@/store/store';
+import type { SupplierData } from '@/store/supplierApi';
+import ConfirmationModal from './common/ConfirmationModal';
 
 interface SupplierDetailsProps {
   supplierId?: string;
   onClose: () => void;
 }
 
-interface SupplierFormData {
-  name: string;
-  contactNumber: string;
-  email: string;
-  salesmanName: string;
-  salesmanContactNumber: string;
-  salesmanEmail: string;
-  address: string;
-  vatNo: string;
-  crNumber: string;
-}
-
 export default function SupplierDetails({ supplierId, onClose }: SupplierDetailsProps) {
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState(false);
+  const dispatch = useDispatch();
+  const { loading, error, suppliers } = useSelector((state: RootState) => state.supplier);
   const isEditMode = !!supplierId;
   
-  const [formData, setFormData] = useState<SupplierFormData>({
+  // Modal states
+  const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
+  const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
+  const [modalMessage, setModalMessage] = useState('');
+  
+  const [formData, setFormData] = useState<SupplierData>({
     name: '',
-    contactNumber: '',
+    contactNo: '',
     email: '',
     salesmanName: '',
-    salesmanContactNumber: '',
+    salesmanContactNo: '',
     salesmanEmail: '',
-    address: '',
+    supplierAddress: '',
     vatNo: '',
-    crNumber: ''
+    crNo: ''
   });
 
+  // Fetch suppliers if in edit mode and suppliers array is empty
   useEffect(() => {
-    if (supplierId) {
-      // In a real app, fetch supplier data based on ID
-      // For this demo, we'll use mock data
-      if (supplierId === '1') {
+    if (isEditMode && suppliers.length === 0) {
+      dispatch(fetchAllSuppliers() as any);
+    }
+  }, [isEditMode, suppliers.length, dispatch]);
+
+  // Populate form data when editing
+  useEffect(() => {
+    if (isEditMode && supplierId && suppliers.length > 0) {
+      const supplierToEdit = suppliers.find(s => s.supplierId === parseInt(supplierId));
+      if (supplierToEdit) {
         setFormData({
-          name: 'Almarai',
-          contactNumber: '543343344',
-          email: 'Almarai@gmail.com',
-          salesmanName: 'Turki',
-          salesmanContactNumber: '555123456',
-          salesmanEmail: 'turki@almarai.com',
-          address: 'Riyadh, Saudi Arabia',
-          vatNo: 'VAT12345',
-          crNumber: 'CR98765'
+          name: supplierToEdit.name,
+          contactNo: supplierToEdit.contactNo,
+          email: supplierToEdit.email,
+          salesmanName: supplierToEdit.salesmanName,
+          salesmanContactNo: supplierToEdit.salesmanContactNo,
+          salesmanEmail: supplierToEdit.salesmanEmail,
+          supplierAddress: supplierToEdit.supplierAddress,
+          vatNo: supplierToEdit.vatNo,
+          crNo: supplierToEdit.crNo
         });
+      } else {
+        setModalMessage('Supplier not found');
+        setIsErrorModalOpen(true);
+        router.push('/suppliers');
       }
     }
-  }, [supplierId]);
+  }, [isEditMode, supplierId, suppliers, router]);
+
+  useEffect(() => {
+    if (error) {
+      setModalMessage(error);
+      setIsErrorModalOpen(true);
+    }
+  }, [error]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -69,25 +85,86 @@ export default function SupplierDetails({ supplierId, onClose }: SupplierDetails
     });
   };
 
+  const validateForm = () => {
+    if (!formData.name) {
+      setModalMessage('Name is required');
+      setIsErrorModalOpen(true);
+      return false;
+    }
+    if (!formData.email) {
+      setModalMessage('Email is required');
+      setIsErrorModalOpen(true);
+      return false;
+    }
+    if (!formData.contactNo) {
+      setModalMessage('Contact number is required');
+      setIsErrorModalOpen(true);
+      return false;
+    }
+    if (!formData.salesmanName) {
+      setModalMessage('Salesman name is required');
+      setIsErrorModalOpen(true);
+      return false;
+    }
+    if (!formData.salesmanContactNo) {
+      setModalMessage('Salesman contact number is required');
+      setIsErrorModalOpen(true);
+      return false;
+    }
+    if (!formData.salesmanEmail) {
+      setModalMessage('Salesman email is required');
+      setIsErrorModalOpen(true);
+      return false;
+    }
+    if (!formData.supplierAddress) {
+      setModalMessage('Supplier address is required');
+      setIsErrorModalOpen(true);
+      return false;
+    }
+    if (!formData.vatNo) {
+      setModalMessage('VAT number is required');
+      setIsErrorModalOpen(true);
+      return false;
+    }
+    if (!formData.crNo) {
+      setModalMessage('CR number is required');
+      setIsErrorModalOpen(true);
+      return false;
+    } 
+    
+    
+    
+    
+    
+    return true;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
+    
+    if (!validateForm()) return;
     
     try {
-      // In a real application, you would submit to an API endpoint
-      // await fetch('/api/suppliers', { method: isEditMode ? 'PUT' : 'POST', body: JSON.stringify(formData) });
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      toast.success(isEditMode ? 'Supplier updated successfully!' : 'Supplier added successfully!');
-      router.push('/suppliers');
+      if (isEditMode && supplierId) {
+        await dispatch(updateSupplier({
+          ...formData,
+          supplierId: parseInt(supplierId)
+        }) as any);
+        setModalMessage('Supplier updated successfully!');
+      } else {
+        await dispatch(addSupplier(formData) as any);
+        setModalMessage('Supplier added successfully!');
+      }
+      setIsSuccessModalOpen(true);
     } catch (error) {
-      console.error('Error saving supplier:', error);
-      toast.error('Failed to save supplier');
-    } finally {
-      setIsLoading(false);
+      setModalMessage('Failed to save supplier');
+      setIsErrorModalOpen(true);
     }
+  };
+
+  const handleSuccessClose = () => {
+    setIsSuccessModalOpen(false);
+    router.push('/suppliers');
   };
 
   return (
@@ -133,9 +210,9 @@ export default function SupplierDetails({ supplierId, onClose }: SupplierDetails
               <label className="block text-gray-700 mb-2 font-medium">Contact Number</label>
               <Input
                 type="text"
-                name="contactNumber"
+                name="contactNo"
                 placeholder="Enter supplier contact"
-                value={formData.contactNumber}
+                value={formData.contactNo}
                 onChange={handleChange}
                 className="w-full"
                 required
@@ -146,9 +223,9 @@ export default function SupplierDetails({ supplierId, onClose }: SupplierDetails
               <label className="block text-gray-700 mb-2 font-medium">Salesman Contact Number</label>
               <Input
                 type="text"
-                name="salesmanContactNumber"
+                name="salesmanContactNo"
                 placeholder="Enter salesman contact"
-                value={formData.salesmanContactNumber}
+                value={formData.salesmanContactNo}
                 onChange={handleChange}
                 className="w-full"
               />
@@ -199,9 +276,9 @@ export default function SupplierDetails({ supplierId, onClose }: SupplierDetails
               <label className="block text-gray-700 mb-2 font-medium">Supplier Address</label>
               <Input
                 type="text"
-                name="address"
+                name="supplierAddress"
                 placeholder="Enter supplier address"
-                value={formData.address}
+                value={formData.supplierAddress}
                 onChange={handleChange}
                 className="w-full"
               />
@@ -212,9 +289,9 @@ export default function SupplierDetails({ supplierId, onClose }: SupplierDetails
             <label className="block text-gray-700 mb-2 font-medium">CR Number</label>
             <Input
               type="text"
-              name="crNumber"
+              name="crNo"
               placeholder="Enter supplier cr number"
-              value={formData.crNumber}
+              value={formData.crNo}
               onChange={handleChange}
               className="w-full md:w-1/2"
             />
@@ -224,13 +301,33 @@ export default function SupplierDetails({ supplierId, onClose }: SupplierDetails
             <Button
               type="submit"
               className="bg-[#05A49D] text-white hover:bg-[#048c86] px-6 py-2.5 rounded-md"
-              disabled={isLoading}
+              disabled={loading}
             >
-              {isLoading ? 'Processing...' : 'SUBMIT'}
+              {loading ? 'Processing...' : 'SUBMIT'}
             </Button>
           </div>
         </form>
       </div>
+
+      {/* Success Modal */}
+      <ConfirmationModal
+        isOpen={isSuccessModalOpen}
+        onClose={handleSuccessClose}
+        title="Success"
+        message={modalMessage}
+        isAlert={true}
+        okText="OK"
+      />
+
+      {/* Error Modal */}
+      <ConfirmationModal
+        isOpen={isErrorModalOpen}
+        onClose={() => setIsErrorModalOpen(false)}
+        title="Error"
+        message={modalMessage}
+        isAlert={true}
+        okText="OK"
+      />
     </div>
   );
 } 

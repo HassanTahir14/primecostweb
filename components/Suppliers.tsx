@@ -1,63 +1,63 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Button from '@/components/common/button';
-import { toast } from 'react-hot-toast';
-
-interface Supplier {
-  id: string;
-  name: string;
-  email: string;
-  contact: string;
-  salesMan: string;
-}
+import { fetchAllSuppliers, deleteSupplier } from '@/store/supplierSlice';
+import type { RootState } from '@/store/store';
+import ConfirmationModal from './common/ConfirmationModal';
 
 interface SuppliersProps {
   onClose: () => void;
+  onEdit: (supplierId: string) => void;
 }
 
-export default function Suppliers({ onClose }: SuppliersProps) {
+export default function Suppliers({ onClose, onEdit }: SuppliersProps) {
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState(false);
+  const dispatch = useDispatch();
+  const { suppliers, loading, error } = useSelector((state: RootState) => state.supplier);
   
-  const [suppliers, setSuppliers] = useState<Supplier[]>([
-    {
-      id: '1',
-      name: 'Almarai',
-      email: 'Almarai@gmail.com',
-      contact: '543343344',
-      salesMan: 'Turki'
-    },
-    {
-      id: '2',
-      name: 'International Food Resources',
-      email: 'info@ifr.com',
-      contact: '054500607',
-      salesMan: 'Mustafa Ali'
-    },
-    {
-      id: '3',
-      name: 'Al Kabbaz',
-      email: 'sulieman.walid@hotmail.com',
-      contact: '054654658',
-      salesMan: 'Wassim'
+  // Modal states
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
+  const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
+  const [selectedSupplierId, setSelectedSupplierId] = useState<number | null>(null);
+  const [modalMessage, setModalMessage] = useState('');
+
+  useEffect(() => {
+    dispatch(fetchAllSuppliers() as any);
+  }, [dispatch]);
+
+  useEffect(() => {
+    if (error) {
+      setModalMessage(error);
+      setIsErrorModalOpen(true);
     }
-  ]);
+  }, [error]);
 
   const handleAddSupplier = () => {
     router.push('/suppliers/add');
   };
 
-  const handleEditSupplier = (id: string) => {
-    router.push(`/suppliers/${id}`);
+  const handleDeleteClick = (id: number) => {
+    setSelectedSupplierId(id);
+    setIsDeleteModalOpen(true);
   };
 
-  const handleDeleteSupplier = (id: string) => {
-    if (window.confirm('Are you sure you want to delete this supplier?')) {
-      setSuppliers(suppliers.filter(supplier => supplier.id !== id));
-      toast.success('Supplier deleted successfully');
+  const handleDeleteConfirm = async () => {
+    if (!selectedSupplierId) return;
+
+    try {
+      await dispatch(deleteSupplier(selectedSupplierId) as any);
+      setIsDeleteModalOpen(false);
+      setModalMessage('Supplier deleted successfully');
+      setIsSuccessModalOpen(true);
+      dispatch(fetchAllSuppliers() as any); // Refresh the list after deletion
+    } catch (error) {
+      setModalMessage('Failed to delete supplier');
+      setIsErrorModalOpen(true);
     }
   };
 
@@ -74,7 +74,7 @@ export default function Suppliers({ onClose }: SuppliersProps) {
         <Button 
           onClick={handleAddSupplier}
           className="rounded-full bg-[#05A49D] text-white text-xs sm:text-sm px-3 py-1.5 sm:px-4 sm:py-2"
-          disabled={isLoading}
+          disabled={loading}
         >
           Add New
         </Button>
@@ -82,51 +82,95 @@ export default function Suppliers({ onClose }: SuppliersProps) {
 
       <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6 flex-1">
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[650px]">
-            <thead>
-              <tr className="border-b">
-                <th className="text-left pb-3 sm:pb-4 text-gray-500 text-xs sm:text-sm font-normal">Supplier Name</th>
-                <th className="text-left pb-3 sm:pb-4 text-gray-500 text-xs sm:text-sm font-normal">Supplier Email</th>
-                <th className="text-left pb-3 sm:pb-4 text-gray-500 text-xs sm:text-sm font-normal">Supplier Contact</th>
-                <th className="text-left pb-3 sm:pb-4 text-gray-500 text-xs sm:text-sm font-normal">Supplier SalesMan</th>
-                <th className="text-left pb-3 sm:pb-4 text-gray-500 text-xs sm:text-sm font-normal">ID</th>
-                <th className="text-right pb-3 sm:pb-4 text-gray-500 text-xs sm:text-sm font-normal">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {suppliers.map((supplier) => (
-                <tr key={supplier.id} className="border-b">
-                  <td className="py-3 sm:py-4 text-gray-800 text-sm sm:text-base pr-2">{supplier.name}</td>
-                  <td className="py-3 sm:py-4 text-gray-800 text-sm sm:text-base pr-2">{supplier.email}</td>
-                  <td className="py-3 sm:py-4 text-gray-800 text-sm sm:text-base pr-2">{supplier.contact}</td>
-                  <td className="py-3 sm:py-4 text-gray-800 text-sm sm:text-base pr-2">{supplier.salesMan}</td>
-                  <td className="py-3 sm:py-4 text-gray-800 text-sm sm:text-base pr-2">{supplier.id}</td>
-                  <td className="py-3 sm:py-4 text-right">
-                    <div className="flex justify-end gap-2">
-                      <Button 
-                        variant="default" 
-                        size="sm" 
-                        className="rounded-full bg-[#05A49D] text-white text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-1.5"
-                        onClick={() => handleEditSupplier(supplier.id)}
-                      >
-                        Edit
-                      </Button>
-                      <Button 
-                        variant="destructive" 
-                        size="sm" 
-                        className="rounded-full bg-red-500 text-white text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-1.5"
-                        onClick={() => handleDeleteSupplier(supplier.id)}
-                      >
-                        Delete
-                      </Button>
-                    </div>
-                  </td>
+          {loading ? (
+            <div className="flex justify-center py-6">
+              <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-gray-900"></div>
+            </div>
+          ) : (
+            <table className="w-full min-w-[650px]">
+              <thead>
+                <tr className="border-b">
+                  <th className="text-left pb-3 sm:pb-4 text-gray-500 text-xs sm:text-sm font-normal">Supplier Name</th>
+                  <th className="text-left pb-3 sm:pb-4 text-gray-500 text-xs sm:text-sm font-normal">Supplier Email</th>
+                  <th className="text-left pb-3 sm:pb-4 text-gray-500 text-xs sm:text-sm font-normal">Supplier Contact</th>
+                  <th className="text-left pb-3 sm:pb-4 text-gray-500 text-xs sm:text-sm font-normal">Supplier SalesMan</th>
+                  <th className="text-left pb-3 sm:pb-4 text-gray-500 text-xs sm:text-sm font-normal">ID</th>
+                  <th className="text-right pb-3 sm:pb-4 text-gray-500 text-xs sm:text-sm font-normal">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {suppliers.map((supplier) => (
+                  <tr key={supplier.supplierId} className="border-b">
+                    <td className="py-3 sm:py-4 text-gray-800 text-sm sm:text-base pr-2">{supplier.name}</td>
+                    <td className="py-3 sm:py-4 text-gray-800 text-sm sm:text-base pr-2">{supplier.email}</td>
+                    <td className="py-3 sm:py-4 text-gray-800 text-sm sm:text-base pr-2">{supplier.contactNo}</td>
+                    <td className="py-3 sm:py-4 text-gray-800 text-sm sm:text-base pr-2">{supplier.salesmanName}</td>
+                    <td className="py-3 sm:py-4 text-gray-800 text-sm sm:text-base pr-2">{supplier.supplierId}</td>
+                    <td className="py-3 sm:py-4 text-right">
+                      <div className="flex justify-end gap-2">
+                        <Button 
+                          variant="default" 
+                          size="sm" 
+                          className="rounded-full bg-[#05A49D] text-white text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-1.5"
+                          onClick={() => onEdit(supplier.supplierId.toString())}
+                          disabled={loading}
+                        >
+                          Edit
+                        </Button>
+                        <Button 
+                          variant="destructive" 
+                          size="sm" 
+                          className="rounded-full bg-red-500 text-white text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-1.5"
+                          onClick={() => handleDeleteClick(supplier.supplierId)}
+                          disabled={loading}
+                        >
+                          Delete
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+          {suppliers.length === 0 && !loading && (
+            <div className="text-center py-6 text-gray-500">
+              No suppliers found
+            </div>
+          )}
         </div>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={handleDeleteConfirm}
+        title="Delete Supplier"
+        message="Are you sure you want to delete this supplier? This action cannot be undone."
+        confirmText="Delete"
+        cancelText="Cancel"
+      />
+
+      {/* Success Modal */}
+      <ConfirmationModal
+        isOpen={isSuccessModalOpen}
+        onClose={() => setIsSuccessModalOpen(false)}
+        title="Success"
+        message={modalMessage}
+        isAlert={true}
+        okText="OK"
+      />
+
+      {/* Error Modal */}
+      <ConfirmationModal
+        isOpen={isErrorModalOpen}
+        onClose={() => setIsErrorModalOpen(false)}
+        title="Error"
+        message={modalMessage}
+        isAlert={true}
+        okText="OK"
+      />
     </div>
   );
 } 
