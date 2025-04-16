@@ -1,55 +1,78 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import PageLayout from '@/components/PageLayout';
+import api from '@/store/api';
+import ConfirmationModal from '@/components/common/ConfirmationModal';
 
-// Mock data for tokens
-const mockTokens = [
-  { 
-    id: 1, 
-    type: 'Test Item New Item',
-    status: 'APPROVED',
-    createdAt: '15/03/2025 01:14 AM',
-    updatedAt: '15/03/2025 01:14 AM',
-    requestedBy: 'Sulieman'
-  },
-  { 
-    id: 2, 
-    type: 'Test Item-UpdateItem',
-    status: 'APPROVED',
-    createdAt: '15/03/2025 01:17 AM',
-    updatedAt: '15/03/2025 01:17 AM',
-    requestedBy: 'Sulieman'
-  },
-  { 
-    id: 3, 
-    type: 'Test Item-Created New Purchase Order',
-    status: 'APPROVED',
-    createdAt: '15/03/2025 01:17 AM',
-    updatedAt: '15/03/2025 01:17 AM',
-    requestedBy: 'Sulieman'
-  },
-  { 
-    id: 4, 
-    type: 'Test Item- Updated Purchase order Status',
-    status: 'APPROVED',
-    createdAt: '15/03/2025 01:18 AM',
-    updatedAt: '15/03/2025 01:18 AM',
-    requestedBy: 'Sulieman'
-  },
-  { 
-    id: 5, 
-    type: 'Test Recipe New Recipe',
-    status: 'APPROVED',
-    createdAt: '15/03/2025 01:19 AM',
-    updatedAt: '15/03/2025 01:20 AM',
-    requestedBy: 'Sulieman'
-  }
-];
+interface Token {
+  tokenId: number;
+  tokenType: string;
+  tokenStatus: string;
+  requestorName: string;
+  approverName: string;
+  createdAt: string;
+  updatedAt: string;
+}
 
 export default function TokensPage() {
   const [isLatestTokens, setIsLatestTokens] = useState(true);
+  const [tokens, setTokens] = useState<Token[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
   
+  // For modals
+  const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
+  const [modalMessage, setModalMessage] = useState('');
+  
+  // Stats
+  const [stats, setStats] = useState({
+    pending: 0,
+    rejected: 0,
+    approved: 0
+  });
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const year = date.getFullYear();
+    const hours = date.getHours().toString().padStart(2, '0');
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    
+    return `${day}/${month}/${year} ${hours}:${minutes} ${hours >= 12 ? 'PM' : 'AM'}`;
+  };
+
+  const fetchTokens = async () => {
+    setIsLoading(true);
+    try {
+      const response = await api.get('/tokens');
+      if (response.data && response.data.tokens) {
+        setTokens(response.data.tokens);
+        
+        // Calculate stats
+        const pendingCount = response.data.tokens.filter((token: Token) => token.tokenStatus === 'PENDING').length;
+        const rejectedCount = response.data.tokens.filter((token: Token) => token.tokenStatus === 'REJECTED').length;
+        const approvedCount = response.data.tokens.filter((token: Token) => token.tokenStatus === 'APPROVED').length;
+        
+        setStats({
+          pending: pendingCount,
+          rejected: rejectedCount,
+          approved: approvedCount
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching tokens:', error);
+      setModalMessage('Failed to load tokens. Please try again later.');
+      setIsErrorModalOpen(true);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchTokens();
+  }, []);
+
   return (
     <PageLayout title="Tokens">
       <div className="bg-white rounded-lg shadow-sm p-6">
@@ -59,13 +82,13 @@ export default function TokensPage() {
             
             <div className="flex space-x-4">
               <div className="bg-[#00997B] text-white rounded-lg py-3 px-5 text-center">
-                <p className="font-medium">Pending: 12</p>
+                <p className="font-medium">Pending: {stats.pending}</p>
               </div>
               <div className="bg-[#00997B] text-white rounded-lg py-3 px-5 text-center">
-                <p className="font-medium">Rejected: 1</p>
+                <p className="font-medium">Rejected: {stats.rejected}</p>
               </div>
               <div className="bg-[#00997B] text-white rounded-lg py-3 px-5 text-center">
-                <p className="font-medium">Approved: 5</p>
+                <p className="font-medium">Approved: {stats.approved}</p>
               </div>
             </div>
           </div>
@@ -87,39 +110,60 @@ export default function TokensPage() {
           </div>
           
           <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="text-left border-b border-gray-200">
-                  <th className="py-4 px-6 font-medium text-gray-600 w-1/5">Token Type</th>
-                  <th className="py-4 px-6 font-medium text-gray-600 w-1/6">Status</th>
-                  <th className="py-4 px-6 font-medium text-gray-600 w-1/4">
-                    <div>Created at:</div>
-                  </th>
-                  <th className="py-4 px-6 font-medium text-gray-600 w-1/4">
-                    <div>Updated at:</div>
-                  </th>
-                  <th className="py-4 px-6 font-medium text-gray-600 w-1/6">Requested By</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {mockTokens.map((token) => (
-                  <tr key={token.id} className="border-b border-gray-100">
-                    <td className="py-4 px-6">{token.type}</td>
-                    <td className="py-4 px-6 font-semibold">{token.status}</td>
-                    <td className="py-4 px-6 text-gray-600">
-                      Created at:{token.createdAt}
-                    </td>
-                    <td className="py-4 px-6 text-gray-600">
-                      Updated at:{token.updatedAt}
-                    </td>
-                    <td className="py-4 px-6 text-[#00997B] font-semibold">{token.requestedBy}</td>
+            {isLoading ? (
+              <div className="flex justify-center py-6">
+                <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-gray-900"></div>
+              </div>
+            ) : (
+              <table className="w-full">
+                <thead>
+                  <tr className="text-left border-b border-gray-200">
+                    <th className="py-4 px-6 font-medium text-gray-600 w-1/5">Token Type</th>
+                    <th className="py-4 px-6 font-medium text-gray-600 w-1/6">Status</th>
+                    <th className="py-4 px-6 font-medium text-gray-600 w-1/4">
+                      <div>Created at:</div>
+                    </th>
+                    <th className="py-4 px-6 font-medium text-gray-600 w-1/4">
+                      <div>Updated at:</div>
+                    </th>
+                    <th className="py-4 px-6 font-medium text-gray-600 w-1/6">Requested By</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {tokens.map((token) => (
+                    <tr key={token.tokenId} className="border-b border-gray-100">
+                      <td className="py-4 px-6">{token.tokenType}</td>
+                      <td className="py-4 px-6 font-semibold">{token.tokenStatus}</td>
+                      <td className="py-4 px-6 text-gray-600">
+                        Created at: {token.createdAt}
+                      </td>
+                      <td className="py-4 px-6 text-gray-600">
+                        Updated at: {token.updatedAt}
+                      </td>
+                      <td className="py-4 px-6 text-[#00997B] font-semibold">{token.requestorName}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+            {tokens.length === 0 && !isLoading && (
+              <div className="text-center py-6 text-gray-500">
+                No tokens found
+              </div>
+            )}
           </div>
         </div>
       </div>
+
+      {/* Error Modal */}
+      <ConfirmationModal
+        isOpen={isErrorModalOpen}
+        onClose={() => setIsErrorModalOpen(false)}
+        title="Error"
+        message={modalMessage}
+        isAlert={true}
+        okText="OK"
+      />
     </PageLayout>
   );
 } 
