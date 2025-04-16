@@ -1,27 +1,83 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import PageLayout from '@/components/PageLayout';
 import Button from '@/components/common/button';
 import { Search, Edit, Trash2 } from 'lucide-react';
 import Link from 'next/link';
-
-// Mock data for sub-recipes
-const mockSubRecipes = [
-  { id: 1, name: 'Basic Vinaigrette', category: 'Dressings', status: 'Active', portions: 10, cost: 3.50 },
-  { id: 2, name: 'Pizza Dough', category: 'Bases', status: 'Active', portions: 5, cost: 4.20 },
-  { id: 3, name: 'Simple Syrup', category: 'Syrups', status: 'Active', portions: 20, cost: 1.80 },
-];
+import { useDispatch, useSelector } from 'react-redux';
+import { AppDispatch } from '@/store/store';
+import { 
+  fetchSubRecipes, 
+  selectAllSubRecipes,
+  selectSubRecipeStatus,
+  selectSubRecipeError,
+  selectSubRecipePagination,
+} from '@/store/subRecipeSlice';
+import ConfirmationModal from '@/components/common/ConfirmationModal';
 
 export default function SubRecipesPage() {
+  const dispatch = useDispatch<AppDispatch>();
+  const subRecipes = useSelector(selectAllSubRecipes);
+  const status = useSelector(selectSubRecipeStatus);
+  const error = useSelector(selectSubRecipeError);
+  const pagination = useSelector(selectSubRecipePagination);
   const [searchQuery, setSearchQuery] = useState('');
-  // Initially empty, replace with mockSubRecipes if needed
-  const [subRecipes, setSubRecipes] = useState(mockSubRecipes);
+  
+  // Modal states
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [selectedRecipe, setSelectedRecipe] = useState<any>(null);
+  const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
+  const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
-  const filteredSubRecipes = subRecipes.filter(recipe =>
+  useEffect(() => {
+    loadSubRecipes();
+  }, [dispatch]);
+
+  const loadSubRecipes = async () => {
+    try {
+      await dispatch(fetchSubRecipes({
+        page: 0,
+        size: 10,
+        sortBy: "createdAt",
+        direction: "asc"
+      })).unwrap();
+    } catch (err) {
+      console.error('Failed to fetch sub-recipes:', err);
+      setErrorMessage('Failed to fetch sub-recipes');
+      setIsErrorModalOpen(true);
+    }
+  };
+
+  const handleDeleteClick = (recipe: any) => {
+    setSelectedRecipe(recipe);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!selectedRecipe) return;
+    
+    try {
+      // await dispatch(deleteSubRecipe(selectedRecipe.id)).unwrap();
+      setIsDeleteModalOpen(false);
+      setIsSuccessModalOpen(true);
+      loadSubRecipes(); // Refresh the list
+    } catch (err: any) {
+      setErrorMessage(err.message || 'Failed to delete sub-recipe');
+      setIsDeleteModalOpen(false);
+      setIsErrorModalOpen(true);
+    }
+  };
+
+  const filteredSubRecipes = subRecipes.filter((recipe: any) =>
     recipe.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    recipe.category.toLowerCase().includes(searchQuery.toLowerCase())
+    (recipe.category?.toLowerCase() || '').includes(searchQuery.toLowerCase())
   );
+
+  if (status === 'loading') {
+    return <div>Loading...</div>;
+  }
 
   return (
     <PageLayout title="All Sub Recipes">
@@ -46,11 +102,10 @@ export default function SubRecipesPage() {
 
             {/* Action Buttons */}
             <div className="flex gap-2 flex-shrink-0">
-              {/* TODO: Link to actual sub-recipe creation page/modal if different from main recipe */}
-              <Link href="/recipes/create?type=sub-recipe">
+              <Link href="/recipes/sub-recipes/create">
                 <Button>Create New</Button>
               </Link>
-              <Link href="/recipes/categories">
+              <Link href="/recipes/sub-recipes/categories">
                  <Button variant="secondary">Categories</Button>
               </Link>
             </div>
@@ -73,7 +128,7 @@ export default function SubRecipesPage() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {filteredSubRecipes.map((recipe) => (
+                  {filteredSubRecipes.map((recipe: any) => (
                     <tr key={recipe.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap font-medium">{recipe.name}</td>
                       <td className="px-6 py-4 whitespace-nowrap">{recipe.category}</td>
@@ -87,14 +142,22 @@ export default function SubRecipesPage() {
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">{recipe.portions}</td>
-                      <td className="px-6 py-4 whitespace-nowrap">${recipe.cost.toFixed(2)}</td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        ${typeof recipe.cost === 'number' ? recipe.cost.toFixed(2) : '0.00'}
+                      </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center space-x-2">
-                          {/* TODO: Implement Edit/Delete functionality */}
-                          <Button variant="ghost" size="sm" className="p-1">
-                            <Edit size={16} className="text-gray-500" />
-                          </Button>
-                          <Button variant="ghost" size="sm" className="p-1">
+                          <Link href={`/recipes/sub-recipes/edit/${recipe.id}`}>
+                            <Button variant="ghost" size="sm" className="p-1">
+                              <Edit size={16} className="text-gray-500" />
+                            </Button>
+                          </Link>
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="p-1"
+                            onClick={() => handleDeleteClick(recipe)}
+                          >
                             <Trash2 size={16} className="text-red-500" />
                           </Button>
                         </div>
@@ -111,6 +174,37 @@ export default function SubRecipesPage() {
           )}
         </div>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={handleDeleteConfirm}
+        title="Delete Sub Recipe"
+        message={`Are you sure you want to delete ${selectedRecipe?.name}? This action cannot be undone.`}
+        confirmText="Delete"
+        cancelText="Cancel"
+      />
+
+      {/* Success Modal */}
+      <ConfirmationModal
+        isOpen={isSuccessModalOpen}
+        onClose={() => setIsSuccessModalOpen(false)}
+        title="Success"
+        message="Sub recipe deleted successfully!"
+        isAlert={true}
+        okText="OK"
+      />
+
+      {/* Error Modal */}
+      <ConfirmationModal
+        isOpen={isErrorModalOpen}
+        onClose={() => setIsErrorModalOpen(false)}
+        title="Error"
+        message={errorMessage}
+        isAlert={true}
+        okText="OK"
+      />
     </PageLayout>
   );
 } 

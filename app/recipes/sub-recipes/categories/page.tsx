@@ -5,6 +5,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import PageLayout from '@/components/PageLayout';
 import Button from '@/components/common/button';
 import Modal from '@/components/common/Modal';
+import ConfirmationModal from '@/components/common/ConfirmationModal';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { 
@@ -12,50 +13,104 @@ import {
   addCategory, 
   updateCategory, 
   deleteCategory 
-} from '@/store/recipeCategorySlice';
+} from '@/store/subRecipeCategorySlice';
 import type { AppDispatch, RootState } from '@/store/store';
 
 interface Category {
-  categoryId: number;
+  subRecipeCategoryId: number;
   name: string;
   type: 'Recipe' | 'Sub-Recipe';
 }
 
 export default function CategoriesPage() {
   const dispatch = useDispatch<AppDispatch>();
-  const { categories, loading, error } = useSelector((state: RootState) => state.recipeCategory);
+  const { subRecipeCategories, loading, error } = useSelector((state: RootState) => state.subRecipeCategory);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
   const [newCategoryType, setNewCategoryType] = useState<'Recipe' | 'Sub-Recipe'>('Recipe');
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+  const [formError, setFormError] = useState('');
+  
+  // Confirmation modal states
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
+  const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
+  const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
-    dispatch(fetchAllCategories());
+    loadCategories();
   }, [dispatch]);
 
+  const loadCategories = async () => {
+    try {
+      await dispatch(fetchAllCategories()).unwrap();
+    } catch (err: any) {
+      setErrorMessage(err.message || 'Failed to load categories');
+      setIsErrorModalOpen(true);
+    }
+  };
+
+  const validateForm = () => {
+    if (!newCategoryName.trim()) {
+      setFormError('Category name is required');
+      return false;
+    }
+    if (newCategoryName.length < 3) {
+      setFormError('Category name must be at least 3 characters long');
+      return false;
+    }
+    setFormError('');
+    return true;
+  };
+
   const handleAddCategory = async () => {
-    if (!newCategoryName.trim()) return;
+    if (!validateForm()) return;
 
     const categoryData = {
       name: newCategoryName.trim(),
       type: newCategoryType,
     };
 
-    if (editingCategory) {
-      await dispatch(updateCategory({
-        categoryId: editingCategory.categoryId,
-        ...categoryData
-      }));
-    } else {
-      await dispatch(addCategory(categoryData));
+    try {
+      if (editingCategory) {
+        await dispatch(updateCategory({
+          subRecipeCategoryId: editingCategory.subRecipeCategoryId,
+          ...categoryData
+        })).unwrap();
+        setSuccessMessage('Category updated successfully!');
+      } else {
+        await dispatch(addCategory(categoryData)).unwrap();
+        setSuccessMessage('Category created successfully!');
+      }
+      closeModal();
+      setIsSuccessModalOpen(true);
+      loadCategories();
+    } catch (err: any) {
+      setErrorMessage(err.message || 'Failed to save category');
+      setIsErrorModalOpen(true);
     }
-    
-    closeModal();
   };
 
-  const handleDeleteCategory = async (categoryId: number) => {
-    if (window.confirm('Are you sure you want to delete this category?')) {
-      await dispatch(deleteCategory(categoryId));
+  const handleDeleteClick = (category: Category) => {
+    setSelectedCategory(category);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!selectedCategory) return;
+
+    try {
+      await dispatch(deleteCategory({ subRecipeCategoryId: selectedCategory.subRecipeCategoryId })).unwrap();
+      setIsDeleteModalOpen(false);
+      setSuccessMessage('Category deleted successfully!');
+      setIsSuccessModalOpen(true);
+      loadCategories();
+    } catch (err: any) {
+      setErrorMessage(err.message || 'Failed to delete category');
+      setIsDeleteModalOpen(false);
+      setIsErrorModalOpen(true);
     }
   };
 
@@ -63,6 +118,7 @@ export default function CategoriesPage() {
     setEditingCategory(category);
     setNewCategoryName(category.name);
     setNewCategoryType(category.type);
+    setFormError('');
     setIsModalOpen(true);
   };
 
@@ -71,6 +127,7 @@ export default function CategoriesPage() {
     setNewCategoryName('');
     setNewCategoryType('Recipe');
     setEditingCategory(null);
+    setFormError('');
   };
 
   if (loading) {
@@ -105,9 +162,9 @@ export default function CategoriesPage() {
           </div>
           
           {/* Rows */}  
-          {categories.length > 0 ? (
-            categories.map((category: Category) => (
-              <div key={category.categoryId} className="flex items-center px-4 py-3 border-b last:border-b-0 hover:bg-gray-50">
+          {subRecipeCategories?.length > 0 ? (
+            subRecipeCategories?.map((category: Category) => (
+              <div key={category.subRecipeCategoryId} className="flex items-center px-4 py-3 border-b last:border-b-0 hover:bg-gray-50">
                 <div className="flex-1 font-medium text-gray-900">{category.name}</div>
                 <div className="w-40 text-gray-600">{category.type}</div>
                 <div className="w-32 flex justify-end space-x-2">
@@ -121,7 +178,7 @@ export default function CategoriesPage() {
                   <Button 
                     variant="destructive" 
                     size="sm"
-                    onClick={() => handleDeleteCategory(category.categoryId)}
+                    onClick={() => handleDeleteClick(category)}
                   >
                     Delete
                   </Button>
@@ -139,7 +196,7 @@ export default function CategoriesPage() {
       {/* Category Modal */}
       <Modal 
         isOpen={isModalOpen} 
-        onClose={closeModal} 
+        onClose={() => setIsModalOpen(false)} 
         title={editingCategory ? "Edit Category" : "New Category"}
       >
         <div className="space-y-4 p-1">
@@ -178,10 +235,16 @@ export default function CategoriesPage() {
               type="text"
               id="categoryName"
               value={newCategoryName}
-              onChange={(e) => setNewCategoryName(e.target.value)}
+              onChange={(e) => {
+                setNewCategoryName(e.target.value);
+                setFormError('');
+              }}
               placeholder="Enter Category Name"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00997B]"
+              className={`w-full px-3 py-2 border ${formError ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00997B]`}
             />
+            {formError && (
+              <p className="mt-1 text-sm text-red-500">{formError}</p>
+            )}
           </div>
           <div className="flex justify-end space-x-3 pt-4">
             <Button variant="secondary" onClick={closeModal}>Discard</Button>
@@ -191,6 +254,37 @@ export default function CategoriesPage() {
           </div>
         </div>
       </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={handleDeleteConfirm}
+        title="Delete Category"
+        message={`Are you sure you want to delete ${selectedCategory?.name}? This action cannot be undone.`}
+        confirmText="Delete"
+        cancelText="Cancel"
+      />
+
+      {/* Success Modal */}
+      <ConfirmationModal
+        isOpen={isSuccessModalOpen}
+        onClose={() => setIsSuccessModalOpen(false)}
+        title="Success"
+        message={successMessage}
+        isAlert={true}
+        okText="OK"
+      />
+
+      {/* Error Modal */}
+      <ConfirmationModal
+        isOpen={isErrorModalOpen}
+        onClose={() => setIsErrorModalOpen(false)}
+        title="Error"
+        message={errorMessage}
+        isAlert={true}
+        okText="OK"
+      />
     </PageLayout>
   );
 } 
