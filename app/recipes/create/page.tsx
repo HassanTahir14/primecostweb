@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { ArrowLeft, Upload } from 'lucide-react';
 import Link from 'next/link';
 import PageLayout from '@/components/PageLayout';
-import Button from '@/components/ui/button';
+import Button from '@/components/common/button';
 import RecipeDetailsForm from '@/components/recipes/RecipeDetailsForm';
 import RecipeIngredientsForm from '@/components/recipes/RecipeIngredientsForm';
 import RecipeCostingForm from '@/components/recipes/RecipeCostingForm';

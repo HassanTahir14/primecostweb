@@ -3,9 +3,9 @@
 import { useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import Button from '@/components/ui/button';
-import Modal from './ui/Modal';
-import Input from './ui/input';
+import Button from '@/components/common/button';
+import Modal from './common/Modal';
+import Input from './common/input';
 import { toast } from 'react-hot-toast';
 
 interface Tax {

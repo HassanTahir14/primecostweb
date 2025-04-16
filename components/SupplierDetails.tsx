@@ -3,8 +3,8 @@
 import { useState, useEffect } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import Button from '@/components/ui/button';
-import Input from '@/components/ui/input';
+import Button from '@/components/common/button';
+import Input from '@/components/common/input';
 import { toast } from 'react-hot-toast';
 
 interface SupplierDetailsProps {

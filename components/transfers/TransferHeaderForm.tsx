@@ -1,7 +1,7 @@
 'use client';
 
-import Input from '@/components/ui/input';
-import Select from '@/components/ui/select';
+import Input from '@/components/common/input';
+import Select from '@/components/common/select';
 
 interface TransferHeaderFormProps {
   formData: any;

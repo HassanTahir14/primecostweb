@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import Button from '@/components/ui/button';
+import Button from '@/components/common/button';
 import { toast } from 'react-hot-toast';
 
 interface Supplier {

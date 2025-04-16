@@ -1,9 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import Button from '@/components/ui/button';
-import Input from '@/components/ui/input';
-import Select from '@/components/ui/select';
+import Button from '@/components/common/button';
+import Input from '@/components/common/input';
+import Select from '@/components/common/select';
 import { Plus, Trash2 } from 'lucide-react';
 
 interface TransferSubRecipeTableProps {

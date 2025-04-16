@@ -3,7 +3,7 @@
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import PageLayout from '@/components/PageLayout';
-import Button from '@/components/ui/button';
+import Button from '@/components/common/button';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 

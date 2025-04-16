@@ -1,9 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import Input from './ui/input';
-import Button from './ui/button';
-import Modal from './ui/Modal';
+import Input from './common/input';
+import Button from './common/button';
+import Modal from './common/Modal';
 
 interface CreateCategoryModalProps {
   isOpen: boolean;

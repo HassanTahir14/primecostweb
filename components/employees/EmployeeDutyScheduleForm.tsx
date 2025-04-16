@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import Button from '@/components/ui/button';
+import Button from '@/components/common/button';
 
 interface EmployeeDutyScheduleFormProps {
   onNext: (data: any) => void;

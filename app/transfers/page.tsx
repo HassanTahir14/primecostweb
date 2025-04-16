@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import PageLayout from '@/components/PageLayout';
-import Button from '@/components/ui/button';
+import Button from '@/components/common/button';
 import Link from 'next/link';
 
 type TransferTab = 'Inventory Items' | 'Recipe' | 'Sub Recipe';

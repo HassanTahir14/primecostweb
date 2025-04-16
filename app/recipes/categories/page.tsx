@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import PageLayout from '@/components/PageLayout';
-import Button from '@/components/ui/button';
-import Modal from '@/components/ui/Modal'; // Assuming a Modal component exists
+import Button from '@/components/common/button';
+import Modal from '@/components/common/Modal'; // Assuming a Modal component exists
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react'; // Import ArrowLeft
 

@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import Sidebar from './Sidebar';
 import { Bell, ChevronDown } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 interface PageLayoutProps {
   children: React.ReactNode;
@@ -14,6 +15,7 @@ export default function PageLayout({ children, title }: PageLayoutProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
 
   // Close user menu when clicking outside
   useEffect(() => {
@@ -48,7 +50,8 @@ export default function PageLayout({ children, title }: PageLayoutProps) {
 
           {/* Right side - User Info & Actions */}
           <div className="flex items-center gap-3 sm:gap-4">
-            <button className="relative text-gray-500 hover:text-gray-700">
+            <button className="relative text-gray-500 hover:text-gray-700"
+            onClick={() => router.push('/tokens')}>
               <Bell size={20} />
               <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-semibold">12</span>
             </button>

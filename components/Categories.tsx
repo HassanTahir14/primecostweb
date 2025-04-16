@@ -3,9 +3,9 @@
 import { useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { CreateCategoryModal } from './CreateCategoryModal';
-import Modal from './ui/Modal';
-import Input from './ui/input';
-import Button from './ui/button';
+import Modal from './common/Modal';
+import Input from './common/input';
+import Button from './common/button';
 
 interface Category {
   id: string;

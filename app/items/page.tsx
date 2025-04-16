@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import PageLayout from '@/components/PageLayout';
-import Button from '@/components/ui/button';
-import SearchInput from '@/components/ui/SearchInput';
+import Button from '@/components/common/button';
+import SearchInput from '@/components/common/SearchInput';
 import AddItemForm from '@/components/AddItemForm';
 import Categories from '@/components/Categories';
 

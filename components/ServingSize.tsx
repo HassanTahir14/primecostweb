@@ -2,10 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { ArrowLeft } from 'lucide-react';
-import Button from '@/components/ui/button';
-import Modal from './ui/Modal';
-import Input from './ui/input';
-import Select from './ui/select';
+import Button from '@/components/common/button';
+import Modal from './common/Modal';
+import Input from './common/input';
+import Select from './common/select';
 import { toast } from 'react-hot-toast';
 
 interface ServingSize {

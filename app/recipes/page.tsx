@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import PageLayout from '@/components/PageLayout';
-import Button from '@/components/ui/button';
+import Button from '@/components/common/button';
 import { Search, Edit, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 

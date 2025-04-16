@@ -1,9 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Button from '@/components/ui/button';
-import Input from '../ui/input'; // Assuming SelectField component
-import Select from '../ui/select';
+import Button from '@/components/common/button';
+import Input from '../common/input'; // Assuming SelectField component
+import Select from '../common/select';
 
 interface EmployeeDetailsFormProps {
   onNext: (data: any) => void;

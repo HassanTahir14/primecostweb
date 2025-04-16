@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Button from '@/components/ui/button';
-import Input from '@/components/ui/input'; // Assuming InputField component
+import Button from '@/components/common/button';
+import Input from '@/components/common/input'; // Assuming InputField component
 import { Upload } from 'lucide-react'; // Import Upload icon
 
 interface EmployeeSalaryFormProps {

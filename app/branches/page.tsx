@@ -5,7 +5,7 @@ import PageLayout from '@/components/PageLayout';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import BranchCreateModal from '@/components/branches/BranchCreateModal';
-import Button from '@/components/ui/button';
+import Button from '@/components/common/button';
 
 // Mock data for branches
 const mockBranches = [

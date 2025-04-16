@@ -1,7 +1,7 @@
 import { useState } from "react";
-import Input from "./ui/input";
-import Select from "./ui/select";
-import Button from "@/components/ui/button";
+import Input from "./common/input";
+import Select from "./common/select";
+import Button from "@/components/common/button";
 import { ArrowLeft } from "lucide-react";
 
 interface AddItemFormProps {

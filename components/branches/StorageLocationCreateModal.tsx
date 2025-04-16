@@ -1,8 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import Modal from '@/components/ui/Modal';
-import Button from '@/components/ui/button';
+import Modal from '@/components/common/Modal';
+import Button from '@/components/common/button';
 
 interface StorageLocationCreateModalProps {
   isOpen: boolean;
