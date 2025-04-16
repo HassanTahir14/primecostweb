@@ -4,15 +4,25 @@ import { useState, useEffect } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import Button from '@/components/common/button';
 import Modal from './common/Modal';
-import Input from './common/input';
 import Select from './common/select';
 import { toast } from 'react-hot-toast';
+import api from '@/store/api';
 
 interface Order {
-  id: string;
-  assignedTo: string;
+  orderId: number;
   orderType: 'RECIPE' | 'PREPARATION';
-  status: 'PENDING' | 'FINISHED' | 'CANCELLED';
+  orderStatus: 'PENDING' | 'FINISHED' | 'CANCELLED';
+  assignedTo: string;
+  assignedToId: number;
+  assignedToPosition: string | null;
+  assignedBy: string;
+  assignedById: number;
+  assignedByPosition: string;
+  assignedTime: string;
+  startTime: string;
+  finishTime: string;
+  branchId: number;
+  branchName: string;
 }
 
 interface AssignOrderProps {
@@ -37,11 +47,26 @@ export default function AssignOrder({ onClose }: AssignOrderProps) {
   const [orderType, setOrderType] = useState<string>('');
   const [userError, setUserError] = useState('');
   const [orderTypeError, setOrderTypeError] = useState('');
-  
-  const [orders, setOrders] = useState<Order[]>([
-    { id: '1', assignedTo: 'Junaid', orderType: 'RECIPE', status: 'FINISHED' },
-    { id: '2', assignedTo: 'Junaid', orderType: 'RECIPE', status: 'PENDING' },
-  ]);
+  const [orders, setOrders] = useState<Order[]>([]);
+
+  useEffect(() => {
+    fetchOrders();
+  }, []);
+
+  const fetchOrders = async () => {
+    setIsLoading(true);
+    try {
+      const response = await api.get('/orders/all');
+      if (response.data?.allAssignedOrders) {
+        setOrders(response.data.allAssignedOrders);
+      }
+    } catch (error: any) {
+      console.error('Error fetching orders:', error);
+      toast.error(error.response?.data?.description || 'Failed to fetch orders');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleAddOrder = async () => {
     if (!validateForm()) return;
@@ -49,28 +74,37 @@ export default function AssignOrder({ onClose }: AssignOrderProps) {
     setIsLoading(true);
     try {
       // In a real application, replace with actual API call
-      // const response = await fetch('/api/orders', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ assignedTo: selectedUser, orderType }),
+      // const response = await api.post('/orders/add', {
+      //   assignedTo: selectedUser,
+      //   orderType
       // });
-      // const newOrder = await response.json();
-      
-      // Mock API response
-      const newOrder = {
-        id: (orders.length + 1).toString(),
-        assignedTo: selectedUser,
+      // await fetchOrders(); // Refresh the list after adding
+
+      // For now, using mock data
+      const newOrder: Order = {
+        orderId: orders.length + 1,
         orderType: orderType as 'RECIPE' | 'PREPARATION',
-        status: 'PENDING',
+        orderStatus: 'PENDING' as const,
+        assignedTo: selectedUser,
+        assignedToId: 1,
+        assignedToPosition: null,
+        assignedBy: "Current User",
+        assignedById: 1,
+        assignedByPosition: "Admin",
+        assignedTime: new Date().toISOString(),
+        startTime: "Not started",
+        finishTime: "Not finished",
+        branchId: 1,
+        branchName: "Main Branch"
       };
       
-      setOrders([...orders, newOrder as Order]);
+      setOrders([...orders, newOrder]);
       setIsCreateModalOpen(false);
       resetForm();
       toast.success('Order assigned successfully');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error assigning order:', error);
-      toast.error('Failed to assign order');
+      toast.error(error.response?.data?.description || 'Failed to assign order');
     } finally {
       setIsLoading(false);
     }
@@ -103,6 +137,17 @@ export default function AssignOrder({ onClose }: AssignOrderProps) {
     setOrderTypeError('');
   };
 
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'FINISHED':
+        return 'text-green-600';
+      case 'CANCELLED':
+        return 'text-red-600';
+      default:
+        return 'text-orange-500';
+    }
+  };
+
   return (
     <div className="flex-1 flex flex-col bg-[#f1fff7] min-h-screen px-3 py-3 sm:px-4 md:px-8 sm:py-4 md:py-6">
       <div className="flex items-center justify-between mb-4 sm:mb-6">
@@ -117,6 +162,13 @@ export default function AssignOrder({ onClose }: AssignOrderProps) {
           <div className="bg-[#05A49D] rounded-lg text-white px-3 py-1.5 text-xs sm:text-sm">
             Total Orders: {orders.length}
           </div>
+          {/* <Button 
+            onClick={() => setIsCreateModalOpen(true)}
+            className="rounded-full bg-[#339A89] text-white text-xs sm:text-sm px-3 py-1.5 sm:px-4 sm:py-2"
+            disabled={isLoading}
+          >
+            Assign New
+          </Button> */}
         </div>
       </div>
 
@@ -140,19 +192,14 @@ export default function AssignOrder({ onClose }: AssignOrderProps) {
           <div className="space-y-3 sm:space-y-4">
             {orders.map((order) => (
               <div 
-                key={order.id} 
+                key={order.orderId} 
                 className="grid grid-cols-4 items-center py-3 sm:py-4 border-b"
               >
                 <span className="text-gray-800 text-sm sm:text-base">{order.assignedTo}</span>
-                <span className="text-gray-800 text-sm sm:text-base">{order.id}</span>
+                <span className="text-gray-800 text-sm sm:text-base">{order.orderId}</span>
                 <span className="text-gray-800 text-sm sm:text-base">{order.orderType}</span>
-                <span 
-                  className={`text-sm sm:text-base font-medium ${
-                    order.status === 'FINISHED' ? 'text-green-600' : 
-                    order.status === 'CANCELLED' ? 'text-red-600' : 'text-orange-500'
-                  }`}
-                >
-                  {order.status}
+                <span className={`text-sm sm:text-base font-medium ${getStatusColor(order.orderStatus)}`}>
+                  {order.orderStatus}
                 </span>
               </div>
             ))}
@@ -180,7 +227,6 @@ export default function AssignOrder({ onClose }: AssignOrderProps) {
                 if (e.target.value) setUserError('');
               }}
               options={USER_OPTIONS}
-              placeholder="Select user"
               className={`w-full bg-white ${userError ? 'border-red-500' : ''}`}
               disabled={isLoading}
             />
@@ -196,7 +242,6 @@ export default function AssignOrder({ onClose }: AssignOrderProps) {
                 if (e.target.value) setOrderTypeError('');
               }}
               options={ORDER_TYPE_OPTIONS}
-              placeholder="Select order type"
               className={`w-full bg-white ${orderTypeError ? 'border-red-500' : ''}`}
               disabled={isLoading}
             />
