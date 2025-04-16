@@ -1,12 +1,7 @@
 {
-  "rewrites": [
-    {
-      "source": "/api/(.*)",
-      "destination": "http://3.86.182.96:3000/api/$1"
-    },
-    {
-      "source": "/(.*)",
-      "destination": "/index.html"
-    }
-  ]
-}
+    "version": 2,
+    "buildCommand": "next build",
+    "devCommand": "next dev",
+    "installCommand": "npm install",
+    "outputDirectory": ".next"
+  }
