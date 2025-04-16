@@ -84,7 +84,7 @@ export default function RecipeDetailsForm({ onNext, initialData }: RecipeDetails
       </div>
 
       <div className="flex justify-end mt-8">
-        <Button onClick={handleNextClick}>Next</Button>
+        <Button size="lg" onClick={handleNextClick}>Next</Button>
       </div>
     </div>
   );

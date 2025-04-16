@@ -87,7 +87,7 @@ export default function EmployeeDutyScheduleForm({ onNext, onPrevious, initialDa
       {/* Action Buttons */}
       <div className="flex justify-between pt-4">
         <Button variant="secondary" onClick={onPrevious}>Previous</Button>
-        <Button onClick={handleNextClick}>Next</Button>
+        <Button size="lg" onClick={handleNextClick}>Next</Button>
       </div>
     </div>
   );

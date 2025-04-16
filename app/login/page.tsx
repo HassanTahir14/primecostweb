@@ -3,7 +3,15 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { Eye, EyeOff, Globe } from 'lucide-react';
+import { Eye, EyeOff } from 'lucide-react';
+import { 
+  useLoginMutation, 
+  useForgotPasswordMutation, 
+  useResetPasswordMutation 
+} from '@/store/authApi';
+import ConfirmationModal from '@/components/common/ConfirmationModal';
+import { toast } from 'react-hot-toast';
+import Loader from '@/components/common/Loader';
 
 type LoginView = 'login' | 'forgotPasswordEmail' | 'forgotPasswordReset';
 
@@ -16,27 +24,103 @@ export default function LoginPage() {
   const [newPassword, setNewPassword] = useState('');
   const router = useRouter();
 
-  const handleLoginSubmit = (e: React.FormEvent) => {
+  const [modalState, setModalState] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    isAlert: boolean;
+    onConfirm?: () => void;
+  }>({ isOpen: false, title: '', message: '', isAlert: false });
+
+  const [login, { isLoading: isLoggingIn, error: loginError }] = useLoginMutation();
+  const [forgotPassword, { isLoading: isSendingCode, error: forgotPasswordError }] = useForgotPasswordMutation();
+  const [resetPassword, { isLoading: isResetting, error: resetPasswordError }] = useResetPasswordMutation();
+
+  const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Login attempt with:", email, password);
-    // TODO: Add actual login logic
-    router.push('/dashboard'); // Redirect to dashboard on successful login
+    try {
+      const loginData = await login({ userName: email, password }).unwrap();
+      console.log("Login successful:", loginData);
+      setModalState({
+        isOpen: true,
+        title: 'Login Successful',
+        message: 'Welcome! You will be redirected to the dashboard.',
+        isAlert: true,
+        onConfirm: () => {
+          localStorage.setItem('authToken', loginData.token);
+          setModalState({ isOpen: false, title: '', message: '', isAlert: false });
+          router.push('/dashboard');
+        }
+      });
+    } catch (err: any) {
+      console.error("Login failed raw error object:", err);
+      console.error("Login failed error data:", err?.data);
+      setModalState({
+        isOpen: true,
+        title: 'Login Failed',
+        message: err?.data?.description || 'Login failed. Please check your credentials or try again later.',
+        isAlert: true,
+      });
+    }
   };
 
-  const handleForgotPasswordEmailSubmit = (e: React.FormEvent) => {
+  const handleForgotPasswordEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Forgot password request for:", email);
-    // TODO: Add logic to send reset code
-    setView('forgotPasswordReset'); // Move to the next step
+    try {
+      const result = await forgotPassword({ userName: email }).unwrap();
+      console.log("Forgot password request result:", result);
+      setModalState({
+        isOpen: true,
+        title: 'Reset Code Sent',
+        message: result?.description || 'A reset code has been sent to your email (if the email exists in our system). Please check your inbox.',
+        isAlert: true,
+        onConfirm: () => {
+          setModalState({ isOpen: false, title: '', message: '', isAlert: false });
+          setView('forgotPasswordReset');
+        }
+      });
+    } catch (err: any) {
+      console.error("Forgot password failed:", err);
+      setModalState({
+        isOpen: true,
+        title: 'Request Failed',
+        message: err?.data?.description || 'Failed to send reset code. Please check the email and try again.',
+        isAlert: true,
+      });
+    }
   };
 
-  const handleResetPasswordSubmit = (e: React.FormEvent) => {
+  const handleResetPasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Reset password attempt with code:", resetCode, "and new password:", newPassword);
-    // TODO: Add logic to verify code and update password
-    // Optionally show a success message
-    setView('login'); // Go back to login view after reset
+    try {
+      const result = await resetPassword({ resetCode, newPassword }).unwrap();
+      console.log("Reset password result:", result);
+      setModalState({
+        isOpen: true,
+        title: 'Password Reset Successful',
+        message: result?.description || 'Your password has been successfully reset. You can now log in with your new password.',
+        isAlert: true,
+        onConfirm: () => {
+          setModalState({ isOpen: false, title: '', message: '', isAlert: false });
+          setView('login');
+          setResetCode('');
+          setNewPassword('');
+          setEmail('');
+          setPassword('');
+        }
+      });
+    } catch (err: any) {
+      console.error("Reset password failed:", err);
+      setModalState({
+        isOpen: true,
+        title: 'Reset Failed',
+        message: err?.data?.description || 'Failed to reset password. Please check the code and try again.',
+        isAlert: true,
+      });
+    }
   };
+
+  const isLoading = isLoggingIn || isSendingCode || isResetting;
 
   const renderLoginForm = () => (
     <form onSubmit={handleLoginSubmit} className="space-y-4 sm:space-y-6">
@@ -49,9 +133,10 @@ export default function LoginPage() {
           id="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#339A89] focus:border-transparent text-sm sm:text-base"
+          className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#339A89] focus:border-transparent text-sm sm:text-base disabled:opacity-50"
           placeholder="Enter email"
           required
+          disabled={isLoading}
         />
       </div>
 
@@ -65,14 +150,16 @@ export default function LoginPage() {
             id="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#339A89] focus:border-transparent text-sm sm:text-base"
+            className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#339A89] focus:border-transparent text-sm sm:text-base disabled:opacity-50"
             placeholder="Enter password"
             required
+            disabled={isLoading}
           />
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors disabled:opacity-50"
+            disabled={isLoading}
           >
             {showPassword ? (
               <EyeOff className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -85,16 +172,18 @@ export default function LoginPage() {
 
       <button
         type="submit"
-        className="w-full bg-[#339A89] text-white py-2.5 sm:py-3 rounded-lg font-medium text-sm sm:text-base hover:bg-[#2b8274] transition-colors"
+        className="w-full bg-[#339A89] text-white py-2.5 sm:py-3 rounded-lg font-medium text-sm sm:text-base hover:bg-[#2b8274] transition-colors disabled:opacity-75 disabled:cursor-not-allowed"
+        disabled={isLoading}
       >
-        SIGN IN
+        {isLoggingIn ? 'SIGNING IN...' : 'SIGN IN'}
       </button>
 
       <div className="text-center pt-1">
         <button 
           type="button" 
           onClick={() => setView('forgotPasswordEmail')} 
-          className="text-[#339A89] text-xs sm:text-sm hover:underline hover:text-[#2b8274] transition-colors"
+          className="text-[#339A89] text-xs sm:text-sm hover:underline hover:text-[#2b8274] transition-colors disabled:opacity-50"
+          disabled={isLoading}
         >
           Forgot Password?
         </button>
@@ -111,25 +200,28 @@ export default function LoginPage() {
         <input
           type="email"
           id="forgot-email"
-          value={email} // Reuse email state
+          value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#339A89] focus:border-transparent text-sm sm:text-base"
+          className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#339A89] focus:border-transparent text-sm sm:text-base disabled:opacity-50"
           placeholder="example@gmail.com"
           required
+          disabled={isLoading}
         />
       </div>
        <p className="text-center text-xs sm:text-sm text-gray-600 pt-1">You will receive a reset code on your ID</p>
       <button
         type="submit"
-        className="w-full bg-[#339A89] text-white py-2.5 sm:py-3 rounded-lg font-medium text-sm sm:text-base hover:bg-[#2b8274] transition-colors"
+        className="w-full bg-[#339A89] text-white py-2.5 sm:py-3 rounded-lg font-medium text-sm sm:text-base hover:bg-[#2b8274] transition-colors disabled:opacity-75 disabled:cursor-not-allowed"
+        disabled={isLoading}
       >
-        Submit
+         {isSendingCode ? 'SENDING...' : 'Submit'}
       </button>
        <div className="text-center pt-1">
         <button 
           type="button" 
-          onClick={() => setView('login')} // Add a way back to login
-          className="text-[#339A89] text-xs sm:text-sm hover:underline hover:text-[#2b8274] transition-colors"
+          onClick={() => setView('login')}
+          className="text-[#339A89] text-xs sm:text-sm hover:underline hover:text-[#2b8274] transition-colors disabled:opacity-50"
+           disabled={isLoading}
         >
           Back to Login
         </button>
@@ -148,37 +240,40 @@ export default function LoginPage() {
           id="reset-code"
           value={resetCode}
           onChange={(e) => setResetCode(e.target.value)}
-          className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#339A89] focus:border-transparent text-sm sm:text-base"
+          className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#339A89] focus:border-transparent text-sm sm:text-base disabled:opacity-50"
           placeholder="Enter the code"
           required
+          disabled={isLoading}
         />
       </div>
       <div>
         <label htmlFor="new-password" className="block text-gray-700 text-sm mb-1.5 sm:mb-2">
           Enter the New Password
         </label>
-        <input // Simple input for password, consider adding visibility toggle if needed
+        <input
           type="password" 
           id="new-password"
           value={newPassword}
           onChange={(e) => setNewPassword(e.target.value)}
-          className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#339A89] focus:border-transparent text-sm sm:text-base"
+          className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#339A89] focus:border-transparent text-sm sm:text-base disabled:opacity-50"
           placeholder="Enter the new Password"
           required
+          disabled={isLoading}
         />
       </div>
-       <p className="text-center text-xs sm:text-sm text-gray-600 pt-1">You will receive a reset code on your ID</p> // Text from image 2
       <button
         type="submit"
-        className="w-full bg-[#339A89] text-white py-2.5 sm:py-3 rounded-lg font-medium text-sm sm:text-base hover:bg-[#2b8274] transition-colors"
+        className="w-full bg-[#339A89] text-white py-2.5 sm:py-3 rounded-lg font-medium text-sm sm:text-base hover:bg-[#2b8274] transition-colors disabled:opacity-75 disabled:cursor-not-allowed"
+         disabled={isLoading}
       >
-        Submit
+        {isResetting ? 'RESETTING...' : 'Submit'}
       </button>
        <div className="text-center pt-1">
         <button 
           type="button" 
-          onClick={() => setView('login')} // Add a way back to login
-          className="text-[#339A89] text-xs sm:text-sm hover:underline hover:text-[#2b8274] transition-colors"
+          onClick={() => setView('login')}
+          className="text-[#339A89] text-xs sm:text-sm hover:underline hover:text-[#2b8274] transition-colors disabled:opacity-50"
+           disabled={isLoading}
         >
           Back to Login
         </button>
@@ -187,8 +282,14 @@ export default function LoginPage() {
   );
 
   return (
-    <div className="min-h-screen w-full relative bg-[#E8FFFE] flex items-center justify-center p-4 sm:p-6 md:p-8"> {/* Changed bg color to match container */}
-      <div className="absolute inset-0 z-0"> {/* Ensure background is behind content */}
+    <div className="min-h-screen w-full relative bg-[#E8FFFE] flex items-center justify-center p-4 sm:p-6 md:p-8">
+      {isLoading && (
+        <div className="fixed inset-0 z-50 flex justify-center items-center bg-black bg-opacity-20">
+          <Loader size="large" />
+        </div>
+      )}
+
+      <div className="absolute inset-0 z-0">
         <Image
           src="/assets/images/login-bg.jpeg"
           alt="Login Background"
@@ -198,36 +299,40 @@ export default function LoginPage() {
         />
       </div>
       
-      {/* Container with light blue background matching screenshots */}
-      <div className="relative w-full max-w-[420px] bg-[#DFF7F4] rounded-2xl p-4 sm:p-6 md:p-8 z-10 shadow-lg"> {/* Adjusted background color & added shadow */}
-        {/* Language button removed as not present in forgot password screens */}
-        {/* <div className="flex justify-end mb-2 sm:mb-4">
-          <button className="flex items-center gap-1.5 text-gray-600 text-xs sm:text-sm hover:text-gray-800 transition-colors">
-            <Globe className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-            English
-          </button>
-        </div> */} 
-
+      <div className="relative w-full max-w-[420px] bg-[#DFF7F4] rounded-2xl p-4 sm:p-6 md:p-8 z-10 shadow-lg">
         <div className="flex justify-center mb-6 sm:mb-8">
           <Image
             src="/assets/images/logo.png"
             alt="Prime Cost Logo"
-            width={140} // Keep logo size consistent
+            width={140}
             height={60}
             className="object-contain sm:w-[160px] md:w-[180px]"
           />
         </div>
 
-        {/* Conditional Form Rendering */}
         {view === 'login' && renderLoginForm()}
         {view === 'forgotPasswordEmail' && renderForgotPasswordEmailForm()}
         {view === 'forgotPasswordReset' && renderForgotPasswordResetForm()}
         
       </div>
-        {/* Footer Text - Adding based on image */}
         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white text-xs z-10">
           © 2024 Restaurant Portal
         </div>
+
+        <ConfirmationModal
+          isOpen={modalState.isOpen}
+          onClose={() => setModalState({ isOpen: false, title: '', message: '', isAlert: false })}
+          onConfirm={() => {
+            if (modalState.onConfirm) {
+              modalState.onConfirm();
+            } else {
+              setModalState({ isOpen: false, title: '', message: '', isAlert: false });
+            }
+          }}
+          title={modalState.title}
+          message={modalState.message}
+          isAlert={modalState.isAlert}
+        />
     </div>
   );
 }

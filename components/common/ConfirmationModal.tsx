@@ -6,11 +6,13 @@ import { X } from 'lucide-react';
 interface ConfirmationModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onConfirm: () => void;
+  onConfirm?: () => void;
   title: string;
   message: string;
   confirmText?: string;
   cancelText?: string;
+  isAlert?: boolean;
+  okText?: string;
 }
 
 const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
@@ -21,6 +23,8 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   message,
   confirmText = 'Confirm',
   cancelText = 'Cancel',
+  isAlert = false,
+  okText = 'OK',
 }) => {
   if (!isOpen) return null;
 
@@ -44,23 +48,43 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
           <p className="text-sm text-gray-600">{message}</p>
         </div>
 
-        {/* Footer */}
+        {/* Footer - Conditional Buttons */}
         <div className="flex justify-end gap-3 p-4 bg-gray-50 rounded-b-lg">
-          <button
-            onClick={onClose}
-            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-          >
-            {cancelText}
-          </button>
-          <button
-            onClick={() => {
-              onConfirm();
-              onClose(); // Optionally close modal on confirm
-            }}
-            className="px-4 py-2 text-sm font-medium text-white bg-teal-600 border border-transparent rounded-md shadow-sm hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
-          >
-            {confirmText}
-          </button>
+          {isAlert ? (
+            // Alert Mode: Single OK button
+            <button
+              onClick={() => {
+                // Execute the confirm action first (if provided)
+                if (onConfirm) {
+                  onConfirm();
+                }
+                // Then close the modal (using the onClose prop)
+                onClose(); 
+              }}
+              className="px-4 py-2 text-sm font-medium text-white bg-teal-600 border border-transparent rounded-md shadow-sm hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
+            >
+              {okText}
+            </button>
+          ) : (
+            // Confirmation Mode: Cancel and Confirm buttons
+            <>
+              <button
+                onClick={onClose}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              >
+                {cancelText}
+              </button>
+              <button
+                onClick={() => {
+                  if (onConfirm) onConfirm();
+                  // No automatic close here in confirmation mode
+                }}
+                className="px-4 py-2 text-sm font-medium text-white bg-teal-600 border border-transparent rounded-md shadow-sm hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
+              >
+                {confirmText}
+              </button>
+            </>
+          )}
         </div>
       </div>
     </div>

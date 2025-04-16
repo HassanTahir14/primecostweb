@@ -77,7 +77,7 @@ export default function EmployeeDetailsForm({ onNext, initialData }: EmployeeDet
       
       {/* Action Button */}
       <div className="flex justify-end pt-4">
-        <Button onClick={handleNextClick}>Next</Button>
+        <Button onClick={handleNextClick} size="lg" >Next</Button>
       </div>
     </div>
   );

@@ -5,6 +5,10 @@ import Sidebar from './Sidebar';
 import { Bell, ChevronDown } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/hooks/useAuth';
+import Loader from '@/components/common/Loader';
+import { useDispatch, useSelector } from 'react-redux';
+import { logout, selectCurrentUser } from '@/store/authSlice';
 
 interface PageLayoutProps {
   children: React.ReactNode;
@@ -12,6 +16,12 @@ interface PageLayoutProps {
 }
 
 export default function PageLayout({ children, title }: PageLayoutProps) {
+  const { isAuthenticated } = useAuth({ redirectTo: '/login' });
+  const currentUser = useSelector(selectCurrentUser);
+  const dispatch = useDispatch();
+
+  console.log("currentUser", currentUser);
+
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
@@ -31,12 +41,21 @@ export default function PageLayout({ children, title }: PageLayoutProps) {
   }, [userMenuRef]);
 
   const handleLogout = () => {
-      // TODO: Implement actual logout logic (clear session, redirect)
-      console.log("Logout clicked");
-      setIsUserMenuOpen(false);
-      // Example redirect: router.push('/login'); 
+    dispatch(logout());
+    setIsUserMenuOpen(false);
+    router.push('/login');
   }
 
+  // Show loader while checking auth / redirecting
+  if (!isAuthenticated) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-[#F4F7FA]">
+        <Loader size="large" />
+      </div>
+    );
+  }
+
+  // If authenticated, render the layout
   return (
     <div className="flex h-screen bg-[#F4F7FA]">
       <Sidebar isOpen={isSidebarOpen} onOpenChange={setIsSidebarOpen} />
@@ -62,7 +81,7 @@ export default function PageLayout({ children, title }: PageLayoutProps) {
                 onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
                 className="flex items-center gap-1 sm:gap-2 text-sm text-gray-700 hover:text-gray-900"
               >
-                <span>Sulieman.walid@gmail.com</span>
+                <span>{currentUser?.username || 'User'}</span>
                 <ChevronDown size={16} className={`transition-transform ${isUserMenuOpen ? 'rotate-180' : ''}`} />
               </button>
 

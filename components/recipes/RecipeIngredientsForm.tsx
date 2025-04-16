@@ -124,7 +124,7 @@ export default function RecipeIngredientsForm({ onNext, onBack, initialData }: R
 
       <div className="flex justify-between mt-8">
         <Button variant="secondary" onClick={onBack}>Back</Button>
-        <Button onClick={handleNextClick}>Next</Button>
+        <Button size="lg" onClick={handleNextClick}>Next</Button>
       </div>
     </div>
   );
