@@ -10,6 +10,7 @@ import supplierReducer from './supplierSlice';
 import storageLocationReducer from './storageLocationSlice';
 import branchReducer from './branchSlice';
 import employeeReducer from './employeeSlice';
+import purchaseOrderReducer from './purchaseOrderSlice';
 
 export const store = configureStore({
   reducer: {
@@ -24,6 +25,7 @@ export const store = configureStore({
     storageLocation: storageLocationReducer,
     branch: branchReducer,
     employee: employeeReducer,
+    purchaseOrder: purchaseOrderReducer,
   },
 });
 
