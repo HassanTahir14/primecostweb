@@ -1,25 +1,39 @@
 'use client';
 
-import { useState } from 'react';
-
-// Mock data for recipes
-const mockRecipes = [
-  { 
-    id: 1, 
-    date: '16/03/2025 08:49 PM',
-    name: 'Test Recipe', 
-    preparedBy: 'Muhammad J Junaid',
-    storage: 'Dry Stock Room Main Brnach',
-    quantity: '500.0 KG',
-    batchNumber: '20250316-recipe code-B001'
-  }
-];
-
+import { useEffect, useState } from 'react';
+import moment from 'moment';
+import api from '@/store/api';
 export default function InventoryByRecipe() {
   const [searchQuery, setSearchQuery] = useState('');
-  const [recipes, setRecipes] = useState(mockRecipes);
+  const [recipes, setRecipes] = useState([]);
 
-  const filteredRecipes = recipes.filter(recipe =>
+  // Call API on mount
+  useEffect(() => {
+    const fetchRecipes = async () => {
+      try {
+        const response = await api.post('/api/v1/inventory/view/prepared-main-recipe', {});
+        const list = response?.data?.inventorylist || [];
+
+        const mapped = list.map((item: any, index: number) => ({
+          id: index,
+          date: moment(item.preparedDate).format('DD/MM/YYYY hh:mm A'),
+          name: item.recipeName,
+          preparedBy: item.preparedBy,
+          storage: `${item.storageLocation} ${item.branchLocation}`,
+          quantity: `${item.totalQuantity} ${item.primaryUnit}`,
+          batchNumber: item.batchNumber
+        }));
+
+        setRecipes(mapped);
+      } catch (error) {
+        console.error('Error fetching recipes:', error);
+      }
+    };
+
+    fetchRecipes();
+  }, []);
+
+  const filteredRecipes = recipes.filter((recipe: any) =>
     recipe.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -38,7 +52,7 @@ export default function InventoryByRecipe() {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {filteredRecipes.map((recipe) => (
+            {filteredRecipes.map((recipe:any) => (
               <tr key={recipe.id}>
                 <td className="px-6 py-4">{recipe.date}</td>
                 <td className="px-6 py-4">{recipe.name}</td>
@@ -53,4 +67,4 @@ export default function InventoryByRecipe() {
       </div>
     </div>
   );
-} 
+}

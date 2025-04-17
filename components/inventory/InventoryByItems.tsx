@@ -1,19 +1,41 @@
 'use client';
 
-import { useState } from 'react';
-
-// Mock data for inventory items
-const mockInventoryItems = [
-  { id: 1, code: 'ITEM-202836723', name: 'Test Item', storage: 'Walking Freezer - Butchery, Main Brnach', quantity: 339.50, unit: 'KILOGRAM (KG): 1.0 GRAM (GRM): 1000.0' },
-];
+import api from '@/store/api';
+import { useEffect, useState } from 'react';
 
 export default function InventoryByItems() {
   const [searchQuery, setSearchQuery] = useState('');
-  const [inventoryItems, setInventoryItems] = useState(mockInventoryItems);
+  const [inventoryItems, setInventoryItems] = useState([]);
 
-  const filteredItems = inventoryItems.filter(item =>
-    item.name.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredItems = inventoryItems.filter((item:any) =>
+    (item?.name || '').toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  useEffect(() => {
+    const fetchInventoryItems = async () => {
+      try {
+        const response = await api.post('/inventory/view/items', {});
+
+
+        // Map the response to your desired format
+        const mappedData = (response?.data?.inventorylist || []).map((item: any) => ({
+          id: item?.itemId,
+          code: item?.itemCode,
+          name: item?.itemName,
+          storage: `${item?.storageLocation || 'N/A'}, ${item?.branchLocation || 'N/A'}`,
+          quantity: item?.totalQuantity != null ? item.totalQuantity / (item?.secondaryUnitValue || 1) : 0,
+          unit: `KILOGRAM (KG): ${item?.primaryUnitValue ?? 1} GRAM (GRM): ${item?.secondaryUnitValue ?? 1000}`,
+        }));
+
+        setInventoryItems(mappedData);
+      } catch (error) {
+        console.error('Failed to fetch inventory items:', error);
+        setInventoryItems([]);
+      }
+    };
+
+    fetchInventoryItems();
+  }, []);
 
   return (
     <div className="bg-white rounded-lg shadow">
@@ -29,18 +51,26 @@ export default function InventoryByItems() {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {filteredItems.map((item) => (
-              <tr key={item.id}>
-                <td className="px-6 py-4">{item.code}</td>
-                <td className="px-6 py-4">{item.name}</td>
-                <td className="px-6 py-4">{item.storage}</td>
-                <td className="px-6 py-4">{item.quantity} KG</td>
-                <td className="px-6 py-4">{item.unit}</td>
+            {filteredItems.length > 0 ? (
+              filteredItems.map((item: any) => (
+                <tr key={item?.id ?? Math.random()}>
+                  <td className="px-6 py-4">{item?.code ?? 'N/A'}</td>
+                  <td className="px-6 py-4">{item?.name ?? 'N/A'}</td>
+                  <td className="px-6 py-4">{item?.storage ?? 'N/A'}</td>
+                  <td className="px-6 py-4">{item?.quantity?.toFixed(2) ?? '0'} KG</td>
+                  <td className="px-6 py-4">{item?.unit ?? 'N/A'}</td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
+                  No inventory items found.
+                </td>
               </tr>
-            ))}
+            )}
           </tbody>
         </table>
       </div>
     </div>
   );
-} 
+}

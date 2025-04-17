@@ -1,25 +1,39 @@
 'use client';
 
-import { useState } from 'react';
-
-// Mock data for sub recipes
-const mockSubRecipes = [
-  { 
-    id: 1, 
-    date: '17/03/2025 10:15 AM',
-    name: 'Marinara Sauce', 
-    preparedBy: 'Ahmed Khan',
-    storage: 'Cold Storage Main Brnach',
-    quantity: '35.0 KG',
-    batchNumber: '20250317-subrecipe-001'
-  }
-];
+import { useEffect, useState } from 'react';
+import api from '@/store/api';
+import moment from 'moment';
 
 export default function InventoryBySubRecipe() {
   const [searchQuery, setSearchQuery] = useState('');
-  const [subRecipes, setSubRecipes] = useState(mockSubRecipes);
+  const [subRecipes, setSubRecipes] = useState([]);
 
-  const filteredSubRecipes = subRecipes.filter(subRecipe =>
+  useEffect(() => {
+    const fetchSubRecipes = async () => {
+      try {
+        const response = await api.post('/api/v1/inventory/view/prepared-sub-recipe', {});
+        const list = response?.data?.inventorylist || [];
+
+        const mapped = list.map((item: any, index: number) => ({
+          id: index,
+          date: moment(item.preparedDate).format('DD/MM/YYYY hh:mm A'),
+          name: item.recipeName, // or subRecipeName if that's what your API uses
+          preparedBy: item.preparedBy,
+          storage: `${item.storageLocation} ${item.branchLocation}`,
+          quantity: `${item.totalQuantity} ${item.primaryUnit}`,
+          batchNumber: item.batchNumber
+        }));
+
+        setSubRecipes(mapped);
+      } catch (error) {
+        console.error('Error fetching sub-recipes:', error);
+      }
+    };
+
+    fetchSubRecipes();
+  }, []);
+
+  const filteredSubRecipes = subRecipes.filter((subRecipe: any) =>
     subRecipe.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -38,7 +52,7 @@ export default function InventoryBySubRecipe() {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {filteredSubRecipes.map((subRecipe) => (
+            {filteredSubRecipes.map((subRecipe:any) => (
               <tr key={subRecipe.id}>
                 <td className="px-6 py-4">{subRecipe.date}</td>
                 <td className="px-6 py-4">{subRecipe.name}</td>
@@ -53,4 +67,4 @@ export default function InventoryBySubRecipe() {
       </div>
     </div>
   );
-} 
+}
