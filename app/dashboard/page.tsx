@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Sidebar from '@/components/Sidebar';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { BarChart3, Box, Users, PenTool, ChevronDown } from 'lucide-react';
+import Link from 'next/link';
 
 const data = [
   { name: 'Data 1', profit: 100, cost: 70, ideal: 120, menu: 140 },
@@ -110,18 +111,19 @@ export default function Dashboard() {
             <h2 className="text-base md:text-lg font-bold mb-4 md:mb-6">Reports</h2>
             <div className="flex flex-wrap gap-2 md:gap-4">
               {[
-                'Non Conformance Report',
-                'Recipe Report',
-                'Purchase Report',
-                'Employee Data Report',
-                'Transfer Report'
+                { name: 'Non Conformance Report', path: '/non-conformance' },
+                { name: 'Recipe Report', path: '/reports/recipe' },
+                { name: 'Purchase Report', path: '/reports/purchase' },
+                { name: 'Employee Data Report', path: '/reports/employee' },
+                { name: 'Transfer Report', path: '/reports/transfer' },
               ].map((report) => (
-                <button
-                  key={report}
-                  className="bg-[#339A89] text-white px-4 md:px-6 py-1.5 md:py-2 rounded-full hover:bg-[#2b8274] transition-colors text-xs md:text-sm"
-                >
-                  {report}
-                </button>
+                <Link key={report.path} href={report.path} passHref legacyBehavior>
+                  <a
+                    className="bg-[#339A89] text-white px-4 md:px-6 py-1.5 md:py-2 rounded-full hover:bg-[#2b8274] transition-colors text-xs md:text-sm no-underline"
+                  >
+                    {report.name}
+                  </a>
+                </Link>
               ))}
             </div>
           </div>

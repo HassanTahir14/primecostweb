@@ -328,7 +328,7 @@ export default function PurchaseOrders({ onClose }: PurchaseOrdersProps) {
                   >
                     Edit
                   </Button>
-                  <Button 
+                  {/* <Button 
                     variant="destructive" 
                     size="sm" 
                     className="rounded-full bg-red-500 text-white text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-1.5"
@@ -336,7 +336,7 @@ export default function PurchaseOrders({ onClose }: PurchaseOrdersProps) {
                     disabled={poLoading}
                   >
                     Delete
-                  </Button>
+                  </Button> */}
                         {/* <Button 
                           variant="ghost" 
                           size="sm" 
