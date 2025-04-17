@@ -68,11 +68,11 @@ export default function ServingSize({ onClose }: { onClose: () => void }) {
   const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
-    api.get('/units-of-measurement/all').then((response) => {
+    api.get('/units-of-measurement/all').then((response:any) => {
       if (response.data?.unitsOfMeasurement) {
         setUnitsOfMeasurement(response.data.unitsOfMeasurement);
       }
-    }).catch(error => {
+    }).catch((error:any) => {
       setErrorMessage('Failed to load units of measurement');
       setIsErrorModalOpen(true);
     });
