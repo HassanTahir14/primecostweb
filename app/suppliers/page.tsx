@@ -33,7 +33,7 @@ export default function SuppliersPage() {
           onClose={() => setEditingSupplierId(null)} 
         />
       ) : (
-        <Suppliers onEdit={setEditingSupplierId} />
+        <Suppliers onClose={() => {setIsErrorModalOpen(false)}} onEdit={setEditingSupplierId} />
       )}
 
       {/* Error Modal */}

@@ -7,6 +7,8 @@ import Modal from './common/Modal';
 import Input from './common/input';
 import Select from './common/select';
 import { toast } from 'react-hot-toast';
+import { useDispatch, useSelector } from 'react-redux';
+import { AppDispatch, RootState } from '@/store/store';
 
 interface PurchaseOrder {
   id: string;
@@ -44,8 +46,12 @@ const TAX_OPTIONS = [
 ];
 
 export default function PurchaseOrders({ onClose }: PurchaseOrdersProps) {
+  const dispatch = useDispatch<AppDispatch>();
+  const { suppliers} = useSelector((state: RootState) => state.supplier);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
+  console.log(suppliers, 'suppliers');
   
   // Form state
   const [productName, setProductName] = useState('');

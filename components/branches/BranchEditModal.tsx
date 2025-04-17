@@ -4,9 +4,23 @@ import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import Modal from '@/components/common/Modal';
 import Button from '@/components/common/button';
-import { addBranch } from '@/store/branchSlice';
-import { fetchAllStorageLocations } from '@/store/storageLocationSlice'; // Fetch storage locations
+import { updateBranch } from '@/store/branchSlice';
+import { fetchAllStorageLocations } from '@/store/storageLocationSlice';
 import type { RootState, AppDispatch } from '@/store/store';
+
+// Interface for Branch matching the slice structure
+interface Branch {
+  branchId: number;
+  branchName: string;
+  branchManager: string;
+  branchAddress: string;
+  createdAt: string;
+  updatedAt: string;
+  storageLocations: {
+    storageLocationName: string;
+    storageLocationId: number;
+  }[];
+}
 
 // Interface for StorageLocation from the storage location slice
 interface StorageLocation {
@@ -14,22 +28,24 @@ interface StorageLocation {
   storageLocationName: string;
 }
 
-interface BranchCreateModalProps {
+interface BranchEditModalProps {
   isOpen: boolean;
   onClose: () => void;
+  branch: Branch | null; // Pass the branch to edit
   onSuccess: (message: string) => void; // Callback for success
   onError: (message: string) => void;   // Callback for error
 }
 
-export default function BranchCreateModal({ 
-  isOpen, 
-  onClose, 
-  onSuccess, 
-  onError 
-}: BranchCreateModalProps) {
+export default function BranchEditModal({
+  isOpen,
+  onClose,
+  branch,
+  onSuccess,
+  onError,
+}: BranchEditModalProps) {
   const dispatch = useDispatch<AppDispatch>();
   const { 
-    locations: storageLocations, // Rename for clarity
+    locations: storageLocations, 
     loading: storageLoading, 
     error: storageError 
   } = useSelector((state: RootState) => state.storageLocation);
@@ -37,15 +53,23 @@ export default function BranchCreateModal({
   const [branchName, setBranchName] = useState('');
   const [branchManager, setBranchManager] = useState('');
   const [branchAddress, setBranchAddress] = useState('');
-  const [selectedLocationIds, setSelectedLocationIds] = useState<number[]>([]); // Store IDs
+  const [selectedLocationIds, setSelectedLocationIds] = useState<number[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
-  // Fetch storage locations when the modal opens
+  // Fetch storage locations and pre-fill form when the modal opens/branch changes
   useEffect(() => {
     if (isOpen) {
       dispatch(fetchAllStorageLocations());
-      // Reset form on open
+      if (branch) {
+        setBranchName(branch.branchName);
+        setBranchManager(branch.branchManager);
+        setBranchAddress(branch.branchAddress);
+        setSelectedLocationIds(branch.storageLocations.map(loc => loc.storageLocationId));
+        setErrors({});
+      }
+    } else {
+      // Reset form when closed
       setBranchName('');
       setBranchManager('');
       setBranchAddress('');
@@ -53,7 +77,7 @@ export default function BranchCreateModal({
       setErrors({});
       setIsLoading(false);
     }
-  }, [isOpen, dispatch]);
+  }, [branch, isOpen, dispatch]);
 
   const validateForm = () => {
     const newErrors: { [key: string]: string } = {};
@@ -67,31 +91,31 @@ export default function BranchCreateModal({
   };
 
   const handleSubmit = async () => {
-    if (!validateForm()) return;
+    if (!branch || !validateForm()) return; // Ensure branch is present
 
     setIsLoading(true);
     try {
-      const resultAction = await dispatch(
-        addBranch({
-          // Assuming the slice expects 'name' based on slice definition
-          branchName: branchName.trim(), 
-          branchManager: branchManager.trim(),
-          branchAddress: branchAddress.trim(),
-          storageLocationIdsToAdd: selectedLocationIds,
-        })
-      );
+      const payload = {
+        branchId: branch.branchId,
+        branchName: branchName.trim(),
+        branchManager: branchManager.trim(),
+        branchAddress: branchAddress.trim(),
+        storageLocationIdsToAdd: selectedLocationIds,
+      };
+      const resultAction = await dispatch(updateBranch(payload));
 
-      if (addBranch.fulfilled.match(resultAction)) {
-        const successMsg = resultAction.payload?.description || 'Branch added successfully';
+      if (updateBranch.fulfilled.match(resultAction)) {
+         // Thunk returns payload on success for optimistic update
+        const successMsg = 'Branch updated successfully'; // API doesn't seem to return description here
         onSuccess(successMsg);
         onClose(); // Close modal on success
       } else {
         const errorPayload = resultAction.payload as any;
-        const errorMsg = errorPayload?.description || errorPayload?.message || 'Failed to add branch';
+        const errorMsg = errorPayload?.description || errorPayload?.message || 'Failed to update branch';
         onError(errorMsg);
       }
     } catch (error) {
-      console.error('Error adding branch:', error);
+      console.error('Error updating branch:', error);
       onError('An unexpected error occurred.');
     } finally {
       setIsLoading(false);
@@ -99,31 +123,37 @@ export default function BranchCreateModal({
   };
 
   const toggleLocation = (id: number) => {
-    setSelectedLocationIds(prev => 
-      prev.includes(id) 
-        ? prev.filter(locId => locId !== id) 
+    setSelectedLocationIds(prev =>
+      prev.includes(id)
+        ? prev.filter(locId => locId !== id)
         : [...prev, id]
     );
-    // Clear storage location error if user interacts
     if (errors.storageLocations) {
       setErrors(prev => ({ ...prev, storageLocations: '' }));
     }
   };
 
+  // Determine if the form has changed
+  const hasChanged = 
+    branchName.trim() !== branch?.branchName ||
+    branchManager.trim() !== branch?.branchManager ||
+    branchAddress.trim() !== branch?.branchAddress ||
+    JSON.stringify(selectedLocationIds.sort()) !== JSON.stringify([...(branch?.storageLocations || [])].map(loc => loc.storageLocationId).sort());
+
   return (
     <Modal 
       isOpen={isOpen} 
       onClose={onClose} 
-      title="New Branch"
+      title="Edit Branch"
       size="lg"
     >
       <div className="space-y-5">
         {/* Branch Details */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label htmlFor="branchName" className="block text-gray-700 font-medium mb-1">Branch Name <span className="text-red-500">*</span></label>
+           <div>
+            <label htmlFor="editBranchName" className="block text-gray-700 font-medium mb-1">Branch Name <span className="text-red-500">*</span></label>
             <input
-              id="branchName"
+              id="editBranchName"
               type="text"
               placeholder="Enter Branch Name"
               className={`w-full p-3 border ${errors.branchName ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:outline-none focus:ring-2 ${errors.branchName ? 'focus:ring-red-500' : 'focus:ring-[#00997B]'}`}
@@ -138,9 +168,9 @@ export default function BranchCreateModal({
           </div>
           
           <div>
-            <label htmlFor="branchManager" className="block text-gray-700 font-medium mb-1">Branch Manager <span className="text-red-500">*</span></label>
+            <label htmlFor="editBranchManager" className="block text-gray-700 font-medium mb-1">Branch Manager <span className="text-red-500">*</span></label>
             <input
-              id="branchManager"
+              id="editBranchManager"
               type="text"
               placeholder="Enter Branch Manager Name"
               className={`w-full p-3 border ${errors.branchManager ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:outline-none focus:ring-2 ${errors.branchManager ? 'focus:ring-red-500' : 'focus:ring-[#00997B]'}`}
@@ -155,9 +185,9 @@ export default function BranchCreateModal({
           </div>
           
           <div className="md:col-span-2">
-            <label htmlFor="branchAddress" className="block text-gray-700 font-medium mb-1">Branch Address <span className="text-red-500">*</span></label>
+            <label htmlFor="editBranchAddress" className="block text-gray-700 font-medium mb-1">Branch Address <span className="text-red-500">*</span></label>
             <input
-              id="branchAddress"
+              id="editBranchAddress"
               type="text"
               placeholder="Enter Branch Address"
               className={`w-full p-3 border ${errors.branchAddress ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:outline-none focus:ring-2 ${errors.branchAddress ? 'focus:ring-red-500' : 'focus:ring-[#00997B]'}`}
@@ -197,7 +227,7 @@ export default function BranchCreateModal({
               ))}
             </div>
           ) : (
-            <div className="text-center text-gray-500">No storage locations found. Please create them first.</div>
+            <div className="text-center text-gray-500">No storage locations found.</div>
           )}
            {errors.storageLocations && <p className="text-red-500 text-xs mt-1">{errors.storageLocations}</p>}
         </div>
@@ -214,9 +244,9 @@ export default function BranchCreateModal({
         </Button>
         <Button 
           onClick={handleSubmit}
-          disabled={isLoading || storageLoading || storageLocations.length === 0} // Disable if loading or no locations
+          disabled={isLoading || storageLoading || !hasChanged} // Disable if loading, no locations, or form hasn't changed
         >
-          {isLoading ? 'Adding...' : 'ADD'}
+          {isLoading ? 'Updating...' : 'UPDATE'}
         </Button>
       </div>
     </Modal>

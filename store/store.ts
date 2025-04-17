@@ -7,6 +7,8 @@ import subRecipeCategoryReducer from './subRecipeCategorySlice';
 import servingSizeReducer from './servingSizeSlice';
 import taxReducer from './taxSlice';
 import supplierReducer from './supplierSlice';
+import storageLocationReducer from './storageLocationSlice';
+import branchReducer from './branchSlice';
 
 export const store = configureStore({
   reducer: {
@@ -18,6 +20,8 @@ export const store = configureStore({
     servingSize: servingSizeReducer,
     tax: taxReducer,
     supplier: supplierReducer,
+    storageLocation: storageLocationReducer,
+    branch: branchReducer,
   },
 });
 
