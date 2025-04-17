@@ -1,101 +1,196 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import PageLayout from '@/components/PageLayout';
 import Button from '@/components/common/button';
 import Link from 'next/link';
+import { Edit, Trash2 } from 'lucide-react'; // Import icons for actions
+import ConfirmationModal from '@/components/common/ConfirmationModal';
 
-// Mock data for employees
-const mockEmployees = [
-  { id: 1, name: 'Sulieman', position: 'Admin', iqamaId: 'IQ123456', iqamaExpiry: '2025-06-30', totalPayroll: 2180.00 },
-  { id: 2, name: 'Omar', position: 'CHEF', iqamaId: '4453697508', iqamaExpiry: '2025-09-30', totalPayroll: 3985.55 },
-  { id: 3, name: 'Muhammad J', position: 'CHEF', iqamaId: '1312312312', iqamaExpiry: '2025-03-27', totalPayroll: 6277.00 },
-  { id: 4, name: 'Test', position: 'HEAD CHEF', iqamaId: '131231231', iqamaExpiry: '2025-03-28', totalPayroll: 10579.00 },
-];
+// Import Redux stuff
+import { AppDispatch, RootState } from '@/store/store';
+import { fetchAllEmployees, clearError } from '@/store/employeeSlice';
+import { Employee } from '@/store/employeeSlice'; // Import the Employee type if defined in slice
 
-// Mock summary data
-const totalEmployeesCount = mockEmployees.length;
-const totalPayrollSum = mockEmployees.reduce((sum, emp) => sum + emp.totalPayroll, 0);
+// Remove mock data
+// const mockEmployees = [...];
+// const totalEmployeesCount = ...;
+// const totalPayrollSum = ...;
 
 export default function EmployeesPage() {
-  const [employees, setEmployees] = useState(mockEmployees);
+  const dispatch = useDispatch<AppDispatch>();
+  const { 
+    employees, 
+    loading: employeesLoading, 
+    error: employeesError 
+  } = useSelector((state: RootState) => state.employee);
 
-  // Add Edit/Delete handlers if needed
-  // const handleEdit = (id) => { ... }
-  // const handleDelete = (id) => { ... }
+  // Modal state
+  const [modalMessage, setModalMessage] = useState<string>('');
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [isConfirmModal, setIsConfirmModal] = useState<boolean>(false); // Differentiate confirm vs alert
+  const [actionEmployeeId, setActionEmployeeId] = useState<number | null>(null);
+
+  // Fetch employees on mount
+  useEffect(() => {
+    dispatch(fetchAllEmployees());
+  }, [dispatch]);
+
+  // Show error modal if fetch fails
+  useEffect(() => {
+    if (employeesError) {
+        const errorMsg = typeof employeesError === 'string' ? employeesError : 
+                        (employeesError as any)?.description || (employeesError as any)?.message || 'Failed to fetch employees.';
+        setModalMessage(errorMsg);
+        setIsConfirmModal(false); // Use alert style for fetch error
+        setIsModalOpen(true);
+    }
+  }, [employeesError]);
+
+  const handleCloseModal = () => {
+      setIsModalOpen(false);
+      setModalMessage('');
+      setActionEmployeeId(null);
+      // Clear Redux error state when closing an error modal
+      if (employeesError) {
+         dispatch(clearError());
+      }
+  };
+  
+  // Placeholder Handlers for Edit/Delete
+  const handleEdit = (id: number) => {
+    console.log("Edit employee:", id);
+    // TODO: Implement edit logic (e.g., navigate to edit page or open modal)
+    // router.push(`/employees/edit/${id}`);
+    setModalMessage(`Edit functionality for employee ${id} is not yet implemented.`);
+    setIsConfirmModal(false);
+    setIsModalOpen(true);
+  };
+
+  const handleDeleteClick = (id: number) => {
+    console.log("Attempt delete employee:", id);
+    setActionEmployeeId(id);
+    setModalMessage(`Are you sure you want to delete employee ${id}? This action cannot be undone.`);
+    setIsConfirmModal(true); // Use confirm style
+    setIsModalOpen(true);
+  };
+
+  const confirmDelete = () => {
+      if (actionEmployeeId !== null) {
+        console.log("Confirm delete employee:", actionEmployeeId);
+        // TODO: Dispatch deleteEmployee action
+        // dispatch(deleteEmployee(actionEmployeeId)).then(...) handle result
+        setModalMessage(`Delete functionality for employee ${actionEmployeeId} is not yet implemented.`);
+        setIsConfirmModal(false); // Show confirmation/error as alert
+        // Keep modal open to show the result message
+        // setIsModalOpen(false); // Close after dispatch usually
+        setActionEmployeeId(null);
+      } else {
+          handleCloseModal();
+      }
+  };
+
+  // Calculate totals based on fetched data
+  const totalEmployeesCount = employees.length;
+  // Assuming salaryDTO structure and basicSalary exist, adjust if needed
+  const totalPayrollSum = employees.reduce((sum, emp) => {
+    // Access nested salary details safely
+    const salary = emp.salaryDTO?.basicSalary || 0;
+    return sum + salary;
+  }, 0);
 
   return (
     <PageLayout title="Kitchen Employees">
-      {/* Summary Cards */}
+      {/* Summary Cards - Updated with Redux data */} 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
         <div className="bg-[#00997B] text-white p-5 rounded-lg shadow flex justify-between items-center">
           <span className="font-medium">Total Employees</span>
-          <span className="text-3xl font-semibold">{totalEmployeesCount}</span>
+          <span className="text-3xl font-semibold">{employeesLoading ? '...' : totalEmployeesCount}</span>
         </div>
         <div className="bg-white border border-gray-200 p-5 rounded-lg shadow flex justify-between items-center">
           <span className="font-medium text-gray-700">Total Payroll</span>
           <span className="text-xl font-semibold text-[#00997B]">
-            USD {totalPayrollSum.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            {employeesLoading ? '...' : `USD ${totalPayrollSum.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
           </span>
         </div>
       </div>
 
-      {/* Main Content Area */}
+      {/* Main Content Area */} 
       <div className="bg-white rounded-lg shadow-sm p-6 space-y-6">
         <div className="flex flex-col md:flex-row justify-end items-center gap-4">
           <div className="flex gap-2 flex-shrink-0">
             <Link href="/employees/create">
               <Button>Create new employee</Button>
             </Link>
-            <Button variant="secondary">Other payroll</Button> 
+            {/* <Button variant="secondary">Other payroll</Button> */}
           </div>
         </div>
 
-        {/* Employees Table */}
+        {/* Employees Table - Updated with Redux data and actions */} 
         <div className="overflow-x-auto">
-          <table className="w-full text-left">
-            <thead className="text-gray-500 text-sm">
-              <tr>
-                <th className="py-3 px-4 font-medium border-b">Employee Name</th>
-                <th className="py-3 px-4 font-medium border-b">Positions</th>
-                <th className="py-3 px-4 font-medium border-b">Iqama ID</th>
-                <th className="py-3 px-4 font-medium border-b">Iqama Id Expiry</th>
-                <th className="py-3 px-4 font-medium border-b">Total Payroll</th>
-                {/* Add Actions header if needed */}
-                {/* <th className="py-3 px-4 font-medium border-b">Actions</th> */} 
-              </tr>
-            </thead>
-            <tbody className="text-gray-700">
-              {employees.length > 0 ? (
-                employees.map((employee) => (
-                  <tr key={employee.id} className="hover:bg-gray-50">
-                    <td className="py-3 px-4 border-b">{employee.name}</td>
-                    <td className="py-3 px-4 border-b">{employee.position}</td>
-                    <td className="py-3 px-4 border-b">{employee.iqamaId}</td>
-                    <td className="py-3 px-4 border-b">{employee.iqamaExpiry}</td>
-                    <td className="py-3 px-4 border-b">
-                      USD {employee.totalPayroll.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                    </td>
-                    {/* Add Edit/Delete buttons if needed */}
-                    {/* <td className="py-3 px-4 border-b">
-                      <div className="flex space-x-2">
-                        <Button variant="ghost" size="sm">Edit</Button>
-                        <Button variant="destructive" size="sm">Delete</Button>
-                      </div>
-                    </td> */}
-                  </tr>
-                ))
-              ) : (
+          {employeesLoading ? (
+            <div className="text-center py-10 text-gray-500">Loading employees...</div>
+          ) : (
+            <table className="w-full text-left">
+              <thead className="text-gray-500 text-sm">
                 <tr>
-                  <td colSpan={5} className="text-center py-10 text-gray-500 border-b">
-                    No employees found.
-                  </td>
+                  <th className="py-3 px-4 font-medium border-b">Employee Name</th>
+                  <th className="py-3 px-4 font-medium border-b">Position</th>
+                  <th className="py-3 px-4 font-medium border-b">Iqama ID</th>
+                  <th className="py-3 px-4 font-medium border-b">Iqama Expiry</th>
+                  <th className="py-3 px-4 font-medium border-b">Basic Salary</th>
+                  <th className="py-3 px-4 font-medium border-b text-center">Actions</th>
                 </tr>
-              )}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="text-gray-700">
+                {employees && employees.length > 0 ? (
+                  employees.map((employee: Employee) => ( // Use imported Employee type
+                    <tr key={employee.employeeId} className="hover:bg-gray-50">
+                      <td className="py-3 px-4 border-b">{employee.employeeDetailsDTO?.firstName || 'N/A'}</td>
+                      <td className="py-3 px-4 border-b">{employee.employeeDetailsDTO?.position || 'N/A'}</td>
+                      <td className="py-3 px-4 border-b">{employee.employeeDetailsDTO?.iqamaId || 'N/A'}</td>
+                      <td className="py-3 px-4 border-b">{employee.employeeDetailsDTO?.iqamaExpiryDate || 'N/A'}</td>
+                      <td className="py-3 px-4 border-b">
+                        USD {employee.salaryDTO?.basicSalary?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || '0.00'}
+                      </td>
+                      <td className="py-3 px-4 border-b text-center">
+                        <div className="flex justify-center space-x-2">
+                          <Button variant="ghost" size="sm" onClick={() => handleEdit(employee.employeeId)} aria-label="Edit">
+                             <Edit size={16} />
+                          </Button>
+                          <Button variant="ghost" className="text-red-600 hover:text-red-800 hover:bg-red-100" size="sm" onClick={() => handleDeleteClick(employee.employeeId)} aria-label="Delete">
+                            <Trash2 size={16} />
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={6} className="text-center py-10 text-gray-500 border-b">
+                     {employeesError ? 'Error loading data.' : 'No employees found.'}
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          )}
         </div>
       </div>
+      
+      {/* Confirmation/Error Modal */}
+      <ConfirmationModal
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        onConfirm={isConfirmModal ? confirmDelete : undefined} // Only pass confirm handler for confirm modals
+        title={isConfirmModal ? 'Confirm Deletion' : (employeesError ? 'Error' : 'Information')}
+        message={modalMessage}
+        isAlert={!isConfirmModal} // Use alert if not confirm
+        confirmText="Delete"
+        cancelText="Cancel"
+        okText="OK"
+      />
     </PageLayout>
   );
 } 

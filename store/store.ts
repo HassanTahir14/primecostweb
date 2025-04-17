@@ -9,6 +9,7 @@ import taxReducer from './taxSlice';
 import supplierReducer from './supplierSlice';
 import storageLocationReducer from './storageLocationSlice';
 import branchReducer from './branchSlice';
+import employeeReducer from './employeeSlice';
 
 export const store = configureStore({
   reducer: {
@@ -22,6 +23,7 @@ export const store = configureStore({
     supplier: supplierReducer,
     storageLocation: storageLocationReducer,
     branch: branchReducer,
+    employee: employeeReducer,
   },
 });
 

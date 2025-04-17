@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Button from '@/components/common/button';
 
 interface EmployeeDutyScheduleFormProps {
-  onNext: (data: any) => void;
+  onNext: (data: { dutySchedulesDTO: any[] }) => void;
   onPrevious: () => void;
   initialData: any; // Data from previous steps
 }
@@ -12,15 +12,36 @@ interface EmployeeDutyScheduleFormProps {
 const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 const timeSlots = ['Opening', 'Break', 'Closing'];
 
+// Helper to format time string "HH:MM" to time object (duplicate from api.ts, consider moving to a util file)
+const formatTime = (timeString: string | null | undefined) => {
+  if (!timeString || !/^\d{2}:\d{2}$/.test(timeString)) {
+    return { hour: 0, minute: 0, second: 0, nano: 0 }; 
+  }
+  const [hour, minute] = timeString.split(':').map(Number);
+  return { hour, minute, second: 0, nano: 0 };
+};
+
 export default function EmployeeDutyScheduleForm({ onNext, onPrevious, initialData }: EmployeeDutyScheduleFormProps) {
-  // Initialize schedule state - could be more complex based on actual requirements
+  // Initialize schedule state from initialData if present
   const [schedule, setSchedule] = useState(() => {
-    const initialSchedule = initialData.schedule || {};
+    // Check if initialData has the dutySchedulesDTO structure
+    const initialDutySchedules = initialData.dutySchedulesDTO || [];
     const newSchedule: { [key: string]: { [key: string]: string } } = {};
     timeSlots.forEach(slot => {
       newSchedule[slot] = {};
       daysOfWeek.forEach(day => {
-        newSchedule[slot][day] = initialSchedule[slot]?.[day] || '';
+        const daySchedule = initialDutySchedules.find((d: any) => d.day === day);
+        let timeValue = '';
+        if (daySchedule) {
+            // Need to reverse formatTime (object to HH:MM string) for display
+            const timeObj = slot === 'Opening' ? daySchedule.openingShift : 
+                            slot === 'Break' ? daySchedule.breakTime : 
+                            daySchedule.closingShift;
+            if (timeObj && typeof timeObj.hour === 'number' && typeof timeObj.minute === 'number') {
+                timeValue = `${String(timeObj.hour).padStart(2, '0')}:${String(timeObj.minute).padStart(2, '0')}`;
+            }
+        }
+         newSchedule[slot][day] = timeValue;
       });
     });
     return newSchedule;
@@ -31,26 +52,34 @@ export default function EmployeeDutyScheduleForm({ onNext, onPrevious, initialDa
       ...prev,
       [slot]: {
         ...prev[slot],
-        [day]: value,
+        [day]: value, // Store as HH:MM string
       },
     }));
   };
 
   const handleAddSchedule = () => {
-    // TODO: Implement logic for adding schedule (e.g., opening a modal, adding rows)
-    console.log("Add Schedule button clicked");
+    console.log("Add Schedule button clicked - Placeholder");
   };
 
   const handleNextClick = () => {
-    console.log("Duty Schedule Data:", schedule);
-    onNext({ schedule }); // Pass schedule data to the next step
+    // Transform the state into the API-expected format
+    const dutySchedulesDTO = daysOfWeek.map(day => ({
+      day: day,
+      openingShift: formatTime(schedule.Opening?.[day]),
+      breakTime: formatTime(schedule.Break?.[day]),
+      closingShift: formatTime(schedule.Closing?.[day])
+    }));
+    
+    console.log("Duty Schedule DTO:", dutySchedulesDTO);
+    onNext({ dutySchedulesDTO }); // Pass the formatted data
   };
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-semibold text-gray-800">Employee Duty Schedule</h2>
-        <Button onClick={handleAddSchedule}>Add Schedule</Button>
+        {/* <Button onClick={handleAddSchedule}>Add Schedule</Button> */}
+        {/* Commenting out Add Schedule button as functionality is unclear */}
       </div>
       
       <div className="overflow-x-auto">
@@ -70,11 +99,11 @@ export default function EmployeeDutyScheduleForm({ onNext, onPrevious, initialDa
                 {daysOfWeek.map(day => (
                   <td key={`${slot}-${day}`} className="border border-gray-300 p-0">
                     <input
-                      type="text" // Consider using time input if appropriate
+                      type="time" // Use type="time" for better UX
                       value={schedule[slot]?.[day] || ''}
                       onChange={(e) => handleScheduleChange(slot, day, e.target.value)}
                       className="w-full h-full p-2 border-none focus:ring-1 focus:ring-inset focus:ring-[#00997B] outline-none text-center text-sm"
-                      placeholder="--:--"
+                      // placeholder="HH:MM"
                     />
                   </td>
                 ))}

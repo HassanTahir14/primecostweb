@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, ChangeEvent } from 'react';
 import Button from '@/components/common/button';
 import Input from '@/components/common/input'; // Assuming InputField component
-import { Upload } from 'lucide-react'; // Import Upload icon
+import { Upload, X } from 'lucide-react'; // Import icons
 
 interface EmployeeSalaryFormProps {
   onSubmit: (data: any) => void;
@@ -22,6 +22,9 @@ export default function EmployeeSalaryForm({ onSubmit, onPrevious, initialData }
     // No total salary state, calculate on submit or display
     ...initialData, // Pre-fill with existing data
   });
+  
+  const [images, setImages] = useState<File[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Calculate total salary (example calculation)
   const calculateTotalSalary = () => {
@@ -41,29 +44,48 @@ export default function EmployeeSalaryForm({ onSubmit, onPrevious, initialData }
 
   const totalSalary = calculateTotalSalary();
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev: any) => ({ ...prev, [name]: value }));
   };
   
-  const handleImageUpload = () => {
-    // TODO: Implement image upload logic
-    console.log("Upload image clicked");
+  // Handle image selection
+  const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      // Append new files to the existing ones
+      const newFiles = Array.from(e.target.files);
+      setImages(prevImages => [...prevImages, ...newFiles]);
+    }
+     // Reset file input value to allow selecting the same file again
+     if (fileInputRef.current) {
+       fileInputRef.current.value = '';
+     }
+  };
+  
+  // Trigger hidden file input
+  const handleImageUploadClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  // Remove an image from the preview
+  const handleRemoveImage = (index: number) => {
+      setImages(prevImages => prevImages.filter((_, i) => i !== index));
   };
 
   const handleSubmitClick = () => {
     // Add validation logic here if needed
     const finalData = { 
       ...formData, 
-      totalSalary // Include calculated total salary 
+      totalSalary, // Include calculated total salary 
+      // images: images // Include selected images
     };
-    console.log("Salary Data:", finalData);
+    console.log("Salary Data (including images):", finalData);
     onSubmit(finalData);
   };
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-semibold text-gray-800 mb-6">Salary</h2>
+      <h2 className="text-2xl font-semibold text-gray-800 mb-6">Salary & Images</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
         {/* Left Column - Allowances */}
         <div className="space-y-4">
@@ -86,11 +108,39 @@ export default function EmployeeSalaryForm({ onSubmit, onPrevious, initialData }
         <div className="space-y-4">
           <div>
              <label className="block text-sm font-medium text-gray-700 mb-1">Employee Images</label>
-             <Button variant="outline" onClick={handleImageUpload} className="w-full justify-center">
+             <input 
+                type="file" 
+                multiple 
+                accept="image/*" 
+                onChange={handleImageChange} 
+                ref={fileInputRef} 
+                className="hidden" // Hide the default input
+             />
+             <Button variant="outline" onClick={handleImageUploadClick} className="w-full justify-center">
                <Upload size={16} className="mr-2" />
-               Add Employee Image
+               Add Employee Image(s)
              </Button>
-             {/* TODO: Add image preview area if needed */}
+             {/* Image Preview Area */}
+             {images.length > 0 && (
+                 <div className="mt-4 grid grid-cols-3 gap-2">
+                     {images.map((image, index) => (
+                         <div key={index} className="relative group">
+                             <img 
+                                src={URL.createObjectURL(image)} 
+                                alt={`preview ${index}`} 
+                                className="w-full h-20 object-cover rounded-md border border-gray-200"
+                             />
+                             <button
+                                 onClick={() => handleRemoveImage(index)}
+                                 className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                                 aria-label="Remove image"
+                              >
+                                 <X size={12} />
+                             </button>
+                         </div>
+                     ))}
+                 </div>
+             )}
           </div>
           <Input label="Other Allowance" name="otherAllowance" value={formData.otherAllowance} onChange={handleChange} placeholder="Any other allowances" type="number" />
           <Input label="Total Salary" name="totalSalary" value={totalSalary} readOnly placeholder="Calculated total" prefix="USD" />
