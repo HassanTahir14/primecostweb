@@ -243,7 +243,7 @@ export default function ItemsMasterList() {
                         <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">{item.itemsBrandName || '-'}</td>
                         <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
                             {item.primaryUnitValue}
-                        </td> 
+                        </td>
                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
                             SAR {item.purchaseCostWithoutVat?.toFixed(2) ?? '0.00'}
                         </td>
