@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { addRecipe, getAllRecipes, updateRecipe } from './recipeApi';
+import { addRecipe, getAllRecipes, updateRecipe, deleteRecipe, fetchRecipeById } from './recipeApi';
 import { RootState } from './store';
 
 // Async Thunks
@@ -34,6 +34,30 @@ export const updateRecipeThunk = createAsyncThunk(
   async (formData: any, { rejectWithValue }) => {
     try {
       const response = await updateRecipe(formData);
+      return response;
+    } catch (error: any) {
+      return rejectWithValue(error);
+    }
+  }
+);
+
+export const deleteRecipeThunk = createAsyncThunk(
+  'recipe/delete',
+  async (recipeId: number, { rejectWithValue }) => {
+    try {
+      const response = await deleteRecipe(recipeId);
+      return { recipeId, response };
+    } catch (error: any) {
+      return rejectWithValue(error);
+    }
+  }
+);
+
+export const fetchRecipeByIdThunk = createAsyncThunk(
+  'recipes/fetchRecipeById',
+  async (id: number, { rejectWithValue }) => {
+    try {
+      const response = await fetchRecipeById(id);
       return response;
     } catch (error: any) {
       return rejectWithValue(error);
@@ -126,6 +150,27 @@ const recipeSlice = createSlice({
         }
       })
       .addCase(updateRecipeThunk.rejected, (state, action) => {
+        state.status = 'failed';
+        state.error = action.payload as any;
+      })
+
+    // Delete Recipe
+      .addCase(deleteRecipeThunk.pending, (state) => {
+        state.status = 'loading';
+      })
+      .addCase(deleteRecipeThunk.fulfilled, (state, action) => {
+        state.status = 'succeeded';
+        if (action.payload && action.payload.response && action.payload.response.responseCode === "0000" && action.payload.recipeId) {
+          // Remove the recipe from the list if it exists
+          const index = state.recipes.findIndex(
+            (recipe: any) => recipe.id === action.payload.recipeId
+          );
+          if (index !== -1) {
+            state.recipes.splice(index, 1);
+          }
+        }
+      })
+      .addCase(deleteRecipeThunk.rejected, (state, action) => {
         state.status = 'failed';
         state.error = action.payload as any;
       });

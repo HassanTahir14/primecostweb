@@ -64,4 +64,26 @@ export const updateRecipe = async (formData: any) => {
   } catch (error: any) {
     throw error.response?.data || error.message;
   }
+};
+
+// Delete Recipe
+export const deleteRecipe = async (recipeId: number) => {
+  try {
+    const response = await api.delete('/recipe/delete', {
+      data: { recipeId }
+    });
+    return response.data;
+  } catch (error: any) {
+    throw error.response?.data || error.message;
+  }
+};
+
+// Fetch Recipe by ID
+export const fetchRecipeById = async (id: number) => {
+  try {
+    const response = await api.get(`/recipe/${id}`);
+    return response.data;
+  } catch (error: any) {
+    throw error.response?.data || error.message;
+  }
 }; 

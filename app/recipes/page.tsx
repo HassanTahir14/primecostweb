@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchRecipes, selectAllRecipes, selectRecipeStatus, selectRecipeError, selectRecipePagination } from '@/store/recipeSlice';
+import { fetchRecipes, selectAllRecipes, selectRecipeStatus, selectRecipeError, selectRecipePagination, deleteRecipeThunk } from '@/store/recipeSlice';
 import PageLayout from '@/components/PageLayout';
 import Button from '@/components/common/button';
 import { Search, Edit, Trash2 } from 'lucide-react';
@@ -10,6 +10,7 @@ import Link from 'next/link';
 import { AppDispatch } from '@/store/store';
 import Loader from '@/components/common/Loader';
 import Image from 'next/image';
+import ConfirmationModal from '@/components/common/ConfirmationModal';
 
 export default function RecipesPage() {
   const dispatch = useDispatch<AppDispatch>();
@@ -18,6 +19,14 @@ export default function RecipesPage() {
   const error = useSelector(selectRecipeError);
   const pagination = useSelector(selectRecipePagination);
   const [searchQuery, setSearchQuery] = useState('');
+  
+  // Modal states
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [selectedRecipe, setSelectedRecipe] = useState<any>(null);
+  const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
+  const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     const loadRecipes = async () => {
@@ -32,11 +41,43 @@ export default function RecipesPage() {
         console.log('response', response);
       } catch (err) {
         console.error('Failed to fetch recipes:', err);
+        setErrorMessage('Failed to fetch recipes');
+        setIsErrorModalOpen(true);
       }
     };
 
     loadRecipes();
   }, [dispatch]);
+
+  const handleDeleteClick = (recipe: any) => {
+    setSelectedRecipe(recipe);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!selectedRecipe) return;
+    
+    try {
+      setIsDeleting(true);
+      await dispatch(deleteRecipeThunk(selectedRecipe.id)).unwrap();
+      setIsDeleteModalOpen(false);
+      setIsSuccessModalOpen(true);
+      
+      // Refresh the list
+      dispatch(fetchRecipes({
+        page: 0,
+        size: 10,
+        sortBy: "createdAt",
+        direction: "asc"
+      }));
+    } catch (err: any) {
+      setErrorMessage(err.message || 'Failed to delete recipe');
+      setIsDeleteModalOpen(false);
+      setIsErrorModalOpen(true);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   const filteredRecipes = recipes?.filter((recipe: any) =>
     recipe.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -155,7 +196,13 @@ export default function RecipesPage() {
                               <Edit size={16} className="text-gray-500" />
                             </Button>
                           </Link>
-                          <Button variant="ghost" size="sm" className="p-1">
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="p-1"
+                            onClick={() => handleDeleteClick(recipe)}
+                            disabled={isDeleting}
+                          >
                             <Trash2 size={16} className="text-red-500" />
                           </Button>
                         </div>
@@ -179,6 +226,37 @@ export default function RecipesPage() {
           </div>
         )}
       </div>
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={handleDeleteConfirm}
+        title="Delete Recipe"
+        message={`Are you sure you want to delete ${selectedRecipe?.name}? This action cannot be undone.`}
+        confirmText="Delete"
+        cancelText="Cancel"
+      />
+
+      {/* Success Modal */}
+      <ConfirmationModal
+        isOpen={isSuccessModalOpen}
+        onClose={() => setIsSuccessModalOpen(false)}
+        title="Success"
+        message="Recipe deleted successfully!"
+        isAlert={true}
+        okText="OK"
+      />
+
+      {/* Error Modal */}
+      <ConfirmationModal
+        isOpen={isErrorModalOpen}
+        onClose={() => setIsErrorModalOpen(false)}
+        title="Error"
+        message={errorMessage}
+        isAlert={true}
+        okText="OK"
+      />
     </PageLayout>
   );
 } 
