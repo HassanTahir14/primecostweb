@@ -22,13 +22,22 @@ export default function CreateRecipePage() {
   const [recipeData, setRecipeData] = useState({});
 
   const handleNext = (data: any) => {
-    setRecipeData(prev => ({ ...prev, ...data }));
+    // Log the data being received from the current step
+    console.log(`Data from ${activeStep} step:`, data);
+    
+    // Merge the new data with the existing recipe data
+    const updatedRecipeData = { ...recipeData, ...data };
+    setRecipeData(updatedRecipeData);
+    
+    // Log the updated recipe data
+    console.log('Updated recipe data:', updatedRecipeData);
+    
     const currentIndex = steps.findIndex(step => step.id === activeStep);
     if (currentIndex < steps.length - 1) {
       setActiveStep(steps[currentIndex + 1].id);
     } else {
       // Handle final submission
-      console.log('Final Recipe Data:', recipeData);
+      console.log('Final Recipe Data:', updatedRecipeData);
       // Potentially navigate away or show success message
     }
   };

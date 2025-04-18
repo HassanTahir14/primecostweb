@@ -59,7 +59,7 @@ export default function RecipesPage() {
     return (
       <PageLayout title="All Recipes">
         <div className="text-center py-10 text-red-500">
-          Error loading recipes: {error}
+          Error loading recipes: {typeof error === 'object' && error !== null ? (error as { description?: string }).description || JSON.stringify(error) : error}
         </div>
       </PageLayout>
     );

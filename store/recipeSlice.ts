@@ -4,12 +4,14 @@ import { RootState } from './store';
 
 // Async Thunks
 export const createRecipe = createAsyncThunk(
-  'recipe/create',
-  async (formData: any, { rejectWithValue }) => {
+  'recipes/createRecipe',
+  async (formData: FormData, { rejectWithValue }) => {
     try {
+      // Pass the FormData directly without modifying it
       const response = await addRecipe(formData);
       return response;
     } catch (error: any) {
+      console.error('Error in createRecipe thunk:', error);
       return rejectWithValue(error);
     }
   }

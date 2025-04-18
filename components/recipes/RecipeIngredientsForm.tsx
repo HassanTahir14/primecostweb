@@ -24,11 +24,18 @@ export default function RecipeIngredientsForm({ onNext, onBack, initialData }: R
     const newIngredient = {
       id: Date.now(), // Simple unique ID
       item,
-      quantity,
-      yieldPercent,
-      apUsdUnit,
-      epUsdUnit,
-      cost: calculateIngredientCost() // Assuming a calculation function exists
+      itemName: item, // Add itemName field for API
+      quantity: Number(quantity) || 0,
+      yieldPercentage: Number(yieldPercent) || 100, // Change to yieldPercentage
+      apUsdUnit: Number(apUsdUnit) || 0,
+      apsPerUnit: Number(apUsdUnit) || 0, // Add apsPerUnit field for API
+      epUsdUnit: Number(epUsdUnit) || 0,
+      epsPerUnit: Number(epUsdUnit) || 0, // Add epsPerUnit field for API
+      unit: 'string', // Add unit field for API
+      weight: 'string', // Add weight field for API
+      volume: 'string', // Add volume field for API
+      recipeCost: calculateIngredientCost(), // Change to recipeCost
+      itemId: 1 // Add itemId field for API
     };
     setIngredients([...ingredients, newIngredient]);
     // Reset form fields
@@ -37,7 +44,7 @@ export default function RecipeIngredientsForm({ onNext, onBack, initialData }: R
     setYieldPercent('');
     setApUsdUnit('');
     setEpUsdUnit('');
-    setRecipeCost(prev => prev + newIngredient.cost);
+    setRecipeCost(prev => prev + newIngredient.recipeCost);
   };
 
   const calculateIngredientCost = () => {
@@ -46,6 +53,9 @@ export default function RecipeIngredientsForm({ onNext, onBack, initialData }: R
   };
 
   const handleNextClick = () => {
+    // Log the ingredients data for debugging
+    console.log('Ingredients data being passed:', ingredients);
+    
     onNext({ ingredients });
   };
 

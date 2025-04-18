@@ -44,74 +44,79 @@ export default function RecipeProcedureForm({ onNext, onBack, initialData }: Rec
     setSteps(steps.filter((_, i) => i !== index));
   };
 
-  const handleFinalSubmit = async () => {
-    try {
-      setIsSubmitting(true);
+ // Update just the handleFinalSubmit function in your RecipeProcedureForm component
+const handleFinalSubmit = async () => {
+  try {
+    setIsSubmitting(true);
 
-      // Create FormData for multipart/form-data
-      const formData = new FormData();
+    // Create FormData for multipart/form-data
+    const formData = new FormData();
 
-      // Add recipe details
-      const recipeDTO = {
-        recipeDetailsRequest: {
-          name: initialData.name || '',
-          recipeCode: initialData.recipeCode || '',
-          category: Number(initialData.category) || 0,
-          numberOfPortions: Number(initialData.portions) || 0,
-          servingSize: Number(initialData.servingSize) || 0
-        },
-        recipeCost: {
-          menuPrice: Number(initialData.menuPrice) || 0,
-          foodCostBudgetPercentage: Number(initialData.foodCostBudget) || 100,
-          foodCostActualPercentage: Number(initialData.foodCostActual) || 100,
-          idealSellingPrice: Number(initialData.idealSellingPrice) || 0,
-          costPerPortion: Number(initialData.costPerPortion) || 0,
-          costPerRecipe: Number(initialData.costPerRecipe) || 0,
-          marginPerPortion: Number(initialData.marginPerPortion) || 0
-        },
-        ingredient: initialData.ingredients?.map((ing: any) => ({
-          unit: ing.unit || 'string',
-          yieldPercentage: Number(ing.yieldPercent) || 100,
-          quantity: Number(ing.quantity) || 0,
-          itemId: Number(ing.itemId) || 1,
-          weight: ing.weight || 'string',
-          epsPerUnit: Number(ing.epUsdUnit) || 0,
-          volume: ing.volume || 'string',
-          recipeCost: Number(ing.recipeCost) || 0,
-          apsPerUnit: Number(ing.apUsdUnit) || 0,
-          itemName: ing.item || 'string'
-        })) || [],
-        procedureStep: steps,
-        isSubRecipeAsIngredient: initialData.isSubRecipeAsIngredient || false,
-        subRecipeIngredients: initialData.subRecipeIngredients || []
-      };
+    // Add recipe details
+    const recipeDTO = {
+      recipeDetailsRequest: {
+        name: initialData.name || '',
+        recipeCode: initialData.recipeCode || '',
+        category: Number(initialData.category) || 0,
+        numberOfPortions: Number(initialData.portions) || 0,
+        servingSize: Number(initialData.servingSize) || 0
+      },
+      recipeCost: {
+        menuPrice: Number(initialData.menuPrice) || 0,
+        foodCostBudgetPercentage: Number(initialData.foodCostBudget) || 100,
+        foodCostActualPercentage: Number(initialData.foodCostActual) || 100,
+        idealSellingPrice: Number(initialData.idealSellingPrice) || 0,
+        costPerPortion: Number(initialData.costPerPortion) || 0,
+        costPerRecipe: Number(initialData.costPerRecipe) || 0,
+        marginPerPortion: Number(initialData.marginPerPortion) || 0
+      },
+      ingredient: initialData.ingredients?.map((ing: any) => ({
+        unit: ing.unit || 'string',
+        yieldPercentage: Number(ing.yieldPercentage || ing.yieldPercent) || 100,
+        quantity: Number(ing.quantity) || 0,
+        itemId: Number(ing.itemId) || 1,
+        weight: ing.weight || 'string',
+        epsPerUnit: Number(ing.epsPerUnit || ing.epUsdUnit) || 0,
+        volume: ing.volume || 'string',
+        recipeCost: Number(ing.recipeCost) || 0,
+        apsPerUnit: Number(ing.apsPerUnit || ing.apUsdUnit) || 0,
+        itemName: ing.itemName || ing.item || 'string'
+      })) || [],
+      procedureStep: steps,
+      isSubRecipeAsIngredient: initialData.isSubRecipeAsIngredient || false,
+      subRecipeIngredients: initialData.subRecipeIngredients || []
+    };
 
-      // Add the recipe DTO to FormData
-      formData.append('recipe', JSON.stringify(recipeDTO));
+   
+    formData.append(
+      'recipe',
+      new Blob([JSON.stringify(recipeDTO)], { type: 'application/json' })
+    );
+    
 
-      // Add images if they exist
-      if (initialData.images && initialData.images.length > 0) {
-        initialData.images.forEach((image: File, index: number) => {
-          formData.append('images', image);
-        });
-      }
-
-      // Dispatch create recipe action
-      const result = await dispatch(createRecipe(formData)).unwrap();
-      
-      if (result.responseCode === '0000') {
-        // Navigate back to recipes list on success
-        router.push('/recipes');
-      } else {
-        throw new Error(result.description || 'Failed to create recipe');
-      }
-    } catch (error: any) {
-      console.error('Failed to create recipe:', error);
-      // Handle error (you might want to show a toast or error message)
-    } finally {
-      setIsSubmitting(false);
+   
+    if (initialData.images && initialData.images.length > 0) {
+      initialData.images.forEach((image: File, index: number) => {
+        formData.append('images', image);
+      });
     }
-  };
+
+   
+    console.log('Form data being sent:', {
+      recipe: JSON.stringify(recipeDTO).substring(0, 100) + '...',
+      images: initialData.images?.length || 0
+    });
+
+   
+    const result = await dispatch(createRecipe(formData)).unwrap();
+    
+    
+  } catch (error: any) {
+   
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
   // Mock data for step type select
   const stepTypes = ['CP', 'Standard', 'Prep'];

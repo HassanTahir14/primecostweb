@@ -34,7 +34,26 @@ export default function RecipeCostingForm({ onNext, onBack, initialData }: Recip
   }, [initialData]);
 
   const handleNextClick = () => {
-    onNext({ menuPrice, foodCostBudget, foodCostActual, idealSellingPrice, costPerPortion, costPerRecipe, marginPerPortion });
+    // Log the costing data for debugging
+    console.log('Costing data being passed:', {
+      menuPrice,
+      foodCostBudget,
+      foodCostActual,
+      idealSellingPrice,
+      costPerPortion,
+      costPerRecipe,
+      marginPerPortion
+    });
+    
+    onNext({ 
+      menuPrice, 
+      foodCostBudget, 
+      foodCostActual, 
+      idealSellingPrice, 
+      costPerPortion, 
+      costPerRecipe, 
+      marginPerPortion 
+    });
   };
 
   return (

@@ -56,6 +56,16 @@ export default function RecipeDetailsForm({ onNext, initialData }: RecipeDetails
   };
 
   const handleNextClick = () => {
+    // Log the details data for debugging
+    console.log('Details data being passed:', {
+      name,
+      recipeCode,
+      category,
+      portions,
+      servingSize,
+      images: images.length
+    });
+    
     onNext({ 
       name, 
       recipeCode,
