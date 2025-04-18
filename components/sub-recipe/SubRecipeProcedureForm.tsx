@@ -7,6 +7,7 @@ import Button from '@/components/common/button';
 import { Plus, Trash2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { AppDispatch } from '@/store/store';
+import { createSubRecipe } from '@/store/subRecipeSlice';
 
 interface RecipeProcedureFormProps {
   onNext: (data: any) => void;
@@ -132,7 +133,7 @@ export default function RecipeProcedureForm({ onNext, onBack, initialData }: Rec
       console.log('Validated recipe data:', recipeDTO);
 
       formData.append(
-        'recipe',
+        'subRecipe',
         new Blob([JSON.stringify(recipeDTO)], { type: 'application/json' })
       );
       
@@ -153,7 +154,7 @@ export default function RecipeProcedureForm({ onNext, onBack, initialData }: Rec
       });
 
      
-      const result = await dispatch(createRecipe(formData)).unwrap();
+      const result = await dispatch(createSubRecipe(formData)).unwrap();
       
       
     } catch (error: any) {

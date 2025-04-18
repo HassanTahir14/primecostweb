@@ -5,10 +5,11 @@ import { ArrowLeft, Upload } from 'lucide-react';
 import Link from 'next/link';
 import PageLayout from '@/components/PageLayout';
 import Button from '@/components/common/button';
-import RecipeDetailsForm from '@/components/recipes/RecipeDetailsForm';
-import RecipeIngredientsForm from '@/components/recipes/RecipeIngredientsForm';
-import RecipeCostingForm from '@/components/recipes/RecipeCostingForm';
-import RecipeProcedureForm from '@/components/recipes/RecipeProcedureForm';
+
+import SubRecipeDetailsForm from '@/components/sub-recipe/SubRecipeDetailsForm';
+import SubRecipeIngredientsForm from '@/components/sub-recipe/SubRecipeIngredientsForm';
+import SubRecipeCostingForm from '@/components/sub-recipe/SubRecipeCostingForm';
+import SubRecipeProcedureForm from '@/components/sub-recipe/SubRecipeProcedureForm';
 
 const steps = [
   { id: 'details', name: 'Details' },
@@ -43,13 +44,13 @@ export default function CreateRecipePage() {
   const renderStepContent = () => {
     switch (activeStep) {
       case 'details':
-        return <RecipeDetailsForm onNext={handleNext} initialData={recipeData} />;
+        return <SubRecipeDetailsForm onNext={handleNext} initialData={recipeData} />;
       case 'ingredients':
-        return <RecipeIngredientsForm onNext={handleNext} onBack={handleBack} initialData={recipeData} />;
+        return <SubRecipeIngredientsForm onNext={handleNext} onBack={handleBack} initialData={recipeData} />;
       case 'costing':
-        return <RecipeCostingForm onNext={handleNext} onBack={handleBack} initialData={recipeData} />;
+        return <SubRecipeCostingForm onNext={handleNext} onBack={handleBack} initialData={recipeData} />;
       case 'procedure':
-        return <RecipeProcedureForm onNext={handleNext} onBack={handleBack} initialData={recipeData} />;
+        return <SubRecipeProcedureForm onNext={handleNext} onBack={handleBack} initialData={recipeData} />;
       default:
         return null;
     }

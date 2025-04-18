@@ -38,3 +38,12 @@ export const updateSubRecipe = async (formData: any) => {
     throw error.response?.data || error.message;
   }
 }; 
+
+export const getSubRecipeById = async (id: number) => {
+  try {
+    const response = await api.get(`/sub-recipe/${id}`);
+    return response.data;
+  } catch (error: any) {
+    throw error.response?.data || error.message;
+  }
+};

@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { addSubRecipe, getAllSubRecipes, updateSubRecipe } from './subRecipeApi';
+import { addSubRecipe, getAllSubRecipes, getSubRecipeById, updateSubRecipe } from './subRecipeApi';
 import { RootState } from './store';
 
 // Async Thunks
@@ -38,6 +38,19 @@ export const updateSubRecipeThunk = createAsyncThunk(
     }
   }
 );
+
+export const getSubRecipeByIdThunk = createAsyncThunk(
+  'subRecipe/getById',
+  async (id: number, { rejectWithValue }) => {
+    try {
+      const response = await getSubRecipeById(id);
+      return response;
+    } catch (error: any) {
+      return rejectWithValue(error);
+    }
+  }
+);
+
 
 // Initial state
 const initialState = {
@@ -129,7 +142,22 @@ const subRecipeSlice = createSlice({
       .addCase(updateSubRecipeThunk.rejected, (state, action) => {
         state.status = 'failed';
         state.error = action.payload as any;
-      });
+    })
+
+    // Get subRecipe by ID
+      .addCase(getSubRecipeByIdThunk.pending, (state) => {
+        state.status = 'loading';
+      })
+      .addCase(getSubRecipeByIdThunk.fulfilled, (state, action) => {
+        state.status = 'succeeded';
+        if (action.payload && action.payload.responseCode === "0000") {
+          state.currentSubRecipe = action.payload.subRecipe;
+        }
+      })
+      .addCase(getSubRecipeByIdThunk.rejected, (state, action) => {
+        state.status = 'failed';
+        state.error = action.payload as any;
+      })
   },
 });
 

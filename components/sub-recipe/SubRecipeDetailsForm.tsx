@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import Button from '@/components/common/button';
 import { Upload, X } from 'lucide-react';
 import Image from 'next/image';
-import { fetchAllCategories } from '@/store/recipeCategorySlice';
+import { fetchAllCategories } from '@/store/subRecipeCategorySlice';
 import { useDispatch } from 'react-redux';
 import { AppDispatch } from '@/store/store';
 import { fetchAllServingSizes } from '@/store/servingSizeSlice';
@@ -23,15 +23,10 @@ interface RecipeDetailsFormProps {
   isEditMode?: boolean;
 }
 
-export default function RecipeDetailsForm({ onNext, initialData, isEditMode = false }: RecipeDetailsFormProps) {
+export default function SubRecipeDetailsForm({ onNext, initialData, isEditMode = false }: RecipeDetailsFormProps) {
   const [name, setName] = useState(initialData.name || '');
   const [recipeCode, setRecipeCode] = useState(initialData.recipeCode || '');
-  const [category, setCategory] = useState(
-    initialData.category !== undefined && initialData.category !== null
-      ? initialData.category
-      : ''
-  );
-  
+  const [category, setCategory] = useState(initialData.category || '');
   const [portions, setPortions] = useState(initialData.portions || '');
   const [servingSize, setServingSize] = useState(initialData.servingSize || '');
   const [images, setImages] = useState<(File | RecipeImage)[]>([]);
@@ -63,7 +58,8 @@ export default function RecipeDetailsForm({ onNext, initialData, isEditMode = fa
     dispatch(fetchAllCategories())
       .unwrap()
       .then((res) => {
-        setCategoryList(res.recipeCategoryList || []);
+        setCategoryList(res.subRecipeCategoryList || []);
+        console.log(res, 'res')
       })
       .catch((err) => {
         console.error('Failed to fetch categories:', err);
@@ -73,6 +69,7 @@ export default function RecipeDetailsForm({ onNext, initialData, isEditMode = fa
       .unwrap()
       .then((res) => {
         setServingSizeList(res.servingSizeList || []);
+        
       })
       .catch((err) => {
         console.error('Failed to fetch serving sizes:', err);
@@ -227,7 +224,7 @@ export default function RecipeDetailsForm({ onNext, initialData, isEditMode = fa
         >
           <option value="" disabled>Select Option</option>
           {categoryList.map((cat: any) => (
-            <option key={cat.categoryId} value={cat.categoryId}>{cat.name}</option>
+            <option key={cat.subRecipeCategoryId} value={cat.subRecipeCategoryId}>{cat.name}</option>
           ))}
         </select>
         {errors.category && <p className="text-red-500 text-sm">{errors.category}</p>}

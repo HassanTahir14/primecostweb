@@ -16,6 +16,48 @@ import {
 } from '@/store/subRecipeSlice';
 import ConfirmationModal from '@/components/common/ConfirmationModal';
 
+interface SubRecipe {
+  id: number;
+  name: string;
+  subRecipeCode: string;
+  numberOfPortions: number;
+  servingSize: number;
+  categoryId: number;
+  categoryName: string;
+  menuPrice: number;
+  foodCostBudgetPercentage: number;
+  foodCostActualPercentage: number;
+  idealSellingPrice: number;
+  costPerPortion: number;
+  costPerRecipe: number;
+  marginPerPortion: number;
+  tokenStatus: string;
+  lastUpdatedById: number | null;
+  lastUpdatedByName: string | null;
+  lastUpdatedByDesignation: string | null;
+  images: Array<{
+    imageId: number;
+    path: string;
+  }>;
+  ingredients: Array<{
+    id: number;
+    itemName: string;
+    quantity: number;
+    weight: string;
+    volume: string;
+    unit: string;
+    yieldPercentage: number;
+    recipeCost: number;
+    epsPerUnit: number;
+    apsPerUnit: number;
+  }>;
+  procedures: Array<{
+    id: number;
+    description: string;
+    criticalPoint: string;
+  }>;
+}
+
 export default function SubRecipesPage() {
   const dispatch = useDispatch<AppDispatch>();
   const subRecipes = useSelector(selectAllSubRecipes);
@@ -26,7 +68,7 @@ export default function SubRecipesPage() {
   
   // Modal states
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [selectedRecipe, setSelectedRecipe] = useState<any>(null);
+  const [selectedRecipe, setSelectedRecipe] = useState<SubRecipe | null>(null);
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
   const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
@@ -50,7 +92,7 @@ export default function SubRecipesPage() {
     }
   };
 
-  const handleDeleteClick = (recipe: any) => {
+  const handleDeleteClick = (recipe: SubRecipe) => {
     setSelectedRecipe(recipe);
     setIsDeleteModalOpen(true);
   };
@@ -70,9 +112,10 @@ export default function SubRecipesPage() {
     }
   };
 
-  const filteredSubRecipes = subRecipes.filter((recipe: any) =>
+  const filteredSubRecipes = subRecipes.filter((recipe: SubRecipe) =>
     recipe.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (recipe.category?.toLowerCase() || '').includes(searchQuery.toLowerCase())
+    recipe.categoryName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    recipe.subRecipeCode.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   if (status === 'loading') {
@@ -120,30 +163,34 @@ export default function SubRecipesPage() {
                 <thead className="bg-gray-50 text-gray-700 uppercase text-xs">
                   <tr>
                     <th className="px-6 py-3 text-left">Sub-Recipe Name</th>
+                    <th className="px-6 py-3 text-left">Recipe Code</th>
                     <th className="px-6 py-3 text-left">Category</th>
                     <th className="px-6 py-3 text-left">Status</th>
                     <th className="px-6 py-3 text-left">Portions</th>
-                    <th className="px-6 py-3 text-left">Recipe Cost</th>
+                    <th className="px-6 py-3 text-left">Cost Per Recipe</th>
                     <th className="px-6 py-3 text-left">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {filteredSubRecipes.map((recipe: any) => (
+                  {filteredSubRecipes.map((recipe: SubRecipe) => (
                     <tr key={recipe.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap font-medium">{recipe.name}</td>
-                      <td className="px-6 py-4 whitespace-nowrap">{recipe.category}</td>
+                      <td className="px-6 py-4 whitespace-nowrap">{recipe.subRecipeCode}</td>
+                      <td className="px-6 py-4 whitespace-nowrap">{recipe.categoryName}</td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          recipe.status === 'Active' 
+                          recipe.tokenStatus === 'APPROVED' 
                             ? 'bg-green-100 text-green-800' 
-                            : 'bg-gray-100 text-gray-800'
+                            : recipe.tokenStatus === 'PENDING'
+                            ? 'bg-yellow-100 text-yellow-800'
+                            : 'bg-red-100 text-red-800'
                         }`}>
-                          {recipe.status}
+                          {recipe.tokenStatus}
                         </span>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">{recipe.portions}</td>
+                      <td className="px-6 py-4 whitespace-nowrap">{recipe.numberOfPortions}</td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        ${typeof recipe.cost === 'number' ? recipe.cost.toFixed(2) : '0.00'}
+                        ${recipe.costPerRecipe.toFixed(2)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center space-x-2">
