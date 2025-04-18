@@ -153,4 +153,8 @@ const taxSlice = createSlice({
 });
 
 export const { clearError, resetState } = taxSlice.actions;
+
+// Add selector for accessing the taxes array
+export const selectAllTaxes = (state: { tax: TaxState }) => state.tax.taxes;
+
 export default taxSlice.reducer; 

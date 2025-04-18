@@ -11,6 +11,8 @@ import storageLocationReducer from './storageLocationSlice';
 import branchReducer from './branchSlice';
 import employeeReducer from './employeeSlice';
 import purchaseOrderReducer from './purchaseOrderSlice';
+import itemCategoryReducer from './itemCategorySlice';
+import itemsReducer from './itemsSlice';
 
 export const store = configureStore({
   reducer: {
@@ -26,6 +28,8 @@ export const store = configureStore({
     branch: branchReducer,
     employee: employeeReducer,
     purchaseOrder: purchaseOrderReducer,
+    itemCategory: itemCategoryReducer,
+    items: itemsReducer,
   },
 });
 

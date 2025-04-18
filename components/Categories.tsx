@@ -1,53 +1,109 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { ArrowLeft } from 'lucide-react';
 import { CreateCategoryModal } from './CreateCategoryModal';
 import Modal from './common/Modal';
 import Input from './common/input';
 import Button from './common/button';
+import ConfirmationModal from './common/ConfirmationModal';
+import { 
+  fetchAllCategories, 
+  addCategory, 
+  updateCategory, 
+  deleteCategory,
+  selectAllCategories,
+  selectCategoryStatus,
+  selectCategoryError,
+  clearError
+} from '@/store/itemCategorySlice';
+import { AppDispatch } from '@/store/store';
 
 interface Category {
-  id: string;
+  categoryId: number;
   name: string;
 }
 
 export default function Categories({ onClose }: { onClose: () => void }) {
+  const dispatch = useDispatch<AppDispatch>();
+  const categories = useSelector(selectAllCategories);
+  const loading = useSelector(selectCategoryStatus);
+  const error = useSelector(selectCategoryError);
+
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isMessageModalOpen, setIsMessageModalOpen] = useState(false);
+  const [messageModalContent, setMessageModalContent] = useState({ title: '', message: '' });
   const [currentCategory, setCurrentCategory] = useState<Category | null>(null);
   const [editCategoryName, setEditCategoryName] = useState('');
-  
-  const [categories, setCategories] = useState<Category[]>([
-    { id: '1', name: 'Vegetables' },
-    { id: '2', name: 'Meat' },
-    { id: '3', name: 'Poultry' },
-    { id: '4', name: 'Seafood' },
-    { id: '5', name: 'Bread' },
-    { id: '6', name: 'Diary' },
-    { id: '7', name: 'Spices' },
-    { id: '8', name: 'Sauces' },
-  ]);
 
-  const handleAddCategory = (categoryName: string) => {
-    const newCategory = {
-      id: Math.random().toString(36).substring(2, 9),
-      name: categoryName,
-    };
-    setCategories([...categories, newCategory]);
+  useEffect(() => {
+    dispatch(fetchAllCategories());
+  }, [dispatch]);
+
+  useEffect(() => {
+    if (error) {
+      handleShowMessage('Error', typeof error === 'string' ? error : 'An error occurred while fetching categories.');
+    }
+  }, [error]);
+
+  const handleShowMessage = (title: string, message: string) => {
+    setMessageModalContent({ title, message });
+    setIsMessageModalOpen(true);
   };
 
-  const handleEditCategory = (id: string, newName: string) => {
-    setCategories(
-      categories.map(category => 
-        category.id === id ? { ...category, name: newName } : category
-      )
-    );
-    setIsEditModalOpen(false);
+  const handleAddCategory = async (categoryName: string) => {
+    if (!categoryName.trim()) {
+      handleShowMessage('Validation Error', 'Category name cannot be empty.');
+      return;
+    }
+    try {
+      const resultAction = await dispatch(addCategory({ name: categoryName }));
+      if (addCategory.fulfilled.match(resultAction)) {
+        handleShowMessage('Success', resultAction.payload.message || 'Category added successfully');
+        dispatch(fetchAllCategories());
+        setIsCreateModalOpen(false);
+      } else if (addCategory.rejected.match(resultAction)) {
+        const errorMsg = typeof resultAction.payload === 'string' ? resultAction.payload : (resultAction.payload as any)?.message || 'Failed to add category';
+        handleShowMessage('Error', errorMsg);
+      }
+    } finally {
+    }
   };
 
-  const handleDeleteCategory = (id: string) => {
-    setCategories(categories.filter(category => category.id !== id));
+  const handleEditCategory = async (categoryId: number, newName: string) => {
+    if (!newName.trim()) {
+      handleShowMessage('Validation Error', 'Category name cannot be empty.');
+      return;
+    }
+    try {
+      const resultAction = await dispatch(updateCategory({ categoryId, name: newName }));
+      if (updateCategory.fulfilled.match(resultAction)) {
+        handleShowMessage('Success', resultAction.payload.message || 'Category updated successfully');
+        dispatch(fetchAllCategories());
+        setIsEditModalOpen(false);
+      } else if (updateCategory.rejected.match(resultAction)) {
+        const errorMsg = typeof resultAction.payload === 'string' ? resultAction.payload : (resultAction.payload as any)?.message || 'Failed to update category';
+        handleShowMessage('Error', errorMsg);
+      }
+    } finally {
+    }
+  };
+
+  const handleDeleteCategory = async (categoryId: number) => {
+    try {
+      const resultAction = await dispatch(deleteCategory(categoryId));
+      if (deleteCategory.fulfilled.match(resultAction)) {
+        handleShowMessage('Success', resultAction.payload.message || 'Category deleted successfully');
+      } else if (deleteCategory.rejected.match(resultAction)) {
+        const errorMsg = typeof resultAction.payload === 'string' ? resultAction.payload : (resultAction.payload as any)?.message || 'Failed to delete category';
+        handleShowMessage('Error', errorMsg);
+      }
+    } finally {
+      setIsDeleteModalOpen(false);
+    }
   };
 
   const openEditModal = (category: Category) => {
@@ -55,6 +111,26 @@ export default function Categories({ onClose }: { onClose: () => void }) {
     setEditCategoryName(category.name);
     setIsEditModalOpen(true);
   };
+
+  const openDeleteModal = (category: Category) => {
+    setCurrentCategory(category);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleMessageModalClose = () => {
+    setIsMessageModalOpen(false);
+    if (messageModalContent.title !== 'Validation Error' && !isEditModalOpen && !isCreateModalOpen) {
+        dispatch(clearError());
+    }
+  };
+
+  if (loading && !isEditModalOpen && !isCreateModalOpen && !isDeleteModalOpen && !isMessageModalOpen) {
+    return (
+      <div className="flex-1 flex items-center justify-center">
+        <div className="text-lg">Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex-1 flex flex-col bg-[#f1fff7] min-h-screen px-3 py-3 sm:px-4 md:px-8 sm:py-4 md:py-6">
@@ -82,7 +158,7 @@ export default function Categories({ onClose }: { onClose: () => void }) {
         <div className="space-y-3 sm:space-y-4">
           {categories.map((category) => (
             <div 
-              key={category.id} 
+              key={category.categoryId} 
               className="flex items-center justify-between py-3 sm:py-4 border-b"
             >
               <span className="text-gray-800 text-sm sm:text-base">{category.name}</span>
@@ -99,7 +175,7 @@ export default function Categories({ onClose }: { onClose: () => void }) {
                   variant="destructive" 
                   size="sm" 
                   className="rounded-full bg-red-500 text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-1.5"
-                  onClick={() => handleDeleteCategory(category.id)}
+                  onClick={() => openDeleteModal(category)}
                 >
                   Delete
                 </Button>
@@ -109,14 +185,12 @@ export default function Categories({ onClose }: { onClose: () => void }) {
         </div>
       </div>
 
-      {/* Create Category Modal */}
       <CreateCategoryModal 
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
         onAddCategory={handleAddCategory}
       />
 
-      {/* Edit Category Modal */}
       <Modal
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
@@ -124,18 +198,19 @@ export default function Categories({ onClose }: { onClose: () => void }) {
       >
         <form onSubmit={(e) => {
           e.preventDefault();
-          if (currentCategory && editCategoryName.trim()) {
-            handleEditCategory(currentCategory.id, editCategoryName);
+          if (currentCategory) {
+            handleEditCategory(currentCategory.categoryId, editCategoryName);
           }
         }} className="w-full">
           <div className="mb-4 sm:mb-6">
-            <label className="block text-gray-700 mb-2 text-sm sm:text-base">Category Name</label>
+            <label className="block text-gray-700 mb-2 text-sm sm:text-base">Category Name *</label>
             <Input
               type="text"
               value={editCategoryName}
               onChange={(e) => setEditCategoryName(e.target.value)}
               placeholder="Enter Category Name"
               className="w-full bg-white text-sm sm:text-base"
+              required
             />
           </div>
           
@@ -158,6 +233,25 @@ export default function Categories({ onClose }: { onClose: () => void }) {
           </div>
         </form>
       </Modal>
+
+      <ConfirmationModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={() => currentCategory && handleDeleteCategory(currentCategory.categoryId)}
+        title="Delete Category"
+        message={`Are you sure you want to delete the category "${currentCategory?.name}"?`}
+        confirmText="Delete"
+        cancelText="Cancel"
+      />
+
+      <ConfirmationModal
+        isOpen={isMessageModalOpen}
+        onClose={handleMessageModalClose}
+        title={messageModalContent.title}
+        message={messageModalContent.message}
+        isAlert={true}
+        okText="OK"
+      />
     </div>
   );
 } 
