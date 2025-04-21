@@ -58,15 +58,15 @@ interface UnitOption {
 // ];
 
 // Mock options - replace with actual data fetching if needed
-const BRANCH_OPTIONS = [
-  { label: "Branch 1", value: "branch1" },
-  { label: "Branch 2", value: "branch2" },
-];
+// const BRANCH_OPTIONS = [
+//   { label: "Branch 1", value: "branch1" },
+//   { label: "Branch 2", value: "branch2" },
+// ];
 
-const LOCATION_OPTIONS = [
-  { label: "Location 1", value: "loc1" },
-  { label: "Location 2", value: "loc2" },
-];
+// const LOCATION_OPTIONS = [
+//   { label: "Location 1", value: "loc1" },
+//   { label: "Location 2", value: "loc2" },
+// ];
 
 const COUNTRY_OPTIONS = [
   { label: "Saudi Arabia", value: "SA" }, // Ensure values match API expectations
@@ -74,8 +74,8 @@ const COUNTRY_OPTIONS = [
 ];
 
 const ITEM_TYPE_OPTIONS = [
-  { label: "Solids", value: "SOLID" },
-  { label: "Liquids", value: "LIQUID" },
+  { label: "Solid Item", value: "Solid Item" },
+  { label: "Liquid Item", value: "Liquid Item" },
 ];
 
 
@@ -210,8 +210,8 @@ export default function AddItemForm({ onClose, onSuccess }: AddItemFormProps) {
         secondaryUnitValue: "Secondary Unit Value",
         countryOfOrigin: "Country of Origin",
         itemType: "Item Type",
-        branch: "Branch",
-        storageLocation: "Storage Location",
+        // branch: "Branch",
+        // storageLocation: "Storage Location",
         brandName: "Brand Name",
 
         // Add other required fields VISIBLE ON DETAILS TAB if any
@@ -305,7 +305,7 @@ export default function AddItemForm({ onClose, onSuccess }: AddItemFormProps) {
 
     // --- Prepare Data for API (Trim strings, parse numbers) --- 
     const itemDataForApi: ItemDataForApi = {
-      name: formData.itemName.trim(),
+      name: `${formData.itemName.trim()}@${formData.itemType}`,
       code: formData.itemCode.trim(),
       itemsBrandName: formData.brandName.trim(),
       categoryId: parseInt(formData.category, 10),
@@ -406,13 +406,13 @@ export default function AddItemForm({ onClose, onSuccess }: AddItemFormProps) {
                  placeholder="Enter item name"
                  required
               />
-              <Select
+              {/* <Select
                 label="Branch"
                 name="branch"
                 value={formData.branch}
                 onChange={handleInputChange}
                  options={BRANCH_OPTIONS} // Replace with fetched data if needed
-              />
+              /> */}
               <div className="relative">
                 <Input
                   label="Item Code"
@@ -433,7 +433,7 @@ export default function AddItemForm({ onClose, onSuccess }: AddItemFormProps) {
                   </button>
                 </div>
               </div>
-              <Select
+              {/* <Select
                 label="Storage Location"
                 name="storageLocation"
                 value={formData.storageLocation}
@@ -446,7 +446,7 @@ export default function AddItemForm({ onClose, onSuccess }: AddItemFormProps) {
                 value={formData.brandName}
                 onChange={handleInputChange}
                  placeholder="Enter brand name"
-              />
+              /> */}
               <Select
                 label="Country of Origin"
                 name="countryOfOrigin"

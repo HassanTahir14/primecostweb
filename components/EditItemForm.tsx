@@ -72,15 +72,15 @@ interface UnitOption {
 }
 
 // Mock options (Keep only those not fetched from API/Redux)
-const BRANCH_OPTIONS = [
-  { label: "Branch 1", value: "branch1" }, 
-  { label: "Branch 2", value: "branch2" },
-];
+// const BRANCH_OPTIONS = [
+//   { label: "Branch 1", value: "branch1" }, 
+//   { label: "Branch 2", value: "branch2" },
+// ];
 
-const LOCATION_OPTIONS = [
-  { label: "Location 1", value: "loc1" },
-  { label: "Location 2", value: "loc2" },
-];
+// const LOCATION_OPTIONS = [
+//   { label: "Location 1", value: "loc1" },
+//   { label: "Location 2", value: "loc2" },
+// ];
 
 const COUNTRY_OPTIONS = [
   { label: "Saudi Arabia", value: "SA" },
@@ -88,8 +88,8 @@ const COUNTRY_OPTIONS = [
 ];
 
 const ITEM_TYPE_OPTIONS = [
-  { label: "Solids", value: "SOLID" },
-  { label: "Liquids", value: "LIQUID" },
+  { label: "Solid Item", value: "Solid Item" },
+  { label: "Liquid Item", value: "Liquid Item" },
 ];
 
 
@@ -138,8 +138,10 @@ export default function EditItemForm({ itemToEdit, onClose, onSuccess }: EditIte
   // Populate form with itemToEdit data
   useEffect(() => {
     if (itemToEdit) {
+      // Split the name into itemName and itemType if it contains @
+      const [itemName, itemType] = itemToEdit.name.split('@');
       setFormData({
-        itemName: itemToEdit.name || "",
+        itemName: itemName || "",
         itemCode: itemToEdit.code || "",
         brandName: itemToEdit.itemsBrandName || "",
         category: itemToEdit.categoryId?.toString() || "",
@@ -151,7 +153,7 @@ export default function EditItemForm({ itemToEdit, onClose, onSuccess }: EditIte
         branch: "", // Replace with actual mapping if needed
         storageLocation: "", // Replace with actual mapping if needed
         countryOfOrigin: itemToEdit.countryOrigin || "",
-        itemType: "", // Replace with actual mapping if needed
+        itemType: itemType || "", // Use the extracted type
         taxType: itemToEdit.taxId?.toString() || "",
         purchaseCostWithoutVAT: itemToEdit.purchaseCostWithoutVat?.toString() || "",
         purchaseCostWithVAT: itemToEdit.purchaseCostWithVat?.toString() || "",
@@ -252,8 +254,8 @@ export default function EditItemForm({ itemToEdit, onClose, onSuccess }: EditIte
         secondaryUnitValue: "Secondary Unit Value",
         countryOfOrigin: "Country of Origin",
         itemType: "Item Type",
-        branch: "Branch",
-        storageLocation: "Storage Location",
+        // branch: "Branch",
+        // storageLocation: "Storage Location",
         brandName: "Brand Name",
     };
     for (const field in requiredDetailsFields) {
@@ -337,7 +339,7 @@ export default function EditItemForm({ itemToEdit, onClose, onSuccess }: EditIte
     // --- Prepare Data for API (Trim strings, parse numbers) --- 
     const itemDataForApi: ItemDataForUpdateApi = {
       itemId: itemToEdit.itemId, // Include the item ID for update
-      name: formData.itemName.trim(),
+      name: `${formData.itemName.trim()}@${formData.itemType}`,
       code: formData.itemCode.trim(),
       itemsBrandName: formData.brandName.trim(),
       categoryId: parseInt(formData.category, 10),
@@ -447,13 +449,13 @@ export default function EditItemForm({ itemToEdit, onClose, onSuccess }: EditIte
                  placeholder="Enter item name"
                  required
                />
-               <Select
+               {/* <Select
                  label="Branch"
                  name="branch"
                  value={formData.branch}
                  onChange={handleInputChange}
                  options={BRANCH_OPTIONS}
-               />
+               /> */}
                <div className="relative">
                   <Input
                    label="Item Code"
@@ -474,13 +476,13 @@ export default function EditItemForm({ itemToEdit, onClose, onSuccess }: EditIte
                    </button>
                  </div>
                </div>
-               <Select
+               {/* <Select
                  label="Storage Location"
                  name="storageLocation"
                  value={formData.storageLocation}
                  onChange={handleInputChange}
                  options={LOCATION_OPTIONS}
-               />
+               /> */}
                <Input
                  label="Items Brand Name"
                  name="brandName"

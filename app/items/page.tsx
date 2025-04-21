@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import debounce from 'lodash/debounce'; // Import debounce
+import Link from 'next/link'; // Import Link
 import PageLayout from '@/components/PageLayout';
 import Button from '@/components/common/button';
 import SearchInput from '@/components/common/SearchInput';
@@ -238,7 +239,11 @@ export default function ItemsMasterList() {
                     )}
                     {items.map((item) => (
                       <tr key={item.itemId} className="hover:bg-gray-50 transition-colors">
-                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-800 font-medium">{item.name}</td>
+                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-800 font-medium">
+                          <Link href={`/items/detail/${item.itemId}`} className="text-blue-600 hover:text-blue-800 hover:underline">
+                            {item.name.split('@')[0]}
+                          </Link>
+                        </td>
                         <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">{item.code || '-'}</td>
                         <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">{item.itemsBrandName || '-'}</td>
                         <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">

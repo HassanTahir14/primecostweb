@@ -16,6 +16,16 @@ import { RootState } from '@/store/store'; // Import RootState if needed for typ
 
 // Define the specific Item structure (can be imported if defined elsewhere)
 interface ItemImage { imageId: number; path: string; }
+
+// Define the BranchDetail structure
+interface BranchDetail {
+  branchId: number;
+  branchName: string;
+  storageLocationId: number;
+  storageLocationName: string;
+  quantity: number;
+}
+
 interface Item {
   itemId: number;
   name: string;
@@ -33,6 +43,7 @@ interface Item {
   images: ItemImage[];
   createdAt?: string; // Make createdAt optional if not always present in list data
   updatedAt?: string; // Keep optional
+  branchDetails?: BranchDetail[]; // Added optional branch details
   // Add any other fields returned by the single item API endpoint
 }
 
@@ -158,7 +169,16 @@ export default function ItemDetailPage() {
 
   // --- Field Configuration (Using IDs and render functions for names) ---
   const fieldConfig: DetailFieldConfig[] = [
-    { key: 'name', label: 'Item Name' },
+    { 
+      key: 'name', 
+      label: 'Item Name',
+      render: (name) => name.split('@')[0]
+    },
+    {
+      key: 'name',
+      label: 'Item Type',
+      render: (name) => name.split('@')[1] || 'N/A'
+    },
     { key: 'code', label: 'Item Code' },
     { key: 'itemsBrandName', label: 'Brand Name' },
     {
@@ -229,6 +249,38 @@ export default function ItemDetailPage() {
         imageKey="images"
         imageBaseUrl={imageBaseUrl}
       />
+
+      {/* Conditionally Render Branch Details Section */} 
+      {!combinedLoading && item && item.branchDetails && item.branchDetails.length > 0 && (
+        <div className="flex-1 flex flex-col p-4 md:p-6 lg:p-8 bg-gray-50">
+          <div className="bg-white bg-opacity-70 p-4 sm:p-6 md:p-8 rounded-2xl shadow-lg">
+            <h2 className="text-base md:text-lg font-bold mb-4">Branch Stock Details</h2>
+            <div className="bg-white bg-opacity-90 rounded-xl shadow-md overflow-hidden">
+              <div className="p-4 sm:p-6">
+                <dl className="grid grid-cols-1 gap-y-4">
+                  {item.branchDetails.map((detail) => (
+                    <div key={detail.branchId + '-' + detail.storageLocationId}>
+                      <dt className="text-lg font-medium text-gray-900">{detail.branchName}</dt>
+                      <dd className="mt-2">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2">
+                          <div>
+                            <span className="text-sm font-medium text-gray-500">Location</span>
+                            <p className="mt-1 text-sm text-gray-900">{detail.storageLocationName}</p>
+                          </div>
+                          <div>
+                            <span className="text-sm font-medium text-gray-500">Quantity</span>
+                            <p className="mt-1 text-sm text-gray-900">{detail.quantity}</p>
+                          </div>
+                        </div>
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </PageLayout>
   );
 } 
