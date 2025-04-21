@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "http://13.61.61.180:8080/api/v1",
+  baseURL: "/api-proxy",
   // Remove the default Content-Type header
 });
 

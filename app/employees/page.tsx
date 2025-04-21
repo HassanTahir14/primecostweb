@@ -162,27 +162,27 @@ export default function EmployeesPage() {
         </div>
 
         {/* Employees Table - Updated with Redux data and actions */} 
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto bg-white rounded-lg border border-gray-200">
           {employeesLoading && employees.length === 0 ? ( // Show loading only if list is empty initially
             <div className="text-center py-10 text-gray-500">Loading employees...</div>
           ) : (
             <table className="w-full text-left">
-              <thead className="text-gray-500 text-sm">
-                <tr>
-                  <th className="py-3 px-4 font-medium border-b">Employee Name</th>
-                  <th className="py-3 px-4 font-medium border-b">Position</th>
-                  <th className="py-3 px-4 font-medium border-b">Iqama ID</th>
-                  <th className="py-3 px-4 font-medium border-b">Iqama Expiry</th>
-                  <th className="py-3 px-4 font-medium border-b">Basic Salary</th>
-                  <th className="py-3 px-4 font-medium border-b text-center">Actions</th>
+              <thead>
+                <tr className="bg-gray-50 border-b border-gray-200">
+                  <th className="py-4 px-6 font-medium text-sm text-gray-500">Employee Name</th>
+                  <th className="py-4 px-6 font-medium text-sm text-gray-500">Position</th>
+                  <th className="py-4 px-6 font-medium text-sm text-gray-500">Iqama ID</th>
+                  <th className="py-4 px-6 font-medium text-sm text-gray-500">Iqama Expiry</th>
+                  <th className="py-4 px-6 font-medium text-sm text-gray-500">Basic Salary</th>
+                  <th className="py-4 px-6 font-medium text-sm text-gray-500 text-center">Actions</th>
                 </tr>
               </thead>
-              <tbody className="text-gray-700">
+              <tbody>
                 {employees && employees.length > 0 ? (
                   employees.map((employee: Employee) => (
                     <tr 
                       key={employee.employeeId} 
-                      className="hover:bg-gray-50 cursor-pointer"
+                      className="hover:bg-gray-50 border-b border-gray-200 last:border-b-0 cursor-pointer"
                       onClick={(e) => {
                         // Prevent navigation if clicking on action buttons
                         if ((e.target as HTMLElement).closest('.action-buttons')) {
@@ -191,15 +191,15 @@ export default function EmployeesPage() {
                         router.push(`/employees/${employee.employeeId}`);
                       }}
                     >
-                      <td className="py-3 px-4 border-b">{employee.employeeDetailsDTO?.firstname || 'N/A'}</td>
-                      <td className="py-3 px-4 border-b">{employee.employeeDetailsDTO?.position || 'N/A'}</td>
-                      <td className="py-3 px-4 border-b">{employee.employeeDetailsDTO?.iqamaId || 'N/A'}</td>
-                      <td className="py-3 px-4 border-b">{employee.employeeDetailsDTO?.iqamaExpiryDate || 'N/A'}</td>
-                      <td className="py-3 px-4 border-b">
+                      <td className="py-4 px-6 text-sm">{employee.employeeDetailsDTO?.firstname || 'N/A'}</td>
+                      <td className="py-4 px-6 text-sm">{employee.employeeDetailsDTO?.position || 'N/A'}</td>
+                      <td className="py-4 px-6 text-sm">{employee.employeeDetailsDTO?.iqamaId || 'N/A'}</td>
+                      <td className="py-4 px-6 text-sm">{employee.employeeDetailsDTO?.iqamaExpiryDate || 'N/A'}</td>
+                      <td className="py-4 px-6 text-sm">
                         USD {employee.salaryDTO?.basicSalary?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || '0.00'}
                       </td>
-                      <td className="py-3 px-4 border-b text-center">
-                        <div className="flex items-center space-x-2 action-buttons">
+                      <td className="py-4 px-6 text-center">
+                        <div className="flex items-center justify-center space-x-2 action-buttons">
                           <Button 
                             variant="default" 
                             size="sm" 
@@ -207,7 +207,6 @@ export default function EmployeesPage() {
                             disabled={employeesLoading}
                             onClick={async (e) => {
                               e.stopPropagation();
-                              // Find and set the employee data before navigation
                               const employeeToEdit = employees.find(emp => emp.employeeId === employee.employeeId);
                               if (employeeToEdit) {
                                 console.log("Found employee to edit:", employeeToEdit);
@@ -236,7 +235,7 @@ export default function EmployeesPage() {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={6} className="text-center py-10 text-gray-500 border-b">
+                    <td colSpan={6} className="text-center py-10 text-gray-500">
                      {employeesError ? 'Error loading data.' : 'No employees found.'}
                     </td>
                   </tr>

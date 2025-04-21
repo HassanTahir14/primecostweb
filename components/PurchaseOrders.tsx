@@ -434,87 +434,83 @@ export default function PurchaseOrders({ onClose }: PurchaseOrdersProps) {
       </div>
 
       <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6 flex-1">
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[800px]">
-            <thead>
-              <tr className="border-b">
-                <th className="text-left pb-3 sm:pb-4 text-gray-500 text-xs sm:text-sm font-normal">Item Name</th>
-                <th className="text-left pb-3 sm:pb-4 text-gray-500 text-xs sm:text-sm font-normal">Item Code</th>
-                <th className="text-left pb-3 sm:pb-4 text-gray-500 text-xs sm:text-sm font-normal">Supplier</th>
-                <th className="text-left pb-3 sm:pb-4 text-gray-500 text-xs sm:text-sm font-normal">Quantity</th>
-                <th className="text-left pb-3 sm:pb-4 text-gray-500 text-xs sm:text-sm font-normal">Cost (USD)</th>
-                <th className="text-left pb-3 sm:pb-4 text-gray-500 text-xs sm:text-sm font-normal">VAT (%)</th>
-                <th className="text-left pb-3 sm:pb-4 text-gray-500 text-xs sm:text-sm font-normal">VAT Amt (USD)</th>
-                <th className="text-left pb-3 sm:pb-4 text-gray-500 text-xs sm:text-sm font-normal">Status</th>
-                <th className="text-right pb-3 sm:pb-4 text-gray-500 text-xs sm:text-sm font-normal">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {poLoading && (!purchaseOrders || purchaseOrders.length === 0) ? (
-                <tr>
-                  <td colSpan={9} className="text-center py-10">
-                    <p className="text-gray-500">Loading purchase orders...</p>
-                  </td>
+        <div className="overflow-x-auto bg-white rounded-lg border border-gray-200">
+          {poLoading ? (
+            <div className="text-center py-10 text-gray-500">Loading purchase orders...</div>
+          ) : (
+            <table className="w-full text-left">
+              <thead>
+                <tr className="bg-gray-50 border-b border-gray-200">
+                  <th className="py-4 px-6 font-medium text-sm text-gray-500">Item Name</th>
+                  <th className="py-4 px-6 font-medium text-sm text-gray-500">Item Code</th>
+                  <th className="py-4 px-6 font-medium text-sm text-gray-500">Quantity</th>
+                  <th className="py-4 px-6 font-medium text-sm text-gray-500">Unit</th>
+                  <th className="py-4 px-6 font-medium text-sm text-gray-500">Status</th>
+                  <th className="py-4 px-6 font-medium text-sm text-gray-500">Created At</th>
+                  <th className="py-4 px-6 font-medium text-sm text-gray-500 text-center">Actions</th>
                 </tr>
-              ) : !poLoading && (!Array.isArray(purchaseOrders) || purchaseOrders.length === 0) ? (
-                <tr>
-                  <td colSpan={9} className="text-center py-10">
-                    <p className="text-gray-500">{poError ? 'Error loading data.' : 'No purchase orders found.'}</p>
-                  </td>
-                </tr>
-              ) : (
-                Array.isArray(purchaseOrders) && purchaseOrders.map((order) => (
-                  <tr key={order.id} className="border-b hover:bg-gray-50">
-                    <td className="py-3 sm:py-4 text-gray-800 text-sm sm:text-base pr-2">{(order.itemName || 'N/A').split('@')[0]}</td>
-                    <td className="py-3 sm:py-4 text-gray-800 text-sm sm:text-base pr-2">{order.itemCode || 'N/A'}</td>
-                    <td className="py-3 sm:py-4 text-gray-800 text-sm sm:text-base pr-2">{order.supplierName || 'N/A'}</td>
-                    <td className="py-3 sm:py-4 text-gray-800 text-sm sm:text-base pr-2">{order.quantity} {order.unitName}</td>
-                    <td className="py-3 sm:py-4 text-gray-800 text-sm sm:text-base pr-2">{order.purchaseCost}</td>
-                    <td className="py-3 sm:py-4 text-gray-800 text-sm sm:text-base pr-2">{order.vatPercentage}%</td>
-                    <td className="py-3 sm:py-4 text-gray-800 text-sm sm:text-base pr-2">{order.vatAmount}</td>
-                     <td className="py-3 sm:py-4 text-gray-800 text-sm sm:text-base pr-2">
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${order.purchaseOrderStatus === 'APPROVED' ? 'bg-green-100 text-green-700' : order.purchaseOrderStatus === 'PENDING' ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-700'}`}>
-                            {order.purchaseOrderStatus || 'N/A'}
+              </thead>
+              <tbody>
+                {purchaseOrders.length > 0 ? (
+                  purchaseOrders.map((order) => (
+                    <tr key={order.id} className="hover:bg-gray-50 border-b border-gray-200 last:border-b-0">
+                      <td className="py-4 px-6 text-sm">{(order.itemName || 'N/A').split('@')[0]}</td>
+                      <td className="py-4 px-6 text-sm">{order.itemCode || 'N/A'}</td>
+                      <td className="py-4 px-6 text-sm">{order.quantity} {order.unitName}</td>
+                      <td className="py-4 px-6 text-sm">{order.unitName || 'N/A'}</td>
+                      <td className="py-4 px-6 text-sm">
+                        <span className={`px-2 py-1 rounded-full text-xs ${
+                          order.purchaseOrderStatus === 'RECEIVED' ? 'bg-green-100 text-green-800' :
+                          order.purchaseOrderStatus === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
+                          'bg-gray-100 text-gray-800'
+                        }`}>
+                          {order.purchaseOrderStatus || 'N/A'}
                         </span>
-                    </td>
-                    <td className="py-3 sm:py-4 text-right">
-                      <div className="flex justify-end gap-1 sm:gap-2">
-                      
-                        <Button 
-                          variant="default" 
-                          size="sm" 
-                          className="rounded-full bg-[#339A89] text-white text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-1.5"
-                          onClick={() => handleEditClick(order)}
-                          disabled={poLoading || order.purchaseOrderStatus === 'RECEIVED'}
-                        >
-                          Update
-                        </Button>
-
-                        <Button 
-                          variant="default" 
-                          size="sm" 
-                          className="rounded-full bg-[#05A49D] text-white text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-1.5"
-                          onClick={() => handleReceiveClick(order)}
-                          disabled={poLoading || order.purchaseOrderStatus === 'RECEIVED'}
-                        >
-                          Received Order?
-                        </Button>
-                        {/* <Button 
-                          variant="destructive" 
-                          size="sm" 
-                          className="rounded-full bg-red-500 text-white text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-1.5"
-                          onClick={() => handleDeleteClick(order.id)}
-                          disabled={poLoading}
-                        >
-                          Delete
-                        </Button> */}
-                      </div>
+                      </td>
+                      <td className="py-4 px-6 text-sm">{order.createdAt || 'N/A'}</td>
+                      <td className="py-4 px-6 text-center">
+                        <div className="flex items-center justify-center space-x-2">
+                          <Button
+                            variant="default"
+                            size="sm"
+                            className="rounded-full bg-[#05A49D] text-white text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-1.5"
+                            onClick={() => handleEditClick(order)}
+                            disabled={poLoading}
+                          >
+                            Edit
+                          </Button>
+                          <Button
+                            variant="default"
+                            size="sm"
+                            className="rounded-full bg-[#05A49D] text-white text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-1.5"
+                            onClick={() => handleReceiveClick(order)}
+                            disabled={poLoading || order.purchaseOrderStatus === 'RECEIVED'}
+                          >
+                            Received Order?
+                          </Button>
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            className="rounded-full bg-red-500 text-white text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-1.5"
+                            onClick={() => handleDeleteClick(order.id)}
+                            disabled={poLoading}
+                          >
+                            Delete
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={7} className="text-center py-10 text-gray-500">
+                      {poError ? 'Error loading data.' : 'No purchase orders found.'}
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+                )}
+              </tbody>
+            </table>
+          )}
         </div>
       </div>
 
