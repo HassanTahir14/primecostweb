@@ -8,37 +8,40 @@ interface EmployeeDetails {
   mobileNumber: string;
   healthCardNumber: string;
   position: string;
-  iqamaId: string; // Or iqamaCardNumber based on consistency?
-  healthCardExpiry: string; // Date string
-  iqamaExpiryDate: string; // Date string
+  iqamaId: string;
+  healthCardExpiry: string;
+  iqamaExpiryDate: string;
   loginId: string;
   active: boolean;
-  dateOfBirth: string | null; // Date string
-  // Add other fields if present in the API response (e.g., email, nationality)
+  dateOfBirth: string | null;
+  nationality: string;
+  password?: string;
 }
 
 interface DutySchedule {
-  // Define based on dutyScheduleResponseList if available in GET response
-  // Example (adjust based on actual structure):
   day: string;
-  openingShift: string; // e.g., "09:00"
+  openingShift: string;
   breakTime: string;
   closingShift: string;
 }
 
 interface SalaryDetails {
   basicSalary: number;
-  // Add other salary components if present (foodAllowance, etc.)
-  // The GET response only shows basicSalary in the provided image
+  foodAllowance: number;
+  accommodationAllowance: number;
+  transportAllowance: number;
+  mobileAllowance: number;
+  otherAllowance: number;
+  totalSalary: number;
 }
 
 // Export the Employee interface
 export interface Employee {
   employeeId: number;
   employeeDetailsDTO: EmployeeDetails;
-  dutyScheduleResponseList: DutySchedule[]; // Adjust name/structure if needed
-  salaryDTO: SalaryDetails; // Adjust name/structure if needed
-  // Add image details if they come in the GET response
+  dutyScheduleResponseList: DutySchedule[];
+  salaryDTO: SalaryDetails;
+  images?: { imageId: number; path: string }[];
 }
 
 interface EmployeeState {

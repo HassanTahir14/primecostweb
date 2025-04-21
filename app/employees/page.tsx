@@ -215,10 +215,14 @@ export default function EmployeesPage() {
                             disabled={employeesLoading}
                             onClick={async (e) => {
                               e.stopPropagation();
+                              // First ensure we have fresh data
+                              await dispatch(fetchAllEmployees());
                               const employeeToEdit = employees.find(emp => emp.employeeId === employee.employeeId);
                               if (employeeToEdit) {
                                 console.log("Found employee to edit:", employeeToEdit);
+                                // Set the employee in Redux store
                                 await dispatch(setSelectedEmployeeForEdit(employeeToEdit));
+                                // Navigate after we're sure the data is in the store
                                 router.push(`/employees/edit/${employee.employeeId}`);
                               }
                             }}

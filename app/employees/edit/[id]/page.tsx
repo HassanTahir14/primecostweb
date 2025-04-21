@@ -21,7 +21,8 @@ import {
   clearError, 
   clearSelectedEmployee, 
   Employee,
-  fetchAllEmployees
+  fetchAllEmployees,
+  setSelectedEmployeeForEdit
 } from '@/store/employeeSlice';
 
 type Step = 'Details' | 'Duty Schedule' | 'Salary';
@@ -51,19 +52,29 @@ export default function EditEmployeePage() {
   console.log("Selected Employee Data:", selectedEmployee);
 
   useEffect(() => {
-    // If no selected employee, try to get it from the employees list
-    if (!selectedEmployee && !employeeLoading && !initialLoadComplete) {
-      const fetchAndSetEmployee = async () => {
-        // First attempt
+    const loadEmployeeData = async () => {
+      if (!selectedEmployee || selectedEmployee.employeeId !== employeeId) {
+        // First attempt to get fresh data
         await dispatch(fetchAllEmployees());
         
-        // Second attempt after delay
+        // Second attempt after a delay to ensure we have the latest data
         setTimeout(async () => {
           await dispatch(fetchAllEmployees());
+          
+          // After second fetch, check if we have the employee data
+          const state = (await dispatch(fetchAllEmployees())).payload;
+          if (state && Array.isArray(state)) {
+            const foundEmployee = state.find(emp => emp.employeeId === employeeId);
+            if (foundEmployee) {
+              dispatch(setSelectedEmployeeForEdit(foundEmployee));
+            }
+          }
         }, 1000);
-      };
+      }
+    };
 
-      fetchAndSetEmployee();
+    if (!initialLoadComplete) {
+      loadEmployeeData();
     }
 
     if (selectedEmployee && selectedEmployee.employeeId === employeeId && !initialLoadComplete) {
@@ -104,11 +115,11 @@ export default function EditEmployeePage() {
       setInitialLoadComplete(true);
     } 
     // Only redirect if we've waited longer and still don't have data
-    else if (!selectedEmployee && !employeeLoading && !initialLoadComplete) {
+    else if (!selectedEmployee && !employeeLoading && initialLoadComplete) {
       const timer = setTimeout(() => {
         console.warn(`No selected employee found in state for ID: ${employeeId}. Redirecting to employees list.`);
         router.push('/employees');
-      }, 3000); // Wait 3 seconds before redirecting to give time for both fetches
+      }, 3000); // Wait 3 seconds before redirecting
       
       return () => clearTimeout(timer);
     }
