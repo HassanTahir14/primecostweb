@@ -406,6 +406,14 @@ export default function AddItemForm({ onClose, onSuccess }: AddItemFormProps) {
                  placeholder="Enter item name"
                  required
               />
+
+              <Input
+              label="Brand Name"
+              name="brandName"
+              value={formData.brandName}
+              onChange={handleInputChange}
+               placeholder="Enter brand name"
+              />
               {/* <Select
                 label="Branch"
                 name="branch"
