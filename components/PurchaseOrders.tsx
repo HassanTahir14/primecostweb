@@ -7,18 +7,22 @@ import Modal from './common/Modal';
 import Input from './common/input';
 import Select from './common/select';
 import ConfirmationModal from './common/ConfirmationModal';
+import ReceiveOrderModal from './ReceiveOrderModal';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/store/store';
 import {
   fetchAllPurchaseOrders,
   addPurchaseOrder,
   updatePurchaseOrder,
+  receivePurchaseOrder,
   clearError,
   PurchaseOrder,
 } from '@/store/purchaseOrderSlice';
 import { AsyncThunk } from '@reduxjs/toolkit';
 import { fetchAllItems } from '@/store/itemsSlice';
 import { fetchAllSuppliers } from '@/store/supplierSlice';
+import { fetchAllBranches, Branch } from '@/store/branchSlice';
+import { fetchAllStorageLocations, StorageLocation } from '@/store/storageLocationSlice';
 
 interface Item {
   itemId: number;
@@ -92,6 +96,11 @@ export default function PurchaseOrders({ onClose }: PurchaseOrdersProps) {
   // Get items and suppliers from state
   const items = useSelector((state: RootState) => state.items.items || []) as unknown as Item[];
   const suppliers = useSelector((state: RootState) => state.supplier.suppliers || []) as unknown as Supplier[];
+  
+  // Get branches and storage locations from state
+  const branches = useSelector((state: RootState) => state.branch.branches || []) as Branch[];
+  console.log("branches", branches);
+  const storageLocations = useSelector((state: RootState) => state.storageLocation.locations || []) as StorageLocation[];
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingOrder, setEditingOrder] = useState<PurchaseOrder | null>(null);
@@ -104,6 +113,10 @@ export default function PurchaseOrders({ onClose }: PurchaseOrdersProps) {
   const [isSuccess, setIsSuccess] = useState(false);
   const [actionOrderId, setActionOrderId] = useState<number | null>(null);
   const [isConfirmDeleteModal, setIsConfirmDeleteModal] = useState(false);
+  
+  // State for Receive Order Modal
+  const [isReceiveModalOpen, setIsReceiveModalOpen] = useState(false);
+  const [selectedOrderForReceive, setSelectedOrderForReceive] = useState<PurchaseOrder | null>(null);
 
   // Create memoized options for dropdowns
   const itemOptions = useMemo(() => {
@@ -173,7 +186,9 @@ export default function PurchaseOrders({ onClose }: PurchaseOrdersProps) {
   useEffect(() => {
     dispatch(fetchAllPurchaseOrders({ page: 0, size: 10, sortBy: 'dateOfOrder', direction: 'asc' }));
     dispatch(fetchAllSuppliers());
-    dispatch(fetchAllItems({  }));
+    dispatch(fetchAllItems({}));
+    dispatch(fetchAllBranches());
+    dispatch(fetchAllStorageLocations());
     console.log("items", items);
   }, [dispatch]);
 
@@ -332,6 +347,69 @@ export default function PurchaseOrders({ onClose }: PurchaseOrdersProps) {
        }
    };
 
+  // --- Receive Order Logic ---
+  const handleReceiveClick = (order: PurchaseOrder) => {
+    // Ensure we have the necessary unit selection flags on the order object
+    // If they aren't present from the fetch, determine them here if possible,
+    // otherwise, the API might need adjustment or the fetch needs to return them.
+    // Assuming the `addPurchaseOrder/updatePurchaseOrder` thunks add these flags
+    // or they are inherently available on the fetched `order` object.
+    if (order.isPrimaryUnitSelected === undefined || order.isSecondaryUnitSelected === undefined) {
+       console.warn("Order object missing unit selection flags for receiving:", order);
+       // Fallback or fetch needed flags if possible
+       // For now, we proceed assuming they exist, but this needs verification
+    }
+    setSelectedOrderForReceive(order);
+    setIsReceiveModalOpen(true);
+  };
+
+  const handleReceiveSubmit = async (receiveFormData: any, orderData: PurchaseOrder) => {
+    dispatch(clearError());
+    setIsSuccess(false);
+
+    const payload = {
+      purchaseId: orderData.id,
+      expiryDate: receiveFormData.expiryDate || null, // Send null if empty
+      dateOfDelivery: receiveFormData.dateOfDelivery,
+      quantity: orderData.quantity, // Quantity from the original order
+      unit: orderData.unitId, // Unit ID from the original order
+      // **Crucially**: Get these flags from the order being received
+      isPrimaryUnitSelected: orderData.isPrimaryUnitSelected ?? true, // Default if not present, but ideally should be
+      isSecondaryUnitSelected: orderData.isSecondaryUnitSelected ?? false, // Default if not present
+      storageLocationId: parseInt(receiveFormData.storageLocationId),
+      branchId: parseInt(receiveFormData.branchId),
+    };
+
+    try {
+      const resultAction = await dispatch(receivePurchaseOrder(payload));
+      if (resultAction.type === receivePurchaseOrder.fulfilled.type) {
+        setIsReceiveModalOpen(false);
+        setSelectedOrderForReceive(null);
+        setFeedbackMessage((resultAction.payload as any)?.description || 'Order received successfully!');
+        setIsSuccess(true);
+        setIsFeedbackAlert(true);
+        setFeedbackModalOpen(true);
+        // Optionally refetch orders if status change isn't handled optimistically
+        dispatch(fetchAllPurchaseOrders({ page: 0, size: 10, sortBy: 'dateOfOrder', direction: 'asc' }));
+      } else if (resultAction.type === receivePurchaseOrder.rejected.type) {
+         setFeedbackMessage((resultAction.payload as any)?.description || (resultAction.payload as any)?.errors || (resultAction.payload as any)?.message || 'Failed to receive order.');
+         setIsSuccess(false);
+         setIsFeedbackAlert(true);
+         setFeedbackModalOpen(true); 
+         // Keep receive modal open on failure?
+         // setIsReceiveModalOpen(false); // Close modal even on failure?
+      }
+    } catch (error) {
+      console.error("Unexpected receive submission error:", error);
+      setFeedbackMessage('An unexpected error occurred during receive submission.');
+      setIsSuccess(false);
+      setIsFeedbackAlert(true);
+      setFeedbackModalOpen(true);
+      // setIsReceiveModalOpen(false); // Close modal even on failure?
+    }
+  };
+  // --- End Receive Order Logic ---
+
   return (
     <div className="flex-1 flex flex-col bg-[#f1fff7] min-h-screen px-3 py-3 sm:px-4 md:px-8 sm:py-4 md:py-6">
       <div className="flex items-center justify-between mb-4 sm:mb-6">
@@ -372,20 +450,20 @@ export default function PurchaseOrders({ onClose }: PurchaseOrdersProps) {
               </tr>
             </thead>
             <tbody>
-              {poLoading && purchaseOrders.length === 0 ? (
+              {poLoading && (!purchaseOrders || purchaseOrders.length === 0) ? (
                 <tr>
                   <td colSpan={9} className="text-center py-10">
                     <p className="text-gray-500">Loading purchase orders...</p>
                   </td>
                 </tr>
-              ) : !poLoading && purchaseOrders.length === 0 ? (
+              ) : !poLoading && (!Array.isArray(purchaseOrders) || purchaseOrders.length === 0) ? (
                 <tr>
                   <td colSpan={9} className="text-center py-10">
                     <p className="text-gray-500">{poError ? 'Error loading data.' : 'No purchase orders found.'}</p>
                   </td>
                 </tr>
               ) : (
-                purchaseOrders.map((order) => (
+                Array.isArray(purchaseOrders) && purchaseOrders.map((order) => (
                   <tr key={order.id} className="border-b hover:bg-gray-50">
                     <td className="py-3 sm:py-4 text-gray-800 text-sm sm:text-base pr-2">{order.itemName || 'N/A'}</td>
                     <td className="py-3 sm:py-4 text-gray-800 text-sm sm:text-base pr-2">{order.itemCode || 'N/A'}</td>
@@ -402,53 +480,33 @@ export default function PurchaseOrders({ onClose }: PurchaseOrdersProps) {
                     <td className="py-3 sm:py-4 text-right">
                       <div className="flex justify-end gap-1 sm:gap-2">
                       
-                  <Button 
-                    variant="default" 
-                    size="sm" 
-                    className="rounded-full bg-[#339A89] text-white text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-1.5"
-                    onClick={() => handleEditClick(order)}
-                    disabled={poLoading}
-                  >
-                    Update
-                  </Button>
-
-                  <Button 
-                    variant="default" 
-                    size="sm" 
-                    className="rounded-full bg-[#339A89] text-white text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-1.5"
-                    onClick={() => handleEditClick(order)}
-                    disabled={poLoading}
-                  >
-                    Received Order?
-                  </Button>
-                  {/* <Button 
-                    variant="destructive" 
-                    size="sm" 
-                    className="rounded-full bg-red-500 text-white text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-1.5"
-                    onClick={() => handleDeleteClick(order.id)}
-                    disabled={poLoading}
-                  >
-                    Delete
-                  </Button> */}
-                        {/* <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          className="text-blue-600 hover:bg-blue-100 p-1 sm:p-1.5 rounded-full"
-                          onClick={() => handleEditClick(order)}
-                          disabled={poLoading}
-                          aria-label="Edit"
-                        >
-                          <Edit size={16} />
-                        </Button>
                         <Button 
-                          variant="ghost" 
+                          variant="default" 
                           size="sm" 
-                          className="text-red-600 hover:bg-red-100 p-1 sm:p-1.5 rounded-full"
+                          className="rounded-full bg-[#339A89] text-white text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-1.5"
+                          onClick={() => handleEditClick(order)}
+                          disabled={poLoading || order.purchaseOrderStatus === 'RECEIVED'}
+                        >
+                          Update
+                        </Button>
+
+                        <Button 
+                          variant="default" 
+                          size="sm" 
+                          className="rounded-full bg-[#339A89] text-white text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-1.5"
+                          onClick={() => handleReceiveClick(order)}
+                          disabled={poLoading || order.purchaseOrderStatus === 'RECEIVED'}
+                        >
+                          Received Order?
+                        </Button>
+                        {/* <Button 
+                          variant="destructive" 
+                          size="sm" 
+                          className="rounded-full bg-red-500 text-white text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-1.5"
                           onClick={() => handleDeleteClick(order.id)}
                           disabled={poLoading}
-                          aria-label="Delete"
                         >
-                           <Trash2 size={16} />
+                          Delete
                         </Button> */}
                       </div>
                     </td>
@@ -618,6 +676,19 @@ export default function PurchaseOrders({ onClose }: PurchaseOrdersProps) {
           </div>
         </form>
       </Modal>
+
+       {/* --- Render Receive Order Modal --- */}
+       {selectedOrderForReceive && (
+         <ReceiveOrderModal
+           isOpen={isReceiveModalOpen}
+           onClose={() => setIsReceiveModalOpen(false)}
+           onSubmit={handleReceiveSubmit}
+           orderData={selectedOrderForReceive} 
+           branches={branches} 
+           storageLocations={storageLocations} 
+           loading={poLoading} // Use main loading state for now
+         />
+       )}
 
        <ConfirmationModal
             isOpen={feedbackModalOpen}

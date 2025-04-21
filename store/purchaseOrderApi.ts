@@ -53,13 +53,30 @@ export const purchaseOrderApi = {
         vatPercentage: parseFloat(orderData.vatPercentage) || 0,
         vatAmount: parseFloat(orderData.vatAmount) || 0,
         quantity: parseFloat(orderData.quantity) || 1,
-        unit: orderData.unit || '', 
+        unit: parseInt(orderData.unit) || 0, // Parse unit to int
         isPrimaryUnitSelected: orderData.isPrimaryUnitSelected ?? true,
         isSecondaryUnitSelected: orderData.isSecondaryUnitSelected ?? false,
         itemId: parseInt(orderData.itemId) || 0, 
         purchaseId: parseInt(orderData.id) || 0, // Use 'id' from the order for 'purchaseId'
     };
     const response = await api.put('/purchase-order/update', payload);
+    return response.data; // Assumes response includes success/error message
+  },
+
+  // Receive a purchase order
+  receive: async (payload: any) => {
+    // Payload structure from receivePurchaseOrder thunk
+    const response = await api.put('/purchase-order/received', {
+      purchaseId: parseInt(payload.purchaseId) || 0,
+      expiryDate: payload.expiryDate || null, // Send null if empty
+      dateOfDelivery: payload.dateOfDelivery,
+      quantity: parseInt(payload.quantity) || 0,
+      unit: parseInt(payload.unit) || 0, // unit ID
+      isPrimaryUnitSelected: payload.isPrimaryUnitSelected,
+      isSecondaryUnitSelected: payload.isSecondaryUnitSelected,
+      storageLocationId: parseInt(payload.storageLocationId) || 0,
+      branchId: parseInt(payload.branchId) || 0,
+    });
     return response.data; // Assumes response includes success/error message
   },
 

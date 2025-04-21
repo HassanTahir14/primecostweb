@@ -21,6 +21,8 @@ export interface PurchaseOrder {
   tokenStatus: string;
   purchaseOrderStatus: string;
   itemName: string;
+  isPrimaryUnitSelected?: boolean; // Added for receive payload
+  isSecondaryUnitSelected?: boolean; // Added for receive payload
   // Add other fields if necessary based on full API spec
 }
 
@@ -86,6 +88,35 @@ export const updatePurchaseOrder = createAsyncThunk(
         return orderData; // Return the data sent for update
       } else {
         return rejectWithValue(response?.description || 'Failed to update purchase order');
+      }
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data || error.message);
+    }
+  }
+);
+
+// --- Receive Purchase Order Thunk ---
+interface ReceiveOrderPayload {
+  purchaseId: number;
+  expiryDate?: string; // Optional based on modal form
+  dateOfDelivery: string;
+  quantity: number;
+  unit: number; // unitId from the original order
+  isPrimaryUnitSelected: boolean;
+  isSecondaryUnitSelected: boolean;
+  storageLocationId: number;
+  branchId: number;
+}
+
+export const receivePurchaseOrder = createAsyncThunk(
+  'purchaseOrder/receive',
+  async (payload: ReceiveOrderPayload, { rejectWithValue }) => {
+    try {
+      const response = await purchaseOrderApi.receive(payload); // Assuming receive method exists in purchaseOrderApi
+      if (response && response.responseCode === '0000') {
+        return { purchaseId: payload.purchaseId, ...response }; // Return ID and response for potential state update
+      } else {
+        return rejectWithValue(response?.description || 'Failed to receive purchase order');
       }
     } catch (error: any) {
       return rejectWithValue(error.response?.data || error.message);
@@ -169,6 +200,28 @@ const purchaseOrderSlice = createSlice({
         state.error = action.payload;
       });
       
+    // --- Handle Receive Purchase Order ---
+    builder
+      .addCase(receivePurchaseOrder.pending, (state) => {
+        state.loading = true; // Or a specific loading state like state.receiving = true;
+        state.error = null;
+      })
+      .addCase(receivePurchaseOrder.fulfilled, (state, action) => {
+        state.loading = false;
+        // Update the status of the received order
+        const index = state.orders.findIndex((order) => order.id === action.payload.purchaseId);
+        if (index !== -1) {
+          // Update status or other relevant fields based on API response
+          // Example: Assuming API confirms receipt and changes status
+          state.orders[index].purchaseOrderStatus = 'RECEIVED'; // Or whatever the status should be
+        }
+        console.log('Receive purchase order success:', action.payload);
+      })
+      .addCase(receivePurchaseOrder.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      });
+
     // Optional: Handle Delete cases
   },
 });

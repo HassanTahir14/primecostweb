@@ -2,9 +2,11 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { storageLocationApi } from './storageLocationApi';
 
 // Define the interface for a single storage location based on the API response
-interface StorageLocation {
+// Export the interface
+export interface StorageLocation {
   storageLocationId: number;
   storageLocationName: string;
+  branchId?: number; // Add branchId if it's part of the structure
 }
 
 // Define the interface for the state
