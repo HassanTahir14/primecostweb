@@ -54,32 +54,20 @@ export default function EditEmployeePage() {
   useEffect(() => {
     const loadEmployeeData = async () => {
       if (!selectedEmployee || selectedEmployee.employeeId !== employeeId) {
-        // First attempt to get fresh data
-        await dispatch(fetchAllEmployees());
-        
-        // Second attempt after a delay to ensure we have the latest data
-        setTimeout(async () => {
-          await dispatch(fetchAllEmployees());
-          
-          // After second fetch, check if we have the employee data
-          const state = (await dispatch(fetchAllEmployees())).payload;
-          if (state && Array.isArray(state)) {
-            const foundEmployee = state.find(emp => emp.employeeId === employeeId);
-            if (foundEmployee) {
-              dispatch(setSelectedEmployeeForEdit(foundEmployee));
-            }
+        // First fetch
+        const result = await dispatch(fetchAllEmployees());
+        if (result.payload) {
+          const foundEmployee = result.payload.find((emp: Employee) => emp.employeeId === employeeId);
+          if (foundEmployee) {
+            dispatch(setSelectedEmployeeForEdit(foundEmployee));
           }
-        }, 1000);
+        }
       }
     };
 
-    if (!initialLoadComplete) {
-      loadEmployeeData();
-    }
+    loadEmployeeData();
 
-    if (selectedEmployee && selectedEmployee.employeeId === employeeId && !initialLoadComplete) {
-      console.log("Selected Employee Data:", selectedEmployee);
-      
+    if (selectedEmployee && selectedEmployee.employeeId === employeeId) {
       const transformedData = {
         // Personal Details
         firstname: selectedEmployee.employeeDetailsDTO?.firstname || '',
@@ -110,20 +98,10 @@ export default function EditEmployeePage() {
         existingImages: selectedEmployee.images || []
       };
       
-      console.log("Transformed Data for Forms:", transformedData);
       setEmployeeData(transformedData);
       setInitialLoadComplete(true);
-    } 
-    // Only redirect if we've waited longer and still don't have data
-    else if (!selectedEmployee && !employeeLoading && initialLoadComplete) {
-      const timer = setTimeout(() => {
-        console.warn(`No selected employee found in state for ID: ${employeeId}. Redirecting to employees list.`);
-        router.push('/employees');
-      }, 3000); // Wait 3 seconds before redirecting
-      
-      return () => clearTimeout(timer);
     }
-  }, [selectedEmployee, employeeId, initialLoadComplete, employeeLoading, router, dispatch]);
+  }, [selectedEmployee, employeeId, dispatch]);
 
   useEffect(() => {
     if (employeeError && !isModalOpen) {
