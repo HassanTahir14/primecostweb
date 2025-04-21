@@ -53,11 +53,12 @@ export default function CreateEmployeePage() {
   
   const handleSubmit = async (finalSalaryData: any) => {
     const completeData = { ...employeeData, ...finalSalaryData };
-    const images = completeData.images || []; // Extract images
-    delete completeData.images; // Remove images from the main data object passed to slice
+    const images = completeData.newImages || []; // Correct key from EmployeeSalaryForm
+    delete completeData.newImages; // Ensure we delete the correct key
+    delete completeData.imageIdsToRemove; // Also remove this if present from SalaryForm
     
     console.log("Submitting Employee Data:", completeData);
-    console.log("Submitting Images:", images);
+    console.log("Submitting Images:", images); // This should now show files
     
     // Clear previous errors
     dispatch(clearError());

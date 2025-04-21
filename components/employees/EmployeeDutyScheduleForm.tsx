@@ -13,6 +13,8 @@ const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Sat
 const timeSlots = ['Opening', 'Break', 'Closing'];
 
 // Helper to format time string "HH:MM" to time object (duplicate from api.ts, consider moving to a util file)
+// Keep this if needed internally, but we mostly need string -> string now
+const formatStringToTimeObject = (timeString: string | null | undefined) => { /* ... no change needed here ... */ };
 const formatTime = (timeString: string | null | undefined) => {
   if (!timeString || !/^\d{2}:\d{2}$/.test(timeString)) {
     return { hour: 0, minute: 0, second: 0, nano: 0 }; 
@@ -24,26 +26,33 @@ const formatTime = (timeString: string | null | undefined) => {
 export default function EmployeeDutyScheduleForm({ onNext, onPrevious, initialData }: EmployeeDutyScheduleFormProps) {
   // Initialize schedule state from initialData if present
   const [schedule, setSchedule] = useState(() => {
-    // Check if initialData has the dutySchedulesDTO structure
+    // Check if initialData has the dutySchedulesDTO structure (which comes from API's dutyScheduleResponseList)
     const initialDutySchedules = initialData.dutySchedulesDTO || [];
     const newSchedule: { [key: string]: { [key: string]: string } } = {};
+    
     timeSlots.forEach(slot => {
       newSchedule[slot] = {};
       daysOfWeek.forEach(day => {
         const daySchedule = initialDutySchedules.find((d: any) => d.day === day);
-        let timeValue = '';
+        let timeValue = ''; // Default to empty string
         if (daySchedule) {
-            // Need to reverse formatTime (object to HH:MM string) for display
-            const timeObj = slot === 'Opening' ? daySchedule.openingShift : 
-                            slot === 'Break' ? daySchedule.breakTime : 
-                            daySchedule.closingShift;
-            if (timeObj && typeof timeObj.hour === 'number' && typeof timeObj.minute === 'number') {
-                timeValue = `${String(timeObj.hour).padStart(2, '0')}:${String(timeObj.minute).padStart(2, '0')}`;
+            // Determine which field to use based on the slot
+            const apiTimeField = slot === 'Opening' ? daySchedule.openingShift :
+                                 slot === 'Break' ? daySchedule.breakTime :
+                                 daySchedule.closingShift;
+            
+            // Extract HH:MM from HH:MM:SS if the string exists and is valid
+            if (apiTimeField && typeof apiTimeField === 'string') {
+                const match = apiTimeField.match(/^(\d{2}:\d{2})/);
+                if (match) {
+                    timeValue = match[1]; // Get the HH:MM part
+                }
             }
         }
-         newSchedule[slot][day] = timeValue;
+        newSchedule[slot][day] = timeValue;
       });
     });
+    console.log("Initialized Schedule State:", newSchedule); // Log the state being set
     return newSchedule;
   });
 

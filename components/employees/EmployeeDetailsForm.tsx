@@ -37,15 +37,14 @@ const nationalityOptions = [
   // Add more nationalities
 ];
 
-// Add default disabled option
+// Update position options to match backend roles
 const positionOptions = [
   { value: '', label: 'Select Position', disabled: true },
-  { value: 'chef', label: 'Chef' },
-  { value: 'head_chef', label: 'Head Chef' },
-  { value: 'sous_chef', label: 'Sous Chef' },
-  { value: 'waiter', label: 'Waiter' },
-  { value: 'admin', label: 'Admin' },
-  // Add more positions
+  { value: 'CHEF', label: 'Chef' },
+  { value: 'HEAD_CHEF', label: 'Head Chef' },
+  { value: 'MANAGER', label: 'Manager' },
+  { value: 'ASSISTANT', label: 'Assistant' },
+  // Add other valid roles if needed, remove invalid ones like 'waiter', 'admin', 'sous_chef'
 ];
 
 export default function EmployeeDetailsForm({ onNext, initialData }: EmployeeDetailsFormProps) {
@@ -74,17 +73,37 @@ export default function EmployeeDetailsForm({ onNext, initialData }: EmployeeDet
       }));
   }, [initialData]);
 
+  // Add state for validation errors
+  const [errors, setErrors] = useState<Partial<Record<keyof FormDataState, string>>>({});
+
   const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    // Use the explicit type for prev
-    setFormData((prev: FormDataState) => ({
-       ...prev, 
-       [name]: value 
-    }));
+    setFormData((prev: FormDataState) => ({ ...prev, [name]: value }));
+    // Clear error on change
+    if (errors[name]) {
+        setErrors(prev => ({ ...prev, [name]: undefined }));
+    }
+  };
+
+  // Add validation function
+  const validateForm = (): boolean => {
+      const newErrors: Partial<Record<keyof FormDataState, string>> = {};
+      if (!formData.name.trim()) newErrors.name = 'Name is required';
+      if (!formData.position) newErrors.position = 'Position is required';
+      if (!formData.mobileNumber.trim()) newErrors.mobileNumber = 'Mobile number is required'; // Add mobile validation if needed
+      if (!formData.iqamaId.trim()) newErrors.iqamaId = 'Iqama ID is required';
+      // Add more specific validations (email format, date format, etc.) if necessary
+      
+      setErrors(newErrors);
+      return Object.keys(newErrors).length === 0;
   };
 
   const handleNextClick = () => {
-    // Add validation logic here if needed
+    if (!validateForm()) {
+        // Optionally show an alert or focus the first error field
+        console.warn("Validation failed:", errors);
+        return; 
+    }
     console.log("Details Data:", formData);
     onNext(formData);
   };
@@ -93,14 +112,14 @@ export default function EmployeeDetailsForm({ onNext, initialData }: EmployeeDet
     <div className="space-y-6">
        <h2 className="text-2xl font-semibold text-gray-800 mb-6">Employee Details</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-        {/* Left Column */}
-        <Input label="Name" name="name" value={formData.name} onChange={handleChange} placeholder="Enter value" />
+        {/* Add error display to relevant fields */}
+        <Input label="Name" name="name" value={formData.name} onChange={handleChange} placeholder="Enter value" error={errors.name} />
         <Input label="Family Name" name="familyName" value={formData.familyName} onChange={handleChange} placeholder="Enter value" />
         <Select label="Nationality" name="nationality" value={formData.nationality} onChange={handleChange} options={nationalityOptions} />
-        <Input label="Mobile Number" name="mobileNumber" value={formData.mobileNumber} onChange={handleChange} placeholder="Enter value" type="tel" />
-        <Select label="Position" name="position" value={formData.position} onChange={handleChange} options={positionOptions} />
+        <Input label="Mobile Number" name="mobileNumber" value={formData.mobileNumber} onChange={handleChange} placeholder="Enter value" type="tel" error={errors.mobileNumber} />
+        <Select label="Position" name="position" value={formData.position} onChange={handleChange} options={positionOptions} error={errors.position} />
         <Input label="Health Card Number" name="healthCardNumber" value={formData.healthCardNumber} onChange={handleChange} placeholder="Health Card Num" />
-        <Input label="Iqama ID" name="iqamaId" value={formData.iqamaId} onChange={handleChange} placeholder="Enter value" />
+        <Input label="Iqama ID" name="iqamaId" value={formData.iqamaId} onChange={handleChange} placeholder="Enter value" error={errors.iqamaId} />
         <Input label="Health Card Expiry" name="healthCardExpiry" value={formData.healthCardExpiry} onChange={handleChange} placeholder="dd/mm/yyyy" type="text" /> 
         <Input label="Iqama ID Expiry Date" name="iqamaIdExpiry" value={formData.iqamaIdExpiry} onChange={handleChange} placeholder="dd/mm/yyyy" type="text" /> 
         <Input label="Date of Birth" name="dateOfBirth" value={formData.dateOfBirth} onChange={handleChange} placeholder="dd/mm/yyyy" type="text" /> 

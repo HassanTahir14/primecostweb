@@ -1,9 +1,9 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { employeeApi } from './employeeApi';
 
 // Interfaces based on GET /kitchen/employees response
 interface EmployeeDetails {
-  firstName: string;
+  firstname: string;
   familyName: string | null;
   mobileNumber: string;
   healthCardNumber: string;
@@ -43,12 +43,14 @@ export interface Employee {
 
 interface EmployeeState {
   employees: Employee[];
+  selectedEmployee: Employee | null; // Keep this for storing the employee being edited
   loading: boolean;
   error: any | null; // Store potentially structured error response
 }
 
 const initialState: EmployeeState = {
   employees: [],
+  selectedEmployee: null,
   loading: false,
   error: null,
 };
@@ -118,8 +120,22 @@ export const updateEmployee = createAsyncThunk(
   }
 );
 
-// Optional: Delete Thunk
-// export const deleteEmployee = createAsyncThunk(...);
+// Delete Employee Thunk
+export const deleteEmployee = createAsyncThunk(
+  'employee/delete',
+  async (employeeId: number, { rejectWithValue }) => {
+    try {
+      const response = await employeeApi.delete(employeeId);
+      if (response && response.responseCode === '0000') {
+        return { employeeId, ...response }; // Return ID and success response
+      } else {
+        return rejectWithValue(response?.description || 'Failed to delete employee');
+      }
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data || error.message);
+    }
+  }
+);
 
 const employeeSlice = createSlice({
   name: 'employee',
@@ -130,9 +146,17 @@ const employeeSlice = createSlice({
     },
     resetState: (state) => {
       state.employees = [];
+      state.selectedEmployee = null;
       state.loading = false;
       state.error = null;
     },
+    clearSelectedEmployee: (state) => {
+      state.selectedEmployee = null;
+    },
+    // Add new action to set the selected employee directly
+    setSelectedEmployeeForEdit: (state, action: PayloadAction<Employee | null>) => {
+      state.selectedEmployee = action.payload;
+    }
   },
   extraReducers: (builder) => {
     // Fetch All
@@ -149,7 +173,7 @@ const employeeSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       });
-
+      
     // Add Employee
     builder
       .addCase(addEmployee.pending, (state) => {
@@ -193,9 +217,28 @@ const employeeSlice = createSlice({
         state.error = action.payload;
       });
       
-    // Optional: Handle Delete cases
+    // Delete Employee
+    builder
+      .addCase(deleteEmployee.pending, (state) => {
+        // Optionally set a specific loading state for delete
+        state.loading = true; 
+        state.error = null;
+      })
+      .addCase(deleteEmployee.fulfilled, (state, action) => {
+        state.loading = false;
+        // Remove the employee from the list
+        state.employees = state.employees.filter(
+          (emp) => emp.employeeId !== action.payload.employeeId
+        );
+        console.log('Delete employee success:', action.payload);
+      })
+      .addCase(deleteEmployee.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      });
+      
   },
 });
 
-export const { clearError, resetState } = employeeSlice.actions;
+export const { clearError, resetState, clearSelectedEmployee, setSelectedEmployeeForEdit } = employeeSlice.actions;
 export default employeeSlice.reducer; 

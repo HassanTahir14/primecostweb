@@ -2,16 +2,16 @@
 
 import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { useRouter } from 'next/navigation'; // Import useRouter
 import PageLayout from '@/components/PageLayout';
 import Button from '@/components/common/button';
 import Link from 'next/link';
-import { Edit, Trash2 } from 'lucide-react'; // Import icons for actions
+import { Edit, Trash2 } from 'lucide-react'; // Import icons for actions and remove Plus icon
 import ConfirmationModal from '@/components/common/ConfirmationModal';
 
 // Import Redux stuff
 import { AppDispatch, RootState } from '@/store/store';
-import { fetchAllEmployees, clearError } from '@/store/employeeSlice';
-import { Employee } from '@/store/employeeSlice'; // Import the Employee type if defined in slice
+import { fetchAllEmployees, clearError as clearEmployeeError, deleteEmployee, setSelectedEmployeeForEdit, Employee } from '@/store/employeeSlice'; // Import deleteEmployee and setSelectedEmployeeForEdit
 
 // Remove mock data
 // const mockEmployees = [...];
@@ -20,6 +20,7 @@ import { Employee } from '@/store/employeeSlice'; // Import the Employee type if
 
 export default function EmployeesPage() {
   const dispatch = useDispatch<AppDispatch>();
+  const router = useRouter(); // Initialize router
   const { 
     employees, 
     loading: employeesLoading, 
@@ -27,67 +28,96 @@ export default function EmployeesPage() {
   } = useSelector((state: RootState) => state.employee);
 
   // Modal state
-  const [modalMessage, setModalMessage] = useState<string>('');
-  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [employeeModalMessage, setEmployeeModalMessage] = useState<string>('');
+  const [isEmployeeModalOpen, setIsEmployeeModalOpen] = useState<boolean>(false);
   const [isConfirmModal, setIsConfirmModal] = useState<boolean>(false); // Differentiate confirm vs alert
   const [actionEmployeeId, setActionEmployeeId] = useState<number | null>(null);
+  const [isDeleteSuccess, setIsDeleteSuccess] = useState<boolean>(false); // Track delete success
 
   // Fetch employees on mount
   useEffect(() => {
     dispatch(fetchAllEmployees());
   }, [dispatch]);
 
-  // Show error modal if fetch fails
+  // Show employee error modal if fetch fails
   useEffect(() => {
-    if (employeesError) {
+    if (employeesError && !isEmployeeModalOpen) { // Only show if modal isn't already open for confirm/result
         const errorMsg = typeof employeesError === 'string' ? employeesError : 
-                        (employeesError as any)?.description || (employeesError as any)?.message || 'Failed to fetch employees.';
-        setModalMessage(errorMsg);
+                        (employeesError as any)?.description || (employeesError as any)?.message || 'An error occurred with employees.';
+        setEmployeeModalMessage(errorMsg);
         setIsConfirmModal(false); // Use alert style for fetch error
-        setIsModalOpen(true);
+        setIsEmployeeModalOpen(true);
+        setIsDeleteSuccess(false); // Ensure delete success flag is reset
     }
-  }, [employeesError]);
+  }, [employeesError, isEmployeeModalOpen]);
 
-  const handleCloseModal = () => {
-      setIsModalOpen(false);
-      setModalMessage('');
+  const handleEmployeeModalClose = () => {
+      setIsEmployeeModalOpen(false);
+      setEmployeeModalMessage('');
       setActionEmployeeId(null);
-      // Clear Redux error state when closing an error modal
-      if (employeesError) {
-         dispatch(clearError());
+      // Clear Redux error state when closing an error modal that wasn't a delete confirmation
+      if (employeesError && !isDeleteSuccess) {
+         dispatch(clearEmployeeError());
       }
+      setIsDeleteSuccess(false); // Reset delete success flag
   };
   
   // Placeholder Handlers for Edit/Delete
   const handleEdit = (id: number) => {
-    console.log("Edit employee:", id);
-    // TODO: Implement edit logic (e.g., navigate to edit page or open modal)
-    // router.push(`/employees/edit/${id}`);
-    setModalMessage(`Edit functionality for employee ${id} is not yet implemented.`);
-    setIsConfirmModal(false);
-    setIsModalOpen(true);
+    // Find the employee data from the current state
+    const employeeToEdit = employees.find(emp => emp.employeeId === id);
+
+    if (employeeToEdit) {
+      console.log("Setting employee for edit:", employeeToEdit);
+      // Dispatch action to set this employee in the Redux store
+      dispatch(setSelectedEmployeeForEdit(employeeToEdit));
+      // Navigate to the edit page
+      router.push(`/employees/edit/${id}`); 
+    } else {
+      // Handle case where employee is not found (shouldn't happen ideally)
+      console.error(`Employee with ID ${id} not found in state.`);
+      setEmployeeModalMessage(`Could not find details for employee ${id}. Please refresh the list.`);
+      setIsConfirmModal(false);
+      setIsEmployeeModalOpen(true);
+    }
   };
 
   const handleDeleteClick = (id: number) => {
     console.log("Attempt delete employee:", id);
     setActionEmployeeId(id);
-    setModalMessage(`Are you sure you want to delete employee ${id}? This action cannot be undone.`);
+    setEmployeeModalMessage(`Are you sure you want to delete employee ${id}? This action cannot be undone.`);
     setIsConfirmModal(true); // Use confirm style
-    setIsModalOpen(true);
+    setIsEmployeeModalOpen(true);
+    setIsDeleteSuccess(false);
   };
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
       if (actionEmployeeId !== null) {
         console.log("Confirm delete employee:", actionEmployeeId);
-        // TODO: Dispatch deleteEmployee action
-        // dispatch(deleteEmployee(actionEmployeeId)).then(...) handle result
-        setModalMessage(`Delete functionality for employee ${actionEmployeeId} is not yet implemented.`);
-        setIsConfirmModal(false); // Show confirmation/error as alert
-        // Keep modal open to show the result message
-        // setIsModalOpen(false); // Close after dispatch usually
-        setActionEmployeeId(null);
+        setIsConfirmModal(false); // Switch to alert style for result message
+        setEmployeeModalMessage('Deleting employee...'); // Indicate processing
+        setIsEmployeeModalOpen(true); // Keep modal open
+
+        try {
+            const resultAction = await dispatch(deleteEmployee(actionEmployeeId)).unwrap();
+            // unwrap() will throw error on rejection
+            
+            setEmployeeModalMessage(resultAction.description || 'Employee deleted successfully!');
+            setIsDeleteSuccess(true);
+            setActionEmployeeId(null); // Clear ID after success
+            // No need to manually close modal here, user clicks OK
+
+        } catch (rejectedValue) {
+            console.error("Delete failed:", rejectedValue);
+            const errorMsg = (rejectedValue as any)?.description || (rejectedValue as any)?.message || 'Failed to delete employee.';
+            setEmployeeModalMessage(errorMsg);
+            setIsDeleteSuccess(false);
+             // Keep modal open to show error
+        }
+
       } else {
-          handleCloseModal();
+          // Should not happen if button is clicked correctly
+          handleEmployeeModalClose();
       }
   };
 
@@ -120,16 +150,20 @@ export default function EmployeesPage() {
       <div className="bg-white rounded-lg shadow-sm p-6 space-y-6">
         <div className="flex flex-col md:flex-row justify-end items-center gap-4">
           <div className="flex gap-2 flex-shrink-0">
+            {/* Other Payroll Button */} 
+            <Link href="/employees/other-payroll">
+              <Button variant="secondary">Other payroll</Button>
+            </Link>
+            {/* Create Employee Button */}
             <Link href="/employees/create">
               <Button>Create new employee</Button>
             </Link>
-            {/* <Button variant="secondary">Other payroll</Button> */}
           </div>
         </div>
 
         {/* Employees Table - Updated with Redux data and actions */} 
         <div className="overflow-x-auto">
-          {employeesLoading ? (
+          {employeesLoading && employees.length === 0 ? ( // Show loading only if list is empty initially
             <div className="text-center py-10 text-gray-500">Loading employees...</div>
           ) : (
             <table className="w-full text-left">
@@ -147,7 +181,7 @@ export default function EmployeesPage() {
                 {employees && employees.length > 0 ? (
                   employees.map((employee: Employee) => ( // Use imported Employee type
                     <tr key={employee.employeeId} className="hover:bg-gray-50">
-                      <td className="py-3 px-4 border-b">{employee.employeeDetailsDTO?.firstName || 'N/A'}</td>
+                      <td className="py-3 px-4 border-b">{employee.employeeDetailsDTO?.firstname || 'N/A'}</td>
                       <td className="py-3 px-4 border-b">{employee.employeeDetailsDTO?.position || 'N/A'}</td>
                       <td className="py-3 px-4 border-b">{employee.employeeDetailsDTO?.iqamaId || 'N/A'}</td>
                       <td className="py-3 px-4 border-b">{employee.employeeDetailsDTO?.iqamaExpiryDate || 'N/A'}</td>
@@ -156,10 +190,23 @@ export default function EmployeesPage() {
                       </td>
                       <td className="py-3 px-4 border-b text-center">
                         <div className="flex justify-center space-x-2">
-                          <Button variant="ghost" size="sm" onClick={() => handleEdit(employee.employeeId)} aria-label="Edit">
+                          <Button 
+                             variant="ghost" 
+                             size="sm" 
+                             onClick={() => handleEdit(employee.employeeId)} 
+                             aria-label="Edit"
+                             disabled={employeesLoading} // Disable actions while loading
+                          >
                              <Edit size={16} />
                           </Button>
-                          <Button variant="ghost" className="text-red-600 hover:text-red-800 hover:bg-red-100" size="sm" onClick={() => handleDeleteClick(employee.employeeId)} aria-label="Delete">
+                          <Button 
+                             variant="ghost" 
+                             className="text-red-600 hover:text-red-800 hover:bg-red-100" 
+                             size="sm" 
+                             onClick={() => handleDeleteClick(employee.employeeId)} 
+                             aria-label="Delete"
+                             disabled={employeesLoading} // Disable actions while loading
+                          >
                             <Trash2 size={16} />
                           </Button>
                         </div>
@@ -179,13 +226,13 @@ export default function EmployeesPage() {
         </div>
       </div>
       
-      {/* Confirmation/Error Modal */}
+      {/* Employee Confirmation/Error Modal */}
       <ConfirmationModal
-        isOpen={isModalOpen}
-        onClose={handleCloseModal}
+        isOpen={isEmployeeModalOpen}
+        onClose={handleEmployeeModalClose}
         onConfirm={isConfirmModal ? confirmDelete : undefined} // Only pass confirm handler for confirm modals
-        title={isConfirmModal ? 'Confirm Deletion' : (employeesError ? 'Error' : 'Information')}
-        message={modalMessage}
+        title={isConfirmModal ? 'Confirm Deletion' : (isDeleteSuccess ? 'Success' : 'Error')}
+        message={employeeModalMessage}
         isAlert={!isConfirmModal} // Use alert if not confirm
         confirmText="Delete"
         cancelText="Cancel"

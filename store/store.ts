@@ -13,6 +13,8 @@ import employeeReducer from './employeeSlice';
 import purchaseOrderReducer from './purchaseOrderSlice';
 import itemCategoryReducer from './itemCategorySlice';
 import itemsReducer from './itemsSlice';
+import otherPayrollReducer from './otherPayrollSlice';
+import expenseReducer from './expenseSlice';
 
 export const store = configureStore({
   reducer: {
@@ -30,6 +32,8 @@ export const store = configureStore({
     purchaseOrder: purchaseOrderReducer,
     itemCategory: itemCategoryReducer,
     items: itemsReducer,
+    otherPayroll: otherPayrollReducer,
+    expense: expenseReducer,
   },
 });
 

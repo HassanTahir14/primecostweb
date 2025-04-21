@@ -18,15 +18,26 @@ const formatDateToYyyyMmDd = (dateString: string | null | undefined): string | n
     return null; 
 };
 
-// Helper to format time string "HH:MM" to time object
-const formatTime = (timeString: string | null | undefined) => {
+// Helper to format time string "HH:MM" to time object (for potential internal use)
+const formatStringToTimeObject = (timeString: string | null | undefined) => {
   if (!timeString || !/^\d{2}:\d{2}$/.test(timeString)) {
-    // Return default or handle error if format is incorrect or time is empty
     return { hour: 0, minute: 0, second: 0, nano: 0 }; 
   }
   const [hour, minute] = timeString.split(':').map(Number);
   return { hour, minute, second: 0, nano: 0 };
 };
+
+// Helper to format time object back to "HH:MM" string for API
+const formatTimeObjectToString = (timeObject: any): string | null => {
+    if (!timeObject || typeof timeObject.hour !== 'number' || typeof timeObject.minute !== 'number') {
+        // Return null or default string if object is invalid
+        return null; 
+    }
+    const hour = String(timeObject.hour).padStart(2, '0');
+    const minute = String(timeObject.minute).padStart(2, '0');
+    return `${hour}:${minute}`;
+};
+
 export const employeeApi = {
   fetchAll: async () => {
     const response = await api.get('/kitchen/employees');
@@ -37,9 +48,21 @@ export const employeeApi = {
     }
   },
 
+  // Fetch Employee by ID
+  fetchById: async (employeeId: number) => {
+    const response = await api.get(`/kitchen/employees/${employeeId}`);
+    if (response.data && response.data.responseCode === '0000') {
+      // Assuming the API returns the employee data directly or nested
+      // Adjust if the structure is different (e.g., response.data.employee)
+      return response.data; 
+    } else {
+      throw new Error(response.data?.description || `Failed to fetch employee with ID ${employeeId}`);
+    }
+  },
+
   add: async (employeeData: any, images: File[]) => {
-    const formData = new FormData();
-    
+    console.log('API received images for add:', images);
+    // Create the JSON part, formatting times back to strings
     const requestDto = {
         employeeDetailsRequestDTO: {
             firstname: employeeData.name || '',
@@ -47,7 +70,7 @@ export const employeeApi = {
             mobileNumber: employeeData.mobileNumber || '',
             iqamaExpiryDate: formatDateToYyyyMmDd(employeeData.iqamaIdExpiry),
             familyName: employeeData.familyName || '',
-            iqamaCardNumber: employeeData.iqamaId || '', 
+            iqamaId: employeeData.iqamaId || '',
             dateOfBirth: formatDateToYyyyMmDd(employeeData.dateOfBirth),
             password: employeeData.password || '',
             nationality: employeeData.nationality || '',
@@ -55,12 +78,13 @@ export const employeeApi = {
             healthCardExpiry: formatDateToYyyyMmDd(employeeData.healthCardExpiry),
             healthCardNumber: employeeData.healthCardNumber || ''
         },
-        dutySchedules: employeeData.schedule ? Object.keys(employeeData.schedule?.Opening || {}).map(day => ({
-            day: day,
-            openingShift: formatTime(employeeData.schedule?.Opening?.[day]),
-            breakTime: formatTime(employeeData.schedule?.Break?.[day]),
-            closingShift: formatTime(employeeData.schedule?.Closing?.[day])
-        })) : [],
+        // Format time objects back to HH:MM strings here
+        dutySchedules: (employeeData.dutySchedulesDTO || []).map((schedule: any) => ({
+            day: schedule.day,
+            openingShift: formatTimeObjectToString(schedule.openingShift),
+            breakTime: formatTimeObjectToString(schedule.breakTime),
+            closingShift: formatTimeObjectToString(schedule.closingShift)
+        })),
         salaryRequestDTO: {
             basicSalary: parseFloat(employeeData.basicSalary) || 0,
             foodAllowance: parseFloat(employeeData.foodAllowance) || 0,
@@ -72,42 +96,32 @@ export const employeeApi = {
         }
     };
 
-    // Append the JSON DTO as a string value
-    formData.append('request', JSON.stringify(requestDto));
+    // Create FormData
+    const formData = new FormData();
+    
+    // Append the JSON part as a Blob named 'request'
+    formData.append('request', new Blob([JSON.stringify(requestDto)], { type: 'application/json' }));
 
-    // Append each image with the key 'images'
+    // Append images
     if (images && images.length > 0) {
         images.forEach((image) => {
             formData.append('images', image);
         });
     }
-
-    // Get the authentication token from wherever it's stored in your application
-    // (localStorage, sessionStorage, Redux store, etc.)
-    const token = localStorage.getItem('authToken'); // Adjust according to your auth method
-
-    // Make sure to include authentication headers when sending FormData
-    const response = await api.post('/kitchen/employees/add', formData, {
+    
+    const token = localStorage.getItem('authToken'); 
+    const response = await api.post('/kitchen/employees/add', formData, { // Send formData
         headers: {
-            // Don't set Content-Type when using FormData - browser will set it with boundary
-            // 'Content-Type': 'multipart/form-data', 
-            
-            // Include your auth token
-            'Authorization': `Bearer ${token}`, // Adjust format according to your API requirements
-            // 'Access-Control-Allow-Origin': 'http://localhost:3000',
-            // 'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
-            // 'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-            // 'Access-Control-Allow-Credentials': 'true',
-            // // 'Access-Control-Max-Age': '86400'
+            // Content-Type is set automatically by the browser for FormData
+            'Authorization': `Bearer ${token}`,
         }
     });
-    
     return response.data;
   },
 
   update: async (employeeId: number, employeeData: any, images: File[], imageIdsToRemove: number[]) => {
-    const formData = new FormData();
-
+    console.log('API received images for update:', images);
+    // Create the JSON part, formatting times back to strings
     const requestDto = {
         employeeId: employeeId,
         employeeDetailsDTO: {
@@ -116,20 +130,20 @@ export const employeeApi = {
             mobileNumber: employeeData.mobileNumber || '',
             iqamaExpiryDate: formatDateToYyyyMmDd(employeeData.iqamaIdExpiry),
             familyName: employeeData.familyName || '',
-            iqamaCardNumber: employeeData.iqamaId || '',
+            iqamaId: employeeData.iqamaId || '',
             dateOfBirth: formatDateToYyyyMmDd(employeeData.dateOfBirth),
-            password: employeeData.password || '',
             nationality: employeeData.nationality || '',
             email: employeeData.email || '',
             healthCardExpiry: formatDateToYyyyMmDd(employeeData.healthCardExpiry),
             healthCardNumber: employeeData.healthCardNumber || ''
         },
-        dutySchedules: employeeData.schedule ? Object.keys(employeeData.schedule?.Opening || {}).map(day => ({
-            day: day,
-            openingShift: formatTime(employeeData.schedule?.Opening?.[day]),
-            breakTime: formatTime(employeeData.schedule?.Break?.[day]),
-            closingShift: formatTime(employeeData.schedule?.Closing?.[day])
-        })) : [],
+        // Format time objects back to HH:MM strings here
+        dutySchedules: (employeeData.dutySchedulesDTO || []).map((schedule: any) => ({
+            day: schedule.day,
+            openingShift: formatTimeObjectToString(schedule.openingShift),
+            breakTime: formatTimeObjectToString(schedule.breakTime),
+            closingShift: formatTimeObjectToString(schedule.closingShift)
+        })),
         salaryDTO: {
             basicSalary: parseFloat(employeeData.basicSalary) || 0,
             foodAllowance: parseFloat(employeeData.foodAllowance) || 0,
@@ -141,25 +155,40 @@ export const employeeApi = {
         },
         imageIdsToRemove: imageIdsToRemove || []
     };
-    
-    formData.append('request', JSON.stringify(requestDto));
 
+    // Create FormData
+    const formData = new FormData();
+
+    // Append the JSON part as a Blob named 'request'
+    formData.append('request', new Blob([JSON.stringify(requestDto)], { type: 'application/json' }));
+
+    // Append NEW images
     if (images && images.length > 0) {
         images.forEach((image) => {
+            // Use the 'images' key for new files being uploaded
             formData.append('images', image);
         });
     }
-
-    // Get the authentication token
-    const token = localStorage.getItem('authToken'); // Adjust according to your auth method
-
-    const response = await api.put('/kitchen/employees/update', formData, {
+    
+    const token = localStorage.getItem('authToken');
+    const response = await api.put('/kitchen/employees/update', formData, { // Send formData
         headers: {
-            // Include your auth token
-            'Authorization': `Bearer ${token}` // Adjust format according to your API requirements
+             // Content-Type is set automatically by the browser for FormData
+            'Authorization': `Bearer ${token}`
         }
     });
-    
     return response.data;
+  },
+
+  // Delete Employee
+  delete: async (employeeId: number) => {
+    const token = localStorage.getItem('authToken');
+    const response = await api.delete('/kitchen/employees/delete', {
+      data: { employeeId }, // Send ID in request body
+      headers: {
+          'Authorization': `Bearer ${token}`
+      }
+    });
+    return response.data; // Assumes response includes success/error message
   }
 };
