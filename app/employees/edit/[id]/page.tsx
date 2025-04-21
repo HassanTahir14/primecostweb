@@ -20,7 +20,8 @@ import {
   updateEmployee, 
   clearError, 
   clearSelectedEmployee, 
-  Employee 
+  Employee,
+  fetchAllEmployees
 } from '@/store/employeeSlice';
 
 type Step = 'Details' | 'Duty Schedule' | 'Salary';
@@ -50,6 +51,21 @@ export default function EditEmployeePage() {
   console.log("Selected Employee Data:", selectedEmployee);
 
   useEffect(() => {
+    // If no selected employee, try to get it from the employees list
+    if (!selectedEmployee && !employeeLoading && !initialLoadComplete) {
+      const fetchAndSetEmployee = async () => {
+        // First attempt
+        await dispatch(fetchAllEmployees());
+        
+        // Second attempt after delay
+        setTimeout(async () => {
+          await dispatch(fetchAllEmployees());
+        }, 1000);
+      };
+
+      fetchAndSetEmployee();
+    }
+
     if (selectedEmployee && selectedEmployee.employeeId === employeeId && !initialLoadComplete) {
       console.log("Selected Employee Data:", selectedEmployee);
       
@@ -87,16 +103,16 @@ export default function EditEmployeePage() {
       setEmployeeData(transformedData);
       setInitialLoadComplete(true);
     } 
-    // Only redirect if we've waited a bit and still don't have data
+    // Only redirect if we've waited longer and still don't have data
     else if (!selectedEmployee && !employeeLoading && !initialLoadComplete) {
       const timer = setTimeout(() => {
         console.warn(`No selected employee found in state for ID: ${employeeId}. Redirecting to employees list.`);
         router.push('/employees');
-      }, 1000); // Wait 1 second before redirecting
+      }, 3000); // Wait 3 seconds before redirecting to give time for both fetches
       
       return () => clearTimeout(timer);
     }
-  }, [selectedEmployee, employeeId, initialLoadComplete, employeeLoading, router]);
+  }, [selectedEmployee, employeeId, initialLoadComplete, employeeLoading, router, dispatch]);
 
   useEffect(() => {
     if (employeeError && !isModalOpen) {

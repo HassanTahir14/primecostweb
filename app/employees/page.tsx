@@ -34,9 +34,17 @@ export default function EmployeesPage() {
   const [actionEmployeeId, setActionEmployeeId] = useState<number | null>(null);
   const [isDeleteSuccess, setIsDeleteSuccess] = useState<boolean>(false); // Track delete success
 
-  // Fetch employees on mount
+  // Fetch employees on mount with retry
   useEffect(() => {
-    dispatch(fetchAllEmployees());
+    const fetchData = async () => {
+      await dispatch(fetchAllEmployees());
+      // Second fetch after a short delay
+      setTimeout(async () => {
+        await dispatch(fetchAllEmployees());
+      }, 1000);
+    };
+
+    fetchData();
   }, [dispatch]);
 
   // Show employee error modal if fetch fails
