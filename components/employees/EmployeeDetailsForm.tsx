@@ -48,12 +48,29 @@ const positionOptions = [
 ];
 
 export default function EmployeeDetailsForm({ onNext, initialData }: EmployeeDetailsFormProps) {
-  const [formData, setFormData] = useState(() => {
-    console.log("Initializing EmployeeDetailsForm with data:", initialData);
-    return {
-      ...initialData.employeeDetailsDTO
-    };
+  const [formData, setFormData] = useState({
+    firstname: initialData?.firstname || '',
+    familyName: initialData?.familyName || '',
+    nationality: initialData?.nationality || '',
+    mobileNumber: initialData?.mobileNumber || '',
+    position: initialData?.position || '',
+    healthCardNumber: initialData?.healthCardNumber || '',
+    iqamaId: initialData?.iqamaId || '',
+    healthCardExpiry: initialData?.healthCardExpiry || '',
+    iqamaExpiryDate: initialData?.iqamaExpiryDate || '',
+    dateOfBirth: initialData?.dateOfBirth || '',
+    loginId: initialData?.loginId || '',
+    password: initialData?.password || ''
   });
+
+  // Ensure initial data uses empty string if value is null/undefined for selects
+  useEffect(() => {
+      setFormData(prev => ({
+          ...prev,
+          nationality: initialData.nationality || '',
+          position: initialData.position || '',
+      }));
+  }, [initialData]);
 
   // Add state for validation errors
   const [errors, setErrors] = useState<Partial<Record<keyof FormDataState, string>>>({});
@@ -82,11 +99,12 @@ export default function EmployeeDetailsForm({ onNext, initialData }: EmployeeDet
 
   const handleNextClick = () => {
     if (!validateForm()) {
-      console.warn("Validation failed:", errors);
-      return; 
+        // Optionally show an alert or focus the first error field
+        console.warn("Validation failed:", errors);
+        return; 
     }
     console.log("Details Data:", formData);
-    onNext({ employeeDetailsDTO: formData });
+    onNext(formData);
   };
 
   return (
