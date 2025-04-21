@@ -49,8 +49,8 @@ export default function RecipeDetailsForm({ onNext, initialData, isEditMode = fa
   const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
 
-  // Get the image base URL for API images
-  const imageBaseUrl = 'http://13.61.61.180:8080/api/v1/images/view/';
+  // Update the image base URL
+  const imageBaseUrl = process.env.NEXT_PUBLIC_IMAGE_URL || 'http://13.61.61.180:8080/api/v1/images/view';
 
   useEffect(() => {
     setIsMounted(true);
@@ -90,7 +90,7 @@ export default function RecipeDetailsForm({ onNext, initialData, isEditMode = fa
         urls.push(URL.createObjectURL(image));
       } else if (typeof image === 'object' && image.path) {
         // For images from API with path property
-        urls.push(`${imageBaseUrl}${image.path}`);
+        urls.push(`${imageBaseUrl}/${image.path}`);
       }
     });
 

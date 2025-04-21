@@ -16,13 +16,18 @@ import {
   updatePurchaseOrder,
   receivePurchaseOrder,
   clearError,
-  PurchaseOrder,
+  PurchaseOrder as PurchaseOrderType,
 } from '@/store/purchaseOrderSlice';
 import { AsyncThunk } from '@reduxjs/toolkit';
 import { fetchAllItems } from '@/store/itemsSlice';
 import { fetchAllSuppliers } from '@/store/supplierSlice';
 import { fetchAllBranches, Branch } from '@/store/branchSlice';
 import { fetchAllStorageLocations, StorageLocation } from '@/store/storageLocationSlice';
+
+// Extend the PurchaseOrder type to include createdAt
+interface PurchaseOrder extends PurchaseOrderType {
+  createdAt?: string;
+}
 
 interface Item {
   itemId: number;
@@ -411,7 +416,7 @@ export default function PurchaseOrders({ onClose }: PurchaseOrdersProps) {
   // --- End Receive Order Logic ---
 
   return (
-    <div className="flex-1 flex flex-col bg-[#f1fff7] min-h-screen px-3 py-3 sm:px-4 md:px-8 sm:py-4 md:py-6">
+    <div className="flex-1 flex flex-col bg-white min-h-screen px-3 py-3 sm:px-4 md:px-8 sm:py-4 md:py-6">
       <div className="flex items-center justify-between mb-4 sm:mb-6">
         <div className="flex items-center gap-2">
           <button onClick={onClose} className="text-gray-600 hover:text-gray-800" disabled={poLoading}>
@@ -434,13 +439,13 @@ export default function PurchaseOrders({ onClose }: PurchaseOrdersProps) {
       </div>
 
       <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6 flex-1">
-        <div className="overflow-x-auto bg-white rounded-lg border border-gray-200">
+        <div className="overflow-x-auto">
           {poLoading ? (
             <div className="text-center py-10 text-gray-500">Loading purchase orders...</div>
           ) : (
             <table className="w-full text-left">
               <thead>
-                <tr className="bg-gray-50 border-b border-gray-200">
+                <tr className="border-b border-gray-200">
                   <th className="py-4 px-6 font-medium text-sm text-gray-500">Item Name</th>
                   <th className="py-4 px-6 font-medium text-sm text-gray-500">Item Code</th>
                   <th className="py-4 px-6 font-medium text-sm text-gray-500">Quantity</th>
@@ -453,7 +458,7 @@ export default function PurchaseOrders({ onClose }: PurchaseOrdersProps) {
               <tbody>
                 {purchaseOrders.length > 0 ? (
                   purchaseOrders.map((order) => (
-                    <tr key={order.id} className="hover:bg-gray-50 border-b border-gray-200 last:border-b-0">
+                    <tr key={order.id} className="border-b border-gray-200 last:border-b-0">
                       <td className="py-4 px-6 text-sm">{(order.itemName || 'N/A').split('@')[0]}</td>
                       <td className="py-4 px-6 text-sm">{order.itemCode || 'N/A'}</td>
                       <td className="py-4 px-6 text-sm">{order.quantity} {order.unitName}</td>
@@ -467,7 +472,7 @@ export default function PurchaseOrders({ onClose }: PurchaseOrdersProps) {
                           {order.purchaseOrderStatus || 'N/A'}
                         </span>
                       </td>
-                      <td className="py-4 px-6 text-sm">{order.createdAt || 'N/A'}</td>
+                      <td className="py-4 px-6 text-sm">{(order as any).createdAt || 'N/A'}</td>
                       <td className="py-4 px-6 text-center">
                         <div className="flex items-center justify-center space-x-2">
                           <Button
@@ -488,7 +493,7 @@ export default function PurchaseOrders({ onClose }: PurchaseOrdersProps) {
                           >
                             Received Order?
                           </Button>
-                          <Button
+                          {/* <Button
                             variant="destructive"
                             size="sm"
                             className="rounded-full bg-red-500 text-white text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-1.5"
@@ -496,7 +501,7 @@ export default function PurchaseOrders({ onClose }: PurchaseOrdersProps) {
                             disabled={poLoading}
                           >
                             Delete
-                          </Button>
+                          </Button> */}
                         </div>
                       </td>
                     </tr>

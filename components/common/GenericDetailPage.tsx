@@ -64,6 +64,9 @@ const GenericDetailPage: React.FC<GenericDetailPageProps> = ({
 
   const images = imageKey && data[imageKey] && Array.isArray(data[imageKey]) ? data[imageKey] : [];
 
+  // Update the image base URL
+  const imageBaseUrlUpdated = process.env.NEXT_PUBLIC_IMAGE_URL || 'http://13.61.61.180:8080/api/v1/images/view';
+
   return (
     <div className="flex-1 flex flex-col p-4 md:p-6 lg:p-8 bg-gray-50">
       {/* Header */}
@@ -88,10 +91,14 @@ const GenericDetailPage: React.FC<GenericDetailPageProps> = ({
                 {images.map((img, index) => (
                   <div key={img.id || img.imageId || index} className="aspect-square bg-gray-100 rounded-lg overflow-hidden">
                     <img
-                      src={`http://13.61.61.180:8080/api/v1/images/view/${img.path}`} 
+                      src={`${imageBaseUrlUpdated}/${img.path}`}
                       alt={`${title} image ${index + 1}`}
                       className="w-full h-full object-cover"
-                      onError={(e) => { e.currentTarget.src = '/placeholder-image.png'; }} // Basic fallback
+                      onError={(e) => { 
+                        const target = e.currentTarget;
+                        target.src = '/placeholder-image.svg';
+                        target.onerror = null; // Prevent infinite loop
+                      }}
                     />
                   </div>
                 ))}

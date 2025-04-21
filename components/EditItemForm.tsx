@@ -395,8 +395,8 @@ export default function EditItemForm({ itemToEdit, onClose, onSuccess }: EditIte
     }
   };
 
-  // Construct base URL for images if paths are relative
-  const imageBaseUrl = 'http://13.61.61.180:8080/api/v1/images/view/';
+  // Update the image base URL
+  const imageBaseUrl = process.env.NEXT_PUBLIC_IMAGE_URL || 'http://13.61.61.180:8080/api/v1/images/view';
 
   return (
     <div className="flex-1 flex flex-col">
@@ -625,10 +625,14 @@ export default function EditItemForm({ itemToEdit, onClose, onSuccess }: EditIte
                          className="relative aspect-square bg-gray-100 rounded-lg group"
                        >
                          <img
-                           src={`${imageBaseUrl}${img.path}`}
+                           src={`${imageBaseUrl}/${img.path}`}
                            alt={`Image ${img.imageId}`}
                            className="w-full h-full object-cover rounded-lg"
-                           onError={(e) => { e.currentTarget.src = '/placeholder-image.png'; }} // Basic fallback
+                           onError={(e) => {
+                             const target = e.target as HTMLImageElement;
+                             target.src = '/placeholder-image.jpg'; // Add a placeholder image
+                             target.onerror = null; // Prevent infinite loop
+                           }}
                          />
                          <button 
                             type="button" 
