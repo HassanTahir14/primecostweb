@@ -7,10 +7,12 @@ interface ConfirmationModalProps {
   isOpen: boolean;
   onClose: () => void;
   onConfirm?: () => void;
+  onReject?: () => void;
   title: string;
   message: string;
   confirmText?: string;
   cancelText?: string;
+  rejectText?: string;
   isAlert?: boolean;
   okText?: string;
 }
@@ -19,10 +21,12 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   isOpen,
   onClose,
   onConfirm,
+  onReject,
   title,
   message,
   confirmText = 'Confirm',
   cancelText = 'Cancel',
+  rejectText = 'Reject',
   isAlert = false,
   okText = 'OK',
 }) => {
@@ -66,7 +70,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
               {okText}
             </button>
           ) : (
-            // Confirmation Mode: Cancel and Confirm buttons
+            // Confirmation Mode: Buttons depend on whether onReject is provided
             <>
               <button
                 onClick={onClose}
@@ -74,12 +78,23 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
               >
                 {cancelText}
               </button>
+              {onReject && (
+                <button
+                  onClick={() => {
+                    if (onReject) onReject();
+                    // No automatic close here
+                  }}
+                  className="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                >
+                  {rejectText}
+                </button>
+              )}
               <button
                 onClick={() => {
                   if (onConfirm) onConfirm();
                   // No automatic close here in confirmation mode
                 }}
-                className="px-4 py-2 text-sm font-medium text-white bg-teal-600 border border-transparent rounded-md shadow-sm hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
+                className={`px-4 py-2 text-sm font-medium text-white ${onReject ? 'bg-green-600 hover:bg-green-700 focus:ring-green-500' : 'bg-teal-600 hover:bg-teal-700 focus:ring-teal-500'} border border-transparent rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2`}
               >
                 {confirmText}
               </button>

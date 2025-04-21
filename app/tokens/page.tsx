@@ -10,19 +10,28 @@ interface Token {
   tokenType: string;
   tokenStatus: string;
   requestorName: string;
-  approverName: string;
+  approverName: string | null; // Can be null if not yet approved/rejected
   createdAt: string;
   updatedAt: string;
 }
+
+type TokenAction = 'APPROVED' | 'REJECTED';
 
 export default function TokensPage() {
   const [isLatestTokens, setIsLatestTokens] = useState(true);
   const [tokens, setTokens] = useState<Token[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isActionLoading, setIsActionLoading] = useState<number | null>(null); // Store tokenId being acted upon
   
-  // For modals
+  // For Error modal
   const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
   const [modalMessage, setModalMessage] = useState('');
+
+  // For Confirmation modal
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [confirmModalTitle, setConfirmModalTitle] = useState('');
+  const [confirmModalMessage, setConfirmModalMessage] = useState('');
+  const [tokenIdToAction, setTokenIdToAction] = useState<number | null>(null);
   
   // Stats
   const [stats, setStats] = useState({
@@ -47,9 +56,24 @@ export default function TokensPage() {
     try {
       const response = await api.get('/tokens');
       if (response.data && response.data.tokens) {
-        setTokens(response.data.tokens);
+        let fetchedTokens: Token[] = response.data.tokens;
+
+        // Sort based on isLatestTokens state BEFORE formatting
+        fetchedTokens.sort((a, b) => {
+          const dateA = new Date(a.createdAt).getTime();
+          const dateB = new Date(b.createdAt).getTime();
+          return isLatestTokens ? dateB - dateA : dateA - dateB; // Desc for latest, Asc otherwise
+        });
+
+        // Format dates immediately after fetching and sorting
+        const formattedTokens = fetchedTokens.map((token: Token) => ({
+          ...token,
+          createdAt: formatDate(token.createdAt),
+          updatedAt: formatDate(token.updatedAt),
+        }));
+        setTokens(formattedTokens);
         
-        // Calculate stats
+        // Calculate stats using the original data before formatting if necessary
         const pendingCount = response.data.tokens.filter((token: Token) => token.tokenStatus === 'PENDING').length;
         const rejectedCount = response.data.tokens.filter((token: Token) => token.tokenStatus === 'REJECTED').length;
         const approvedCount = response.data.tokens.filter((token: Token) => token.tokenStatus === 'APPROVED').length;
@@ -71,7 +95,38 @@ export default function TokensPage() {
 
   useEffect(() => {
     fetchTokens();
-  }, []);
+  }, [isLatestTokens]);
+
+  const handleRowClick = (tokenId: number) => {
+    setTokenIdToAction(tokenId);
+    setConfirmModalTitle('Token Action');
+    setConfirmModalMessage('Please choose an action for this token (Approve or Reject).');
+    setIsConfirmModalOpen(true);
+  };
+
+  const performTokenAction = async (action: TokenAction) => {
+    if (!tokenIdToAction) return;
+
+    setIsActionLoading(tokenIdToAction); // Indicate loading for this specific token
+    setIsConfirmModalOpen(false); // Close confirmation modal immediately
+
+    try {
+      await api.post('/tokens/action', {
+        tokenId: tokenIdToAction,
+        action: action,
+      });
+      // Refresh tokens after successful action
+      await fetchTokens();
+    } catch (error) {
+      console.error(`Error performing action ${action} on token:`, error);
+      setModalMessage(`Failed to perform action ${action}. Please try again.`);
+      setIsErrorModalOpen(true);
+    } finally {
+      // Reset state regardless of success or failure
+      setIsActionLoading(null);
+      setTokenIdToAction(null);
+    }
+  };
 
   return (
     <PageLayout title="Tokens">
@@ -131,14 +186,30 @@ export default function TokensPage() {
                 </thead>
                 <tbody className="divide-y divide-gray-200">
                   {tokens.map((token) => (
-                    <tr key={token.tokenId} className="border-b border-gray-100">
+                    <tr 
+                      key={token.tokenId} 
+                      className={`border-b border-gray-100 ${
+                        isActionLoading === token.tokenId ? 'opacity-50' : ''
+                      } ${
+                        token.tokenStatus === 'PENDING' ? 'cursor-pointer hover:bg-gray-50' : ''
+                      }`}
+                      onClick={() => token.tokenStatus === 'PENDING' && handleRowClick(token.tokenId)}
+                    >
                       <td className="py-4 px-6">{token.tokenType}</td>
-                      <td className="py-4 px-6 font-semibold">{token.tokenStatus}</td>
-                      <td className="py-4 px-6 text-gray-600">
-                        Created at: {token.createdAt}
+                      <td className="py-4 px-6 font-semibold">
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          token.tokenStatus === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
+                          token.tokenStatus === 'APPROVED' ? 'bg-green-100 text-green-800' :
+                          token.tokenStatus === 'REJECTED' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800'
+                        }`}>
+                          {token.tokenStatus}
+                        </span>
                       </td>
                       <td className="py-4 px-6 text-gray-600">
-                        Updated at: {token.updatedAt}
+                        {token.createdAt}
+                      </td>
+                      <td className="py-4 px-6 text-gray-600">
+                        {token.updatedAt}
                       </td>
                       <td className="py-4 px-6 text-[#00997B] font-semibold">{token.requestorName}</td>
                     </tr>
@@ -163,6 +234,25 @@ export default function TokensPage() {
         message={modalMessage}
         isAlert={true}
         okText="OK"
+      />
+
+      {/* Confirmation Modal for Token Actions */}
+      <ConfirmationModal
+        isOpen={isConfirmModalOpen}
+        onClose={() => {
+          if (!isActionLoading) {
+            setIsConfirmModalOpen(false);
+            setTokenIdToAction(null);
+          }
+        }}
+        onConfirm={() => performTokenAction('APPROVED')}
+        onReject={() => performTokenAction('REJECTED')}
+        title={confirmModalTitle}
+        message={confirmModalMessage}
+        confirmText="Approve"
+        rejectText="Reject"
+        cancelText="Cancel"
+        isAlert={false}
       />
     </PageLayout>
   );
