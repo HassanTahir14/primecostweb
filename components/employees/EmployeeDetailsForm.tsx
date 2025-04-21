@@ -48,7 +48,7 @@ const positionOptions = [
 ];
 
 export default function EmployeeDetailsForm({ onNext, initialData }: EmployeeDetailsFormProps) {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormDataState>(() => ({
     firstname: initialData?.firstname || '',
     familyName: initialData?.familyName || '',
     nationality: initialData?.nationality || '',
@@ -61,16 +61,7 @@ export default function EmployeeDetailsForm({ onNext, initialData }: EmployeeDet
     dateOfBirth: initialData?.dateOfBirth || '',
     loginId: initialData?.loginId || '',
     password: initialData?.password || ''
-  });
-
-  // Ensure initial data uses empty string if value is null/undefined for selects
-  useEffect(() => {
-      setFormData(prev => ({
-          ...prev,
-          nationality: initialData.nationality || '',
-          position: initialData.position || '',
-      }));
-  }, [initialData]);
+  }));
 
   // Add state for validation errors
   const [errors, setErrors] = useState<Partial<Record<keyof FormDataState, string>>>({});
