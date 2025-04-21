@@ -22,6 +22,7 @@ import {
   selectItemsCurrentAction,
   clearError as clearItemsError,
 } from '@/store/itemsSlice';
+import { useRouter } from 'next/navigation';
 
 // Define Item interface matching the structure in itemsSlice
 interface ItemImage {
@@ -59,6 +60,7 @@ export default function ItemsMasterList() {
   const status = useSelector(selectItemsStatus);
   const error = useSelector(selectItemsError);
   const currentAction = useSelector(selectItemsCurrentAction);
+  const router = useRouter();
 
   const [showAddForm, setShowAddForm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false); // State for edit form visibility
@@ -194,120 +196,129 @@ export default function ItemsMasterList() {
   } else {
     // Default view: Items List Table
     mainContent = (
-      <>
-        <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+      <div className="bg-white rounded-lg shadow-sm p-6 space-y-6">
+        <div className="flex flex-col md:flex-row justify-between items-center gap-4">
           <SearchInput 
             placeholder="Search items..." 
             value={internalSearchTerm} 
             onChange={handleSearchInputChange} 
           />
-          <div className="flex gap-3 self-end md:self-center">
+          <div className="flex gap-2 flex-shrink-0">
             <Button onClick={() => {setShowAddForm(true); setShowEditForm(false); setItemToEdit(null);}}>Add Item</Button>
-            <Button onClick={() => setShowCategories(true)} variant="outline">Manage Categories</Button>
+            <Button onClick={() => setShowCategories(true)} variant="secondary">Manage Categories</Button>
           </div>
         </div>
 
-        {isLoading && currentAction === 'fetch' && <div className="text-center p-4">Loading items...</div>}
-        
-        {!isLoading && error && currentAction === 'fetch' && (
-           <div className="text-center p-4 text-red-600">
-             Error loading items: {typeof error === 'string' ? error : error?.message || 'Unknown error'}
-           </div>
-        )}
-
-        {status !== 'loading' && status !== 'failed' && (
-          <div className="bg-white bg-opacity-70 p-4 sm:p-6 md:p-8 rounded-2xl shadow-lg">
-            <h2 className="text-base md:text-lg font-bold mb-4">Items List</h2>
-            <div className="bg-white bg-opacity-90 rounded-xl shadow-md overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="w-full min-w-[800px]">
-                  <thead className="bg-gray-100">
-                    <tr>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Item name</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Code</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Brand</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Primary Unit</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Cost (VAT Excl)</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Actions</th>
+        {isLoading && currentAction === 'fetch' ? (
+          <div className="text-center py-10 text-gray-500">
+            Loading items...
+          </div>
+        ) : error && currentAction === 'fetch' ? (
+          <div className="text-center py-10 text-red-500">
+            Error loading items: {typeof error === 'string' ? error : error?.message || 'Unknown error'}
+          </div>
+        ) : (
+          <div>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-50 text-gray-700 uppercase text-xs">
+                  <tr>
+                    <th className="px-6 py-3 text-left">Item name</th>
+                    <th className="px-6 py-3 text-left">Code</th>
+                    <th className="px-6 py-3 text-left">Brand</th>
+                    <th className="px-6 py-3 text-left">Primary Unit</th>
+                    <th className="px-6 py-3 text-left">Cost (VAT Excl)</th>
+                    <th className="px-6 py-3 text-left">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {items.length === 0 && (
+                     <tr>
+                       <td colSpan={6} className="px-6 py-4 text-center text-sm text-gray-500">No items found.</td>
+                     </tr>
+                  )}
+                  {items.map((item) => (
+                    <tr 
+                      key={item.itemId} 
+                      className="hover:bg-gray-50 cursor-pointer"
+                      onClick={(e) => {
+                        // Prevent navigation if clicking on action buttons
+                        if ((e.target as HTMLElement).closest('.action-buttons')) {
+                          return;
+                        }
+                        router.push(`/items/detail/${item.itemId}`);
+                      }}
+                    >
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800 font-medium">
+                        {item.name.split('@')[0]}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{item.code || '-'}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{item.itemsBrandName || '-'}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                          {item.primaryUnitValue}
+                      </td>
+                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                          SAR {item.purchaseCostWithoutVat?.toFixed(2) ?? '0.00'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center space-x-2 action-buttons">
+                          <Button 
+                            variant="default" 
+                            size="sm" 
+                            className="rounded-full bg-[#339A89] text-white text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-1.5"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleEditClick(item);
+                            }}
+                          >
+                            Edit
+                          </Button>
+                          <Button 
+                            variant="destructive" 
+                            size="sm" 
+                            className="rounded-full bg-red-500 text-white text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-1.5"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteClick(item);
+                            }}
+                          >
+                            Delete
+                          </Button>
+                        </div>
+                      </td>
                     </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {items.length === 0 && (
-                       <tr>
-                         <td colSpan={7} className="px-4 py-4 text-center text-sm text-gray-500">No items found.</td>
-                       </tr>
-                    )}
-                    {items.map((item) => (
-                      <tr key={item.itemId} className="hover:bg-gray-50 transition-colors">
-                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-800 font-medium">
-                          <Link href={`/items/detail/${item.itemId}`} className="text-blue-600 hover:text-blue-800 hover:underline">
-                            {item.name.split('@')[0]}
-                          </Link>
-                        </td>
-                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">{item.code || '-'}</td>
-                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">{item.itemsBrandName || '-'}</td>
-                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
-                            {item.primaryUnitValue}
-                        </td>
-                         <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
-                            SAR {item.purchaseCostWithoutVat?.toFixed(2) ?? '0.00'}
-                        </td>
-                        <td className="px-4 py-3 whitespace-nowrap text-sm font-medium">
-                           <div className="flex gap-2">
-                             <Button 
-                               variant="outline" 
-                               size="sm" 
-                               className="text-xs"
-                               onClick={() => handleEditClick(item)}
-                               disabled={isLoading}
-                              >
-                                Edit
-                              </Button> 
-                             <Button 
-                               variant="destructive"
-                               size="sm" 
-                               className="text-xs"
-                               onClick={() => handleDeleteClick(item)}
-                               disabled={isActionLoading}
-                              >
-                               {isActionLoading && itemToDelete?.itemId === item.itemId ? 'Deleting...' : 'Delete'}
-                             </Button>
-                           </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-              {pagination && pagination.totalPages > 1 && (
-                <div className="flex justify-between items-center p-4 border-t bg-gray-50">
-                   <span className="text-sm text-gray-600">
-                     Page {pagination.pageNumber + 1} of {pagination.totalPages} ({pagination.totalElements} items)
-                   </span>
-                  <div className="flex gap-2">
-                     <Button 
-                       onClick={() => handlePageChange(pagination.pageNumber - 1)} 
-                       disabled={pagination.first || isLoading}
-                       variant="outline" 
-                       size="sm"
-                     >
-                       Previous
-                     </Button>
-                     <Button 
-                       onClick={() => handlePageChange(pagination.pageNumber + 1)} 
-                       disabled={pagination.last || isLoading}
-                       variant="outline" 
-                       size="sm"
-                     >
-                       Next
-                     </Button>
-                  </div>
-                </div>
-              )}
+                  ))}
+                </tbody>
+              </table>
             </div>
+            {pagination && pagination.totalPages > 1 && (
+              <div className="flex justify-between items-center p-4 border-t bg-gray-50">
+                 <span className="text-sm text-gray-600">
+                   Page {pagination.pageNumber + 1} of {pagination.totalPages} ({pagination.totalElements} items)
+                 </span>
+                <div className="flex gap-2">
+                   <Button 
+                     onClick={() => handlePageChange(pagination.pageNumber - 1)} 
+                     disabled={pagination.first || isLoading}
+                     variant="outline" 
+                     size="sm"
+                   >
+                     Previous
+                   </Button>
+                   <Button 
+                     onClick={() => handlePageChange(pagination.pageNumber + 1)} 
+                     disabled={pagination.last || isLoading}
+                     variant="outline" 
+                     size="sm"
+                   >
+                     Next
+                   </Button>
+                </div>
+              </div>
+            )}
           </div>
         )}
-      </>
+      </div>
     );
   }
 

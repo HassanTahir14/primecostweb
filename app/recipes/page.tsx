@@ -11,6 +11,8 @@ import { AppDispatch } from '@/store/store';
 import Loader from '@/components/common/Loader';
 import Image from 'next/image';
 import ConfirmationModal from '@/components/common/ConfirmationModal';
+import { useRouter } from 'next/navigation';
+import SearchInput from '@/components/common/SearchInput';
 
 export default function RecipesPage() {
   const dispatch = useDispatch<AppDispatch>();
@@ -27,6 +29,8 @@ export default function RecipesPage() {
   const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
+
+  const router = useRouter();
 
   useEffect(() => {
     const loadRecipes = async () => {
@@ -110,34 +114,21 @@ export default function RecipesPage() {
     <PageLayout title="All Recipes">
       <div className="bg-white rounded-lg shadow-sm p-6 space-y-6">
         <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-          {/* <h1 className="text-3xl font-semibold text-gray-900">All Recipes</h1> */}
-          <div className="flex items-center gap-4 w-full md:w-auto flex-wrap justify-end">
-            {/* Search Input */}
-            <div className="relative flex-grow min-w-[200px] max-w-xs">
-              <input
-                type="text"
-                placeholder="Search Recipe"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00997B] pl-10"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-              <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                <Search className="h-5 w-5 text-gray-400" />
-              </div>
-            </div>
-
-            {/* Action Buttons */}
-            <div className="flex gap-2 flex-shrink-0">
-              <Link href="/recipes/create">
-                <Button>Create New</Button>
-              </Link>
-              <Link href="/recipes/sub-recipes">
-                <Button variant="secondary">Sub-Recipes List</Button>
-              </Link>
-              <Link href="/recipes/categories">
-                <Button variant="secondary">Categories</Button>
-              </Link>
-            </div>
+          <SearchInput 
+            placeholder="Search Recipe" 
+            value={searchQuery} 
+            onChange={(e) => setSearchQuery(e.target.value)} 
+          />
+          <div className="flex gap-2 flex-shrink-0">
+            <Link href="/recipes/create">
+              <Button>Create New</Button>
+            </Link>
+            <Link href="/recipes/sub-recipes">
+              <Button variant="secondary">Sub-Recipes List</Button>
+            </Link>
+            <Link href="/recipes/categories">
+              <Button variant="secondary">Categories</Button>
+            </Link>
           </div>
         </div>
         
@@ -159,12 +150,22 @@ export default function RecipesPage() {
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {filteredRecipes.map((recipe: any) => (
-                    <tr key={recipe.id} className="hover:bg-gray-50">
+                    <tr 
+                      key={recipe.id} 
+                      className="hover:bg-gray-50 cursor-pointer"
+                      onClick={(e) => {
+                        // Prevent navigation if clicking on action buttons
+                        if ((e.target as HTMLElement).closest('.action-buttons')) {
+                          return;
+                        }
+                        router.push(`/recipes/${recipe.id}`);
+                      }}
+                    >
                       <td className="px-6 py-4 whitespace-nowrap">
                         {recipe.images && recipe.images.length > 0 ? (
                           <div className="w-12 h-12 rounded-md overflow-hidden relative">
                             <Image 
-                              src={`http://13.61.61.180:8080/${recipe.images[0].path}`}
+                              src={`http://13.61.61.180:8080/api/v1/images/view/${recipe.images[0].path}`}
                               alt={recipe.name}
                               fill
                               className="object-cover"
@@ -190,20 +191,26 @@ export default function RecipesPage() {
                       <td className="px-6 py-4 whitespace-nowrap">{recipe.numberOfPortions}</td>
                       <td className="px-6 py-4 whitespace-nowrap">${(recipe.costPerRecipe / 100).toFixed(2)}</td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center space-x-2">
+                        <div className="flex items-center space-x-2 action-buttons">
                           <Link href={`/recipes/edit/${recipe.id}`}>
-                            <Button variant="ghost" size="sm" className="p-1">
-                              <Edit size={16} className="text-gray-500" />
+                            <Button 
+                              variant="default" 
+                              size="sm" 
+                              className="rounded-full bg-[#339A89] text-white text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-1.5"
+                            >
+                              Edit
                             </Button>
                           </Link>
                           <Button 
-                            variant="ghost" 
+                            variant="destructive" 
                             size="sm" 
-                            className="p-1"
-                            onClick={() => handleDeleteClick(recipe)}
-                            disabled={isDeleting}
+                            className="rounded-full bg-red-500 text-white text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-1.5"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteClick(recipe);
+                            }}
                           >
-                            <Trash2 size={16} className="text-red-500" />
+                            Delete
                           </Button>
                         </div>
                       </td>

@@ -121,7 +121,7 @@ export default function PurchaseOrders({ onClose }: PurchaseOrdersProps) {
   // Create memoized options for dropdowns
   const itemOptions = useMemo(() => {
     return items.map((item: Item) => ({
-      label: `${item.name} (${item.code})`,
+      label: `${item.name.split('@')[0]} (${item.code})`,
       value: String(item.itemId),
       categoryId: String(item.categoryId),
       primaryUnitId: String(item.primaryUnitId),
@@ -465,7 +465,7 @@ export default function PurchaseOrders({ onClose }: PurchaseOrdersProps) {
               ) : (
                 Array.isArray(purchaseOrders) && purchaseOrders.map((order) => (
                   <tr key={order.id} className="border-b hover:bg-gray-50">
-                    <td className="py-3 sm:py-4 text-gray-800 text-sm sm:text-base pr-2">{order.itemName || 'N/A'}</td>
+                    <td className="py-3 sm:py-4 text-gray-800 text-sm sm:text-base pr-2">{(order.itemName || 'N/A').split('@')[0]}</td>
                     <td className="py-3 sm:py-4 text-gray-800 text-sm sm:text-base pr-2">{order.itemCode || 'N/A'}</td>
                     <td className="py-3 sm:py-4 text-gray-800 text-sm sm:text-base pr-2">{order.supplierName || 'N/A'}</td>
                     <td className="py-3 sm:py-4 text-gray-800 text-sm sm:text-base pr-2">{order.quantity} {order.unitName}</td>
@@ -493,7 +493,7 @@ export default function PurchaseOrders({ onClose }: PurchaseOrdersProps) {
                         <Button 
                           variant="default" 
                           size="sm" 
-                          className="rounded-full bg-[#339A89] text-white text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-1.5"
+                          className="rounded-full bg-[#05A49D] text-white text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-1.5"
                           onClick={() => handleReceiveClick(order)}
                           disabled={poLoading || order.purchaseOrderStatus === 'RECEIVED'}
                         >

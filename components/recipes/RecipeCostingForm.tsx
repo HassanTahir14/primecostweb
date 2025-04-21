@@ -10,9 +10,10 @@ interface RecipeCostingFormProps {
 }
 
 export default function RecipeCostingForm({ onNext, onBack, initialData }: RecipeCostingFormProps) {
+  console.log(initialData, 'initialData');
   const [menuPrice, setMenuPrice] = useState(initialData.menuPrice || '');
-  const [foodCostBudgetPercent, setFoodCostBudgetPercent] = useState(initialData.foodCostBudgetPercent || '');
-  const [foodCostActualPercent, setFoodCostActualPercent] = useState(initialData.foodCostActualPercent || '');
+  const [foodCostBudgetPercent, setFoodCostBudgetPercent] = useState(initialData.foodCostBudget || '');
+  const [foodCostActualPercent, setFoodCostActualPercent] = useState(initialData.foodCostActual || '');
   const [idealSellingPrice, setIdealSellingPrice] = useState(initialData.idealSellingPrice || '');
   const [costPerPortion, setCostPerPortion] = useState(initialData.costPerPortion || '');
   const [costPerRecipe, setCostPerRecipe] = useState(initialData.costPerRecipe || '');

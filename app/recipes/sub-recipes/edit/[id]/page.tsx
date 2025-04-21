@@ -190,7 +190,7 @@ export default function EditRecipePage() {
       
       // Redirect to recipes list after successful update
       setTimeout(() => {
-        router.push('/recipes');
+        router.push('/recipes/sub-recipes');
       }, 1500);
     } catch (err: any) {
       setErrorMessage(err.message || 'Failed to update recipe');
@@ -224,11 +224,11 @@ export default function EditRecipePage() {
   }
 
   return (
-    <PageLayout title="Edit Recipe">
+    <PageLayout title="Edit Sub Recipe">
       <div className="mb-4">
-        <Link href="/recipes" className="inline-flex items-center text-gray-600 hover:text-gray-900">
+        <Link href="/recipes/sub-recipes" className="inline-flex items-center text-gray-600 hover:text-gray-900">
           <ArrowLeft className="w-5 h-5 mr-2" />
-          <span>Back to Recipes</span>
+          <span>Back to Sub Recipes</span>
         </Link>
       </div>
 
@@ -259,7 +259,7 @@ export default function EditRecipePage() {
         isOpen={isSuccessModalOpen}
         onClose={() => setIsSuccessModalOpen(false)}
         title="Success"
-        message="Recipe updated successfully!"
+        message="Sub Recipe updated successfully!"
         isAlert={true}
         okText="OK"
       />

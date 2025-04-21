@@ -16,17 +16,15 @@ const timeSlots = ['Opening', 'Break', 'Closing'];
 // Keep this if needed internally, but we mostly need string -> string now
 const formatStringToTimeObject = (timeString: string | null | undefined) => { /* ... no change needed here ... */ };
 const formatTime = (timeString: string | null | undefined) => {
-  if (!timeString || !/^\d{2}:\d{2}$/.test(timeString)) {
-    return { hour: 0, minute: 0, second: 0, nano: 0 }; 
+  if (!timeString || timeString === '00:00:00' || !/^\d{2}:\d{2}:\d{2}$/.test(timeString)) {
+    return ''; // Return empty string for invalid or 00:00:00 times
   }
-  const [hour, minute] = timeString.split(':').map(Number);
-  return { hour, minute, second: 0, nano: 0 };
+  return timeString.substring(0, 5); // Extract HH:MM from HH:MM:SS
 };
 
 export default function EmployeeDutyScheduleForm({ onNext, onPrevious, initialData }: EmployeeDutyScheduleFormProps) {
   // Initialize schedule state from initialData if present
   const [schedule, setSchedule] = useState(() => {
-    // Check if initialData has the dutySchedulesDTO structure (which comes from API's dutyScheduleResponseList)
     const initialDutySchedules = initialData.dutySchedulesDTO || [];
     const newSchedule: { [key: string]: { [key: string]: string } } = {};
     
@@ -36,18 +34,11 @@ export default function EmployeeDutyScheduleForm({ onNext, onPrevious, initialDa
         const daySchedule = initialDutySchedules.find((d: any) => d.day === day);
         let timeValue = ''; // Default to empty string
         if (daySchedule) {
-            // Determine which field to use based on the slot
-            const apiTimeField = slot === 'Opening' ? daySchedule.openingShift :
-                                 slot === 'Break' ? daySchedule.breakTime :
-                                 daySchedule.closingShift;
-            
-            // Extract HH:MM from HH:MM:SS if the string exists and is valid
-            if (apiTimeField && typeof apiTimeField === 'string') {
-                const match = apiTimeField.match(/^(\d{2}:\d{2})/);
-                if (match) {
-                    timeValue = match[1]; // Get the HH:MM part
-                }
-            }
+          // Map the time values based on slot
+          const timeField = slot === 'Opening' ? daySchedule.openingShift :
+                          slot === 'Break' ? daySchedule.breakTime :
+                          daySchedule.closingShift;
+          timeValue = formatTime(timeField);
         }
         newSchedule[slot][day] = timeValue;
       });
@@ -108,12 +99,17 @@ export default function EmployeeDutyScheduleForm({ onNext, onPrevious, initialDa
                 {daysOfWeek.map(day => (
                   <td key={`${slot}-${day}`} className="border border-gray-300 p-0">
                     <input
-                      type="time" // Use type="time" for better UX
+                      type="time"
                       value={schedule[slot]?.[day] || ''}
                       onChange={(e) => handleScheduleChange(slot, day, e.target.value)}
                       className="w-full h-full p-2 border-none focus:ring-1 focus:ring-inset focus:ring-[#00997B] outline-none text-center text-sm"
-                      // placeholder="HH:MM"
+                      placeholder="-"
                     />
+                    {!schedule[slot]?.[day] && (
+                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                        <span className="text-gray-400">-</span>
+                      </div>
+                    )}
                   </td>
                 ))}
               </tr>

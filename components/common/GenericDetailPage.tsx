@@ -88,7 +88,7 @@ const GenericDetailPage: React.FC<GenericDetailPageProps> = ({
                 {images.map((img, index) => (
                   <div key={img.id || img.imageId || index} className="aspect-square bg-gray-100 rounded-lg overflow-hidden">
                     <img
-                      src={`${imageBaseUrl}${img.path}`} 
+                      src={`http://13.61.61.180:8080/api/v1/images/view/${img.path}`} 
                       alt={`${title} image ${index + 1}`}
                       className="w-full h-full object-cover"
                       onError={(e) => { e.currentTarget.src = '/placeholder-image.png'; }} // Basic fallback
@@ -109,7 +109,7 @@ const GenericDetailPage: React.FC<GenericDetailPageProps> = ({
                   <div key={key} className="py-2">
                     <dt className="text-sm font-medium text-gray-500 mb-1">{label}</dt>
                     <dd className="text-sm text-gray-900">
-                      {render ? render(value, data) : (value ?? 'N/A')} 
+                      {render ? render(value, data) : (typeof value === 'object' ? JSON.stringify(value) : (value ?? 'N/A'))} 
                     </dd>
                   </div>
                 );

@@ -396,7 +396,7 @@ export default function EditItemForm({ itemToEdit, onClose, onSuccess }: EditIte
   };
 
   // Construct base URL for images if paths are relative
-  const imageBaseUrl = api.defaults.baseURL?.replace('/api/v1', '') || ''; // Adjust if needed
+  const imageBaseUrl = 'http://13.61.61.180:8080/api/v1/images/view/';
 
   return (
     <div className="flex-1 flex flex-col">
@@ -625,7 +625,7 @@ export default function EditItemForm({ itemToEdit, onClose, onSuccess }: EditIte
                          className="relative aspect-square bg-gray-100 rounded-lg group"
                        >
                          <img
-                           src={`${imageBaseUrl}${img.path}`} // Construct full URL if path is relative
+                           src={`${imageBaseUrl}${img.path}`}
                            alt={`Image ${img.imageId}`}
                            className="w-full h-full object-cover rounded-lg"
                            onError={(e) => { e.currentTarget.src = '/placeholder-image.png'; }} // Basic fallback

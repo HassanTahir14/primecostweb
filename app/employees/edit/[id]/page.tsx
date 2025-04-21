@@ -45,18 +45,17 @@ export default function EditEmployeePage() {
   
   const [modalMessage, setModalMessage] = useState<string>('');
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-  const [isSuccess, setIsSuccess] = useState<boolean>(false); 
-
-  useEffect(() => {
-      return () => {
-          dispatch(clearSelectedEmployee());
-      };
-  }, [dispatch]);
+  const [isSuccess, setIsSuccess] = useState<boolean>(false);
+  
+  console.log("Selected Employee Data:", selectedEmployee);
 
   useEffect(() => {
     if (selectedEmployee && selectedEmployee.employeeId === employeeId && !initialLoadComplete) {
+      console.log("Selected Employee Data:", selectedEmployee);
+      
       const transformedData = {
-        name: selectedEmployee.employeeDetailsDTO?.firstname || '',
+        // Personal Details
+        firstname: selectedEmployee.employeeDetailsDTO?.firstname || '',
         familyName: selectedEmployee.employeeDetailsDTO?.familyName || '',
         nationality: selectedEmployee.employeeDetailsDTO?.nationality || '',
         mobileNumber: selectedEmployee.employeeDetailsDTO?.mobileNumber || '',
@@ -64,24 +63,38 @@ export default function EditEmployeePage() {
         healthCardNumber: selectedEmployee.employeeDetailsDTO?.healthCardNumber || '',
         iqamaId: selectedEmployee.employeeDetailsDTO?.iqamaId || '',
         healthCardExpiry: selectedEmployee.employeeDetailsDTO?.healthCardExpiry || '',
-        iqamaIdExpiry: selectedEmployee.employeeDetailsDTO?.iqamaExpiryDate || '',
+        iqamaExpiryDate: selectedEmployee.employeeDetailsDTO?.iqamaExpiryDate || '',
         dateOfBirth: selectedEmployee.employeeDetailsDTO?.dateOfBirth || '',
-        email: selectedEmployee.employeeDetailsDTO?.email || '',
+        loginId: selectedEmployee.employeeDetailsDTO?.loginId || '',
+        password: selectedEmployee.employeeDetailsDTO?.password || '',
+        
+        // Duty Schedule
         dutySchedulesDTO: selectedEmployee.dutyScheduleResponseList || [],
-        basicSalary: selectedEmployee.salaryDTO?.basicSalary || '',
-        foodAllowance: selectedEmployee.salaryDTO?.foodAllowance || '',
-        accommodationAllowance: selectedEmployee.salaryDTO?.accommodationAllowance || '',
-        transportAllowance: selectedEmployee.salaryDTO?.transportAllowance || '',
-        telephoneAllowance: selectedEmployee.salaryDTO?.mobileAllowance || '',
-        otherAllowance: selectedEmployee.salaryDTO?.otherAllowance || '',
+        
+        // Salary Details
+        basicSalary: selectedEmployee.salaryDTO?.basicSalary?.toString() || '',
+        foodAllowance: selectedEmployee.salaryDTO?.foodAllowance?.toString() || '',
+        accommodationAllowance: selectedEmployee.salaryDTO?.accommodationAllowance?.toString() || '',
+        transportAllowance: selectedEmployee.salaryDTO?.transportAllowance?.toString() || '',
+        mobileAllowance: selectedEmployee.salaryDTO?.mobileAllowance?.toString() || '',
+        otherAllowance: selectedEmployee.salaryDTO?.otherAllowance?.toString() || '',
+        
+        // Images
+        existingImages: selectedEmployee.images || []
       };
-      console.log("Transformed Initial Data for Edit (from state):", transformedData);
+      
+      console.log("Transformed Data for Forms:", transformedData);
       setEmployeeData(transformedData);
       setInitialLoadComplete(true);
     } 
+    // Only redirect if we've waited a bit and still don't have data
     else if (!selectedEmployee && !employeeLoading && !initialLoadComplete) {
-        console.warn(`No selected employee found in state for ID: ${employeeId}. Redirecting.`);
-        setInitialLoadComplete(true);
+      const timer = setTimeout(() => {
+        console.warn(`No selected employee found in state for ID: ${employeeId}. Redirecting to employees list.`);
+        router.push('/employees');
+      }, 1000); // Wait 1 second before redirecting
+      
+      return () => clearTimeout(timer);
     }
   }, [selectedEmployee, employeeId, initialLoadComplete, employeeLoading, router]);
 
@@ -192,6 +205,13 @@ export default function EditEmployeePage() {
               return null;
       }
   };
+
+  // Clear selected employee when component unmounts
+  useEffect(() => {
+    return () => {
+      dispatch(clearSelectedEmployee());
+    };
+  }, [dispatch]);
 
   return (
     <PageLayout title={`Edit Employee #${employeeId}`}>

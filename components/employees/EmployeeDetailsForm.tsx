@@ -12,7 +12,7 @@ interface EmployeeDetailsFormProps {
 
 // Interface for the form data state
 interface FormDataState {
-  name: string;
+  firstname: string;
   familyName: string;
   nationality: string;
   mobileNumber: string;
@@ -20,9 +20,9 @@ interface FormDataState {
   healthCardNumber: string;
   iqamaId: string;
   healthCardExpiry: string;
-  iqamaIdExpiry: string;
+  iqamaExpiryDate: string;
   dateOfBirth: string;
-  email: string;
+  loginId: string;
   password: string;
   [key: string]: any; // Allow for additional properties from initialData
 }
@@ -48,21 +48,20 @@ const positionOptions = [
 ];
 
 export default function EmployeeDetailsForm({ onNext, initialData }: EmployeeDetailsFormProps) {
-  const [formData, setFormData] = useState<FormDataState>(() => ({
-    name: '',
-    familyName: '',
-    nationality: '', // Default to empty string for controlled component
-    mobileNumber: '',
-    position: '', // Default to empty string for controlled component
-    healthCardNumber: '',
-    iqamaId: '',
-    healthCardExpiry: '',
-    iqamaIdExpiry: '',
-    dateOfBirth: '',
-    email: '',
-    password: '', 
-    ...initialData, // Pre-fill with existing data if any
-  }));
+  const [formData, setFormData] = useState({
+    firstname: initialData?.firstname || '',
+    familyName: initialData?.familyName || '',
+    nationality: initialData?.nationality || '',
+    mobileNumber: initialData?.mobileNumber || '',
+    position: initialData?.position || '',
+    healthCardNumber: initialData?.healthCardNumber || '',
+    iqamaId: initialData?.iqamaId || '',
+    healthCardExpiry: initialData?.healthCardExpiry || '',
+    iqamaExpiryDate: initialData?.iqamaExpiryDate || '',
+    dateOfBirth: initialData?.dateOfBirth || '',
+    loginId: initialData?.loginId || '',
+    password: initialData?.password || ''
+  });
 
   // Ensure initial data uses empty string if value is null/undefined for selects
   useEffect(() => {
@@ -88,7 +87,7 @@ export default function EmployeeDetailsForm({ onNext, initialData }: EmployeeDet
   // Add validation function
   const validateForm = (): boolean => {
       const newErrors: Partial<Record<keyof FormDataState, string>> = {};
-      if (!formData.name.trim()) newErrors.name = 'Name is required';
+      if (!formData.firstname.trim()) newErrors.firstname = 'Name is required';
       if (!formData.position) newErrors.position = 'Position is required';
       if (!formData.mobileNumber.trim()) newErrors.mobileNumber = 'Mobile number is required'; // Add mobile validation if needed
       if (!formData.iqamaId.trim()) newErrors.iqamaId = 'Iqama ID is required';
@@ -113,7 +112,7 @@ export default function EmployeeDetailsForm({ onNext, initialData }: EmployeeDet
        <h2 className="text-2xl font-semibold text-gray-800 mb-6">Employee Details</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
         {/* Add error display to relevant fields */}
-        <Input label="Name" name="name" value={formData.name} onChange={handleChange} placeholder="Enter value" error={errors.name} />
+        <Input label="Name" name="firstname" value={formData.firstname} onChange={handleChange} placeholder="Enter value" error={errors.firstname} />
         <Input label="Family Name" name="familyName" value={formData.familyName} onChange={handleChange} placeholder="Enter value" />
         <Select label="Nationality" name="nationality" value={formData.nationality} onChange={handleChange} options={nationalityOptions} />
         <Input label="Mobile Number" name="mobileNumber" value={formData.mobileNumber} onChange={handleChange} placeholder="Enter value" type="tel" error={errors.mobileNumber} />
@@ -121,9 +120,9 @@ export default function EmployeeDetailsForm({ onNext, initialData }: EmployeeDet
         <Input label="Health Card Number" name="healthCardNumber" value={formData.healthCardNumber} onChange={handleChange} placeholder="Health Card Num" />
         <Input label="Iqama ID" name="iqamaId" value={formData.iqamaId} onChange={handleChange} placeholder="Enter value" error={errors.iqamaId} />
         <Input label="Health Card Expiry" name="healthCardExpiry" value={formData.healthCardExpiry} onChange={handleChange} placeholder="dd/mm/yyyy" type="text" /> 
-        <Input label="Iqama ID Expiry Date" name="iqamaIdExpiry" value={formData.iqamaIdExpiry} onChange={handleChange} placeholder="dd/mm/yyyy" type="text" /> 
+        <Input label="Iqama ID Expiry Date" name="iqamaExpiryDate" value={formData.iqamaExpiryDate} onChange={handleChange} placeholder="dd/mm/yyyy" type="text" /> 
         <Input label="Date of Birth" name="dateOfBirth" value={formData.dateOfBirth} onChange={handleChange} placeholder="dd/mm/yyyy" type="text" /> 
-        <Input label="Email" name="email" value={formData.email} onChange={handleChange} placeholder="Enter value" type="email" />
+        <Input label="Email" name="loginId" value={formData.loginId} onChange={handleChange} placeholder="Enter value" type="email" />
         <Input label="Password" name="password" value={formData.password} onChange={handleChange} placeholder="Enter value" type="password" />
       </div>
       

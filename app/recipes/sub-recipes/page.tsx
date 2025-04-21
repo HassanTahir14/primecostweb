@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import PageLayout from '@/components/PageLayout';
 import Button from '@/components/common/button';
-import { Search, Edit, Trash2 } from 'lucide-react';
+import { Search, Edit, Trash2, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch } from '@/store/store';
@@ -15,6 +15,8 @@ import {
   selectSubRecipePagination,
 } from '@/store/subRecipeSlice';
 import ConfirmationModal from '@/components/common/ConfirmationModal';
+import { useRouter } from 'next/navigation';
+import SearchInput from '@/components/common/SearchInput';
 
 interface SubRecipe {
   id: number;
@@ -65,6 +67,7 @@ export default function SubRecipesPage() {
   const error = useSelector(selectSubRecipeError);
   const pagination = useSelector(selectSubRecipePagination);
   const [searchQuery, setSearchQuery] = useState('');
+  const router = useRouter();
   
   // Modal states
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -125,37 +128,31 @@ export default function SubRecipesPage() {
   return (
     <PageLayout title="All Sub Recipes">
       <div className="bg-white rounded-lg shadow-sm p-6 space-y-6">
-        <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-          <h1 className="text-3xl font-semibold text-gray-900">All Sub Recipes</h1>
-          
-          <div className="flex items-center gap-4 w-full md:w-auto flex-wrap">
-            {/* Search Input */}
-            <div className="relative flex-grow min-w-[200px]">
-              <input
-                type="text"
-                placeholder="Search Sub Recipe"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00997B] pl-10"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-              <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                <Search className="h-5 w-5 text-gray-400" />
-              </div>
-            </div>
+        <div className="flex items-center gap-2 mb-6">
+          <Link href="/recipes" className="text-gray-600 hover:text-gray-800">
+            <ArrowLeft className="w-5 h-5" />
+          </Link>
+        </div>
 
-            {/* Action Buttons */}
-            <div className="flex gap-2 flex-shrink-0">
-              <Link href="/recipes/sub-recipes/create">
-                <Button>Create New</Button>
-              </Link>
-              <Link href="/recipes/sub-recipes/categories">
-                 <Button variant="secondary">Categories</Button>
-              </Link>
-            </div>
+        <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+          <div className="relative flex-grow min-w-[200px] max-w-xs">
+            <SearchInput 
+              placeholder="Search Sub Recipe" 
+              value={searchQuery} 
+              onChange={(e) => setSearchQuery(e.target.value)} 
+            />
+          </div>
+
+          <div className="flex gap-2 flex-shrink-0">
+            <Link href="/recipes/sub-recipes/create">
+              <Button>Create New</Button>
+            </Link>
+            <Link href="/recipes/sub-recipes/categories">
+              <Button variant="secondary">Categories</Button>
+            </Link>
           </div>
         </div>
         
-        {/* Sub-Recipe List or Empty State */}
         <div>
           {filteredSubRecipes.length > 0 ? (
             <div className="overflow-x-auto">
@@ -173,7 +170,17 @@ export default function SubRecipesPage() {
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {filteredSubRecipes.map((recipe: SubRecipe) => (
-                    <tr key={recipe.id} className="hover:bg-gray-50">
+                    <tr 
+                      key={recipe.id} 
+                      className="hover:bg-gray-50 cursor-pointer"
+                      onClick={(e) => {
+                        // Prevent navigation if clicking on action buttons
+                        if ((e.target as HTMLElement).closest('.action-buttons')) {
+                          return;
+                        }
+                        router.push(`/recipes/sub-recipes/${recipe.id}`);
+                      }}
+                    >
                       <td className="px-6 py-4 whitespace-nowrap font-medium">{recipe.name}</td>
                       <td className="px-6 py-4 whitespace-nowrap">{recipe.subRecipeCode}</td>
                       <td className="px-6 py-4 whitespace-nowrap">{recipe.categoryName}</td>
@@ -193,19 +200,26 @@ export default function SubRecipesPage() {
                         ${recipe.costPerRecipe.toFixed(2)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center space-x-2">
+                        <div className="flex items-center space-x-2 action-buttons">
                           <Link href={`/recipes/sub-recipes/edit/${recipe.id}`}>
-                            <Button variant="ghost" size="sm" className="p-1">
-                              <Edit size={16} className="text-gray-500" />
+                            <Button 
+                              variant="default" 
+                              size="sm" 
+                              className="rounded-full bg-[#339A89] text-white text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-1.5"
+                            >
+                              Edit
                             </Button>
                           </Link>
                           <Button 
-                            variant="ghost" 
+                            variant="destructive" 
                             size="sm" 
-                            className="p-1"
-                            onClick={() => handleDeleteClick(recipe)}
+                            className="rounded-full bg-red-500 text-white text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-1.5"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteClick(recipe);
+                            }}
                           >
-                            <Trash2 size={16} className="text-red-500" />
+                            Delete
                           </Button>
                         </div>
                       </td>
@@ -238,7 +252,7 @@ export default function SubRecipesPage() {
         isOpen={isSuccessModalOpen}
         onClose={() => setIsSuccessModalOpen(false)}
         title="Success"
-        message="Sub recipe deleted successfully!"
+        message="Sub Recipe deleted successfully!"
         isAlert={true}
         okText="OK"
       />

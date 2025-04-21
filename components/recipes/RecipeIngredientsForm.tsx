@@ -27,12 +27,16 @@ interface RecipeIngredientsFormProps {
 }
 
 export default function RecipeIngredientsForm({ onNext, onBack, initialData }: RecipeIngredientsFormProps) {
-  const [item, setItem] = useState(initialData.ingredients?.[0]?.itemName || '');
-  const [quantity, setQuantity] = useState(initialData.ingredients?.[0]?.quantity?.toString() || '');
-  const [yieldPercent, setYieldPercent] = useState(initialData.ingredients?.[0]?.yieldPercentage?.toString() || '');
-  const [apUsdUnit, setApUsdUnit] = useState(initialData.ingredients?.[0]?.apUsdUnit?.toString() || '');
-  const [epUsdUnit, setEpUsdUnit] = useState(initialData.ingredients?.[0]?.epUsdUnit?.toString() || '');
-  const [recipeCost, setRecipeCost] = useState(initialData.ingredients?.[0]?.recipeCost || 0.00);
+  const [ingredients, setIngredients] = useState<Ingredient[]>(initialData.ingredients || []);
+  const [selectedIngredientIndex, setSelectedIngredientIndex] = useState<number | null>(null);
+  const [showForm, setShowForm] = useState(false);
+  
+  const [item, setItem] = useState('');
+  const [quantity, setQuantity] = useState('');
+  const [yieldPercent, setYieldPercent] = useState('');
+  const [apUsdUnit, setApUsdUnit] = useState('');
+  const [epUsdUnit, setEpUsdUnit] = useState('');
+  const [recipeCost, setRecipeCost] = useState(0.00);
   const [itemList, setItemList] = useState<any[]>([]);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
@@ -45,6 +49,37 @@ export default function RecipeIngredientsForm({ onNext, onBack, initialData }: R
         setItemList(res.itemList || []);
       });
   }, [dispatch]);
+
+  const resetForm = () => {
+    setItem('');
+    setQuantity('');
+    setYieldPercent('');
+    setApUsdUnit('');
+    setEpUsdUnit('');
+    setRecipeCost(0.00);
+    setErrors({});
+    setSelectedIngredientIndex(null);
+    setShowForm(false);
+  };
+
+  const handleEditIngredient = (index: number) => {
+    const ingredient = ingredients[index];
+    const [itemName] = ingredient.itemName.split('@');
+    
+    setItem(itemName);
+    setQuantity(ingredient.quantity.toString());
+    setYieldPercent(ingredient.yieldPercentage.toString());
+    setApUsdUnit(ingredient.apUsdUnit.toString());
+    setEpUsdUnit(ingredient.epUsdUnit.toString());
+    setRecipeCost(ingredient.recipeCost);
+    
+    setSelectedIngredientIndex(index);
+    setShowForm(true);
+  };
+
+  const handleDeleteIngredient = (index: number) => {
+    setIngredients(ingredients.filter((_, i) => i !== index));
+  };
 
   const validateFields = () => {
     const newErrors: { [key: string]: string } = {};
@@ -63,33 +98,110 @@ export default function RecipeIngredientsForm({ onNext, onBack, initialData }: R
     return qty * epUsd;
   };
 
-  const handleNextClick = () => {
+  const handleSaveIngredient = () => {
     if (!validateFields()) return;
 
-    const selectedItem = itemList.find(i => i.name === item);
+    const selectedItem = itemList.find(i => i.name.split('@')[0] === item);
+    const [, itemType] = selectedItem?.name.split('@') || [];
     const cost = calculateIngredientCost(Number(quantity), Number(epUsdUnit));
     
     const updatedIngredient = {
-      id: initialData.ingredients?.[0]?.id || Date.now(),
+      id: selectedIngredientIndex !== null ? ingredients[selectedIngredientIndex].id : Date.now(),
       item,
-      itemName: selectedItem?.name || item,
+      itemName: `${item}@${itemType || 'Solid Item'}`,
       quantity: Number(quantity),
       yieldPercentage: Number(yieldPercent),
       apUsdUnit: Number(apUsdUnit),
       epUsdUnit: Number(epUsdUnit),
-      unit: selectedItem?.unit || initialData.ingredients?.[0]?.unit || 'KG',
-      weight: selectedItem?.weight || initialData.ingredients?.[0]?.weight || 'KG',
-      volume: selectedItem?.volume || initialData.ingredients?.[0]?.volume || null,
+      unit: selectedItem?.unit || 'KG',
+      weight: selectedItem?.weight || 'KG',
+      volume: selectedItem?.volume || null,
       recipeCost: cost
     };
 
-    onNext({ ingredients: [updatedIngredient] });
+    if (selectedIngredientIndex !== null) {
+      // Update existing ingredient
+      setIngredients(ingredients.map((ing, index) => 
+        index === selectedIngredientIndex ? updatedIngredient : ing
+      ));
+    } else {
+      // Add new ingredient
+      setIngredients([...ingredients, updatedIngredient]);
+    }
+
+    resetForm();
+  };
+
+  const handleNextClick = () => {
+    onNext({ ingredients });
   };
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-semibold">Edit Ingredient</h2>
+      <h2 className="text-2xl font-semibold">Recipe Ingredients</h2>
 
+      {/* Ingredients List */}
+      <div className="bg-white rounded-lg shadow p-4">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-medium">Ingredients List</h3>
+          <Button 
+            onClick={() => setShowForm(true)} 
+            disabled={showForm}
+          >
+            Add Ingredient
+          </Button>
+        </div>
+
+        {ingredients.length === 0 ? (
+          <p className="text-gray-500 text-center py-4">No ingredients added yet</p>
+        ) : (
+          <div className="space-y-4">
+            {ingredients.map((ingredient, index) => (
+              <div key={ingredient.id} className="flex items-center justify-between p-4 border rounded-lg">
+                <div>
+                  <p className="font-medium">{ingredient.itemName.split('@')[0]}</p>
+                  <p className="text-sm text-gray-600">
+                    Quantity: {ingredient.quantity} {ingredient.unit} | 
+                    Yield: {ingredient.yieldPercentage}% | 
+                    Cost: USD {ingredient.recipeCost.toFixed(2)}
+                  </p>
+                </div>
+                <div className="flex gap-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => handleEditIngredient(index)}
+                  >
+                    Edit
+                  </Button>
+                  <Button 
+                    variant="destructive" 
+                    size="sm"
+                    onClick={() => handleDeleteIngredient(index)}
+                  >
+                    Delete
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Ingredient Form */}
+      {showForm && (
+        <div className="bg-white rounded-lg shadow p-6">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg font-medium">
+              {selectedIngredientIndex !== null ? 'Edit Ingredient' : 'Add New Ingredient'}
+            </h3>
+            <Button variant="outline" size="sm" onClick={resetForm}>
+              Cancel
+            </Button>
+          </div>
+
+          {/* Form Fields */}
+          <div className="space-y-4">
       {/* Select Item */}
       <div>
         <label className="block text-gray-700 font-medium mb-2">Select Item</label>
@@ -100,7 +212,9 @@ export default function RecipeIngredientsForm({ onNext, onBack, initialData }: R
         >
           <option value="">Select an item</option>
           {itemList.map((item: any) => (
-            <option key={item.itemId} value={item.name}>{item.name}</option>
+                  <option key={item.itemId} value={item.name.split('@')[0]}>
+                    {item.name.split('@')[0]}
+                  </option>
           ))}
         </select>
         {errors.item && <p className="text-red-500 text-sm mt-1">{errors.item}</p>}
@@ -167,9 +281,27 @@ export default function RecipeIngredientsForm({ onNext, onBack, initialData }: R
         </div>
       </div>
 
+            <Button 
+              size="lg" 
+              className="w-full mt-4" 
+              onClick={handleSaveIngredient}
+            >
+              {selectedIngredientIndex !== null ? 'Update Ingredient' : 'Add Ingredient'}
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Navigation Buttons */}
       <div className="flex justify-between mt-8">
         <Button variant="secondary" onClick={onBack}>Back</Button>
-        <Button size="lg" onClick={handleNextClick}>Next</Button>
+        <Button 
+          size="lg" 
+          onClick={handleNextClick}
+          disabled={ingredients.length === 0}
+        >
+          Next
+        </Button>
       </div>
     </div>
   );

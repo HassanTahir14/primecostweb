@@ -179,8 +179,18 @@ export default function EmployeesPage() {
               </thead>
               <tbody className="text-gray-700">
                 {employees && employees.length > 0 ? (
-                  employees.map((employee: Employee) => ( // Use imported Employee type
-                    <tr key={employee.employeeId} className="hover:bg-gray-50">
+                  employees.map((employee: Employee) => (
+                    <tr 
+                      key={employee.employeeId} 
+                      className="hover:bg-gray-50 cursor-pointer"
+                      onClick={(e) => {
+                        // Prevent navigation if clicking on action buttons
+                        if ((e.target as HTMLElement).closest('.action-buttons')) {
+                          return;
+                        }
+                        router.push(`/employees/${employee.employeeId}`);
+                      }}
+                    >
                       <td className="py-3 px-4 border-b">{employee.employeeDetailsDTO?.firstname || 'N/A'}</td>
                       <td className="py-3 px-4 border-b">{employee.employeeDetailsDTO?.position || 'N/A'}</td>
                       <td className="py-3 px-4 border-b">{employee.employeeDetailsDTO?.iqamaId || 'N/A'}</td>
@@ -189,25 +199,36 @@ export default function EmployeesPage() {
                         USD {employee.salaryDTO?.basicSalary?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || '0.00'}
                       </td>
                       <td className="py-3 px-4 border-b text-center">
-                        <div className="flex justify-center space-x-2">
+                        <div className="flex items-center space-x-2 action-buttons">
                           <Button 
-                             variant="ghost" 
-                             size="sm" 
-                             onClick={() => handleEdit(employee.employeeId)} 
-                             aria-label="Edit"
-                             disabled={employeesLoading} // Disable actions while loading
+                            variant="default" 
+                            size="sm" 
+                            className="rounded-full bg-[#339A89] text-white text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-1.5"
+                            disabled={employeesLoading}
+                            onClick={async (e) => {
+                              e.stopPropagation();
+                              // Find and set the employee data before navigation
+                              const employeeToEdit = employees.find(emp => emp.employeeId === employee.employeeId);
+                              if (employeeToEdit) {
+                                console.log("Found employee to edit:", employeeToEdit);
+                                await dispatch(setSelectedEmployeeForEdit(employeeToEdit));
+                                router.push(`/employees/edit/${employee.employeeId}`);
+                              }
+                            }}
                           >
-                             <Edit size={16} />
+                            Edit
                           </Button>
                           <Button 
-                             variant="ghost" 
-                             className="text-red-600 hover:text-red-800 hover:bg-red-100" 
-                             size="sm" 
-                             onClick={() => handleDeleteClick(employee.employeeId)} 
-                             aria-label="Delete"
-                             disabled={employeesLoading} // Disable actions while loading
+                            variant="destructive" 
+                            size="sm" 
+                            className="rounded-full bg-red-500 text-white text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-1.5"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteClick(employee.employeeId);
+                            }}
+                            disabled={employeesLoading}
                           >
-                            <Trash2 size={16} />
+                            Delete
                           </Button>
                         </div>
                       </td>
