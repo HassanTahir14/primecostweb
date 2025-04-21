@@ -17,7 +17,7 @@ interface SidebarProps {
 
 // Base configuration mapping menu names to icons and paths
 const menuConfig: { [key: string]: { icon: string; href: string; label: string } } = {
-  'Home': { icon: '/assets/svgs/home.svg', href: '/', label: 'Home' },
+  'Home': { icon: '/assets/svgs/home.svg', href: '/dashboard', label: 'Home' },
   'Items Master List': { icon: '/assets/svgs/fishSimple.svg', href: '/items', label: 'Items Master List' },
   'Recipes': { icon: '/assets/svgs/recipes.svg', href: '/recipes', label: 'Recipes' },
   'Serving Size': { icon: '/assets/svgs/scales.svg', href: '/serving-size', label: 'Serving Size' },

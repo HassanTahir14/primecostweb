@@ -88,8 +88,8 @@ const COUNTRY_OPTIONS = [
 ];
 
 const ITEM_TYPE_OPTIONS = [
-  { label: "Type 1", value: "type1" },
-  { label: "Type 2", value: "type2" },
+  { label: "Solids", value: "SOLID" },
+  { label: "Liquids", value: "LIQUID" },
 ];
 
 

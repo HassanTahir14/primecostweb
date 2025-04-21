@@ -17,37 +17,41 @@ import {
   PurchaseOrder,
 } from '@/store/purchaseOrderSlice';
 import { AsyncThunk } from '@reduxjs/toolkit';
+import { fetchAllItems } from '@/store/itemsSlice';
+import { fetchAllSuppliers } from '@/store/supplierSlice';
 
-const MOCK_SUPPLIER_OPTIONS = [
-  { label: "Select Supplier", value: "", disabled: true },
-  { label: "Almarai", value: "67660" },
-  { label: "NADEC", value: "2" },
-];
+interface Item {
+  itemId: number;
+  name: string;
+  code: string;
+  categoryId: number;
+  primaryUnitId: number;
+  primaryUnitValue: number;
+  secondaryUnitId: number;
+  secondaryUnitValue: number;
+  itemsBrandName: string;
+  countryOrigin: string;
+  purchaseCostWithoutVat: number;
+  taxId: number;
+  purchaseCostWithVat: number;
+  images: Array<{
+    imageId: number;
+    path: string;
+  }>;
+  tokenStatus: string;
+  branchDetails: Array<{
+    branchId: number;
+    branchName: string;
+    storageLocationId: number;
+    storageLocationName: string;
+    quantity: number;
+  }>;
+}
 
-const MOCK_ITEM_OPTIONS = [
-   { label: "Select Item", value: "", disabled: true },
-   { label: "Test Item@Solid Item", value: "ITEM-20236723", categoryId: "2" },
-   { label: "Milk", value: "1", categoryId: "1" },
-   { label: "Yogurt", value: "2", categoryId: "1" },
-   { label: "Cheese", value: "3", categoryId: "1" },
-   { label: "Chicken Breast", value: "4", categoryId: "2" },
-   { label: "Beef Mince", value: "5", categoryId: "2" },
-];
-
-const MOCK_CATEGORY_OPTIONS = [
-  { label: "Select Category", value: "", disabled: true },
-  { label: "Dairy", value: "1" },
-  { label: "Meat", value: "2" },
-];
-
-const UNIT_OPTIONS = [
-  { label: "Select Unit", value: "", disabled: true },
-  { label: "KG", value: "KG" },
-  { label: "Grams", value: "Grams" },
-  { label: "Pieces", value: "Pieces" },
-  { label: "Liters", value: "Liters" },
-  { label: "ML", value: "ML" },
-];
+interface Supplier {
+  supplierId: number;
+  name: string;
+}
 
 interface PurchaseOrdersProps {
   onClose: () => void;
@@ -57,7 +61,8 @@ interface FormDataState {
   itemId: string;
   categoryId: string;
   supplierId: string;
-  unit: number;
+  unitType: 'primary' | 'secondary';
+  unitId: string;
   quantity: string;
   purchaseCost: string;
   vatPercentage: string;
@@ -68,7 +73,8 @@ const initialFormState: FormDataState = {
   itemId: '',
   categoryId: '',
   supplierId: '',
-  unit: 1,
+  unitType: 'primary',
+  unitId: '',
   quantity: '',
   purchaseCost: '',
   vatPercentage: '15',
@@ -82,6 +88,10 @@ export default function PurchaseOrders({ onClose }: PurchaseOrdersProps) {
     loading: poLoading, 
     error: poError 
   } = useSelector((state: RootState) => state.purchaseOrder);
+  
+  // Get items and suppliers from state
+  const items = useSelector((state: RootState) => state.items.items || []) as unknown as Item[];
+  const suppliers = useSelector((state: RootState) => state.supplier.suppliers || []) as unknown as Supplier[];
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingOrder, setEditingOrder] = useState<PurchaseOrder | null>(null);
@@ -95,8 +105,76 @@ export default function PurchaseOrders({ onClose }: PurchaseOrdersProps) {
   const [actionOrderId, setActionOrderId] = useState<number | null>(null);
   const [isConfirmDeleteModal, setIsConfirmDeleteModal] = useState(false);
 
+  // Create memoized options for dropdowns
+  const itemOptions = useMemo(() => {
+    return items.map((item: Item) => ({
+      label: `${item.name} (${item.code})`,
+      value: String(item.itemId),
+      categoryId: String(item.categoryId),
+      primaryUnitId: String(item.primaryUnitId),
+      secondaryUnitId: String(item.secondaryUnitId)
+    }));
+  }, [items]);
+
+  const supplierOptions = useMemo(() => {
+    // Filter out any duplicate suppliers by ID
+    const uniqueSuppliers = suppliers.reduce((acc, supplier) => {
+      if (!acc.some(existing => existing.supplierId === supplier.supplierId)) {
+        acc.push(supplier);
+      }
+      return acc;
+    }, [] as Supplier[]);
+    
+    return [
+      { label: "Select Supplier", value: "", disabled: true },
+      ...uniqueSuppliers.map((supplier: Supplier) => ({
+        label: supplier.name,
+        value: String(supplier.supplierId)
+      }))
+    ];
+  }, [suppliers]);
+
+  // Add unit options based on selected item and unit type
+  const unitOptions = useMemo(() => {
+    if (!formData.itemId) return [];
+    
+    const selectedItem = items.find(item => String(item.itemId) === formData.itemId);
+    if (!selectedItem) return [];
+
+    if (formData.unitType === 'primary') {
+      return [{
+        label: `Primary Unit (ID: ${selectedItem.primaryUnitId})`,
+        value: String(selectedItem.primaryUnitId)
+      }];
+    } else {
+      return [{
+        label: `Secondary Unit (ID: ${selectedItem.secondaryUnitId})`,
+        value: String(selectedItem.secondaryUnitId)
+      }];
+    }
+  }, [items, formData.itemId, formData.unitType]);
+
+  // Update form data when item changes
+  useEffect(() => {
+    if (formData.itemId) {
+      const selectedItem = items.find(item => String(item.itemId) === formData.itemId);
+      if (selectedItem) {
+        setFormData(prev => ({
+          ...prev,
+          categoryId: String(selectedItem.categoryId),
+          unitId: formData.unitType === 'primary' 
+            ? String(selectedItem.primaryUnitId)
+            : String(selectedItem.secondaryUnitId)
+        }));
+      }
+    }
+  }, [formData.itemId, formData.unitType, items]);
+
   useEffect(() => {
     dispatch(fetchAllPurchaseOrders({ page: 0, size: 10, sortBy: 'dateOfOrder', direction: 'asc' }));
+    dispatch(fetchAllSuppliers());
+    dispatch(fetchAllItems({  }));
+    console.log("items", items);
   }, [dispatch]);
 
   useEffect(() => {
@@ -122,15 +200,6 @@ export default function PurchaseOrders({ onClose }: PurchaseOrdersProps) {
     }
   }, [formData.purchaseCost, formData.vatPercentage]);
 
-  useEffect(() => {
-       const selectedItem = MOCK_ITEM_OPTIONS.find(item => item.value === formData.itemId);
-       if (selectedItem && selectedItem.categoryId) {
-           setFormData(prev => ({ ...prev, categoryId: selectedItem.categoryId }));
-       } else if (!formData.itemId && formData.categoryId !== '') {
-           setFormData(prev => ({ ...prev, categoryId: '' }));
-       }
-   }, [formData.itemId]);
-
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
@@ -144,7 +213,7 @@ export default function PurchaseOrders({ onClose }: PurchaseOrdersProps) {
     if (!formData.itemId) errors.itemId = 'Item is required';
     if (!formData.categoryId) errors.categoryId = 'Category is required (auto-selected from item)';
     if (!formData.supplierId) errors.supplierId = 'Supplier is required';
-    if (!formData.unit) errors.unit = 'Unit is required';
+    if (!formData.unitId) errors.unitId = 'Unit is required';
     if (!formData.quantity || parseFloat(formData.quantity) <= 0) errors.quantity = 'Valid quantity is required';
     if (!formData.purchaseCost || parseFloat(formData.purchaseCost) < 0) errors.purchaseCost = 'Valid purchase cost is required';
     if (!formData.vatPercentage || parseFloat(formData.vatPercentage) < 0) errors.vatPercentage = 'Valid VAT percentage is required';
@@ -167,52 +236,66 @@ export default function PurchaseOrders({ onClose }: PurchaseOrdersProps) {
     dispatch(clearError());
     setIsSuccess(false);
 
+    const selectedItem = items.find(item => String(item.itemId) === formData.itemId);
+    if (!selectedItem) {
+      setFeedbackMessage('Selected item not found.');
+      setIsSuccess(false);
+      setIsFeedbackAlert(true);
+      setFeedbackModalOpen(true);
+      return;
+    }
+
     const thunkActionCreator: AsyncThunk<any, any, any> = editingOrder
       ? updatePurchaseOrder
       : addPurchaseOrder;
 
-    const payload = editingOrder 
-        ? { ...formData, id: editingOrder.id } 
-        : formData;
+    const payload = {
+      ...formData,
+      id: editingOrder?.id,
+      unit: formData.unitType === 'primary' 
+        ? String(selectedItem.primaryUnitId)
+        : String(selectedItem.secondaryUnitId),
+      isPrimaryUnitSelected: formData.unitType === 'primary',
+      isSecondaryUnitSelected: formData.unitType === 'secondary'
+    };
 
     try {
-        const resultAction = await dispatch(thunkActionCreator(payload));
+      const resultAction = await dispatch(thunkActionCreator(payload));
 
-        if (resultAction.type === thunkActionCreator.fulfilled.type) {
-            const successMsg = (resultAction.payload as any)?.description || 
-                             (editingOrder ? 'Order updated successfully!' : 'Order added successfully!');
-            resetFormAndCloseModal();
-            dispatch(fetchAllPurchaseOrders({ page: 0, size: 10, sortBy: 'datedFOrder', direction: 'asc' }));
-            
-            setFeedbackMessage(successMsg);
-            setIsSuccess(true);
-            setIsFeedbackAlert(true);
-            setFeedbackModalOpen(true);
-
-        } else if (resultAction.type === thunkActionCreator.rejected.type) {
-            console.error("Thunk rejected:", resultAction.payload);
-        }
-    } catch (error) {
-        console.error("Unexpected submission error:", error);
-        setFeedbackMessage('An unexpected error occurred during submission.');
-        setIsSuccess(false);
+      if (resultAction.type === thunkActionCreator.fulfilled.type) {
+        const successMsg = (resultAction.payload as any)?.description || 
+                          (editingOrder ? 'Order updated successfully!' : 'Order added successfully!');
+        resetFormAndCloseModal();
+        dispatch(fetchAllPurchaseOrders({ page: 0, size: 10, sortBy: 'dateOfOrder', direction: 'asc' }));
+        
+        setFeedbackMessage(successMsg);
+        setIsSuccess(true);
         setIsFeedbackAlert(true);
         setFeedbackModalOpen(true);
+      } else if (resultAction.type === thunkActionCreator.rejected.type) {
+        console.error("Thunk rejected:", resultAction.payload);
+      }
+    } catch (error) {
+      console.error("Unexpected submission error:", error);
+      setFeedbackMessage('An unexpected error occurred during submission.');
+      setIsSuccess(false);
+      setIsFeedbackAlert(true);
+      setFeedbackModalOpen(true);
     }
   };
 
-  const handleEditClick = (order: PurchaseOrder) => {
+  const handleEditClick = (order: any) => {
     setEditingOrder(order);
-    const formItemId = MOCK_ITEM_OPTIONS.find(item => item.value === order.itemCode)?.value || ''; 
     setFormData({
-      itemId: formItemId, 
-      categoryId: String(order.categoryId || ''),
+      itemId: String(order.itemId || ''),
+      categoryId: String(order.categoryId || 1),
       supplierId: String(order.supplierId || ''),
-      unit: 1 || '', 
+      unitType: order.unitType || 'primary',
+      unitId: String(order.unitId || ''),
       quantity: String(order.quantity || ''),
       purchaseCost: String(order.purchaseCost || ''),
-      vatPercentage: String(order.vatPercentage || '15'), 
-      vatAmount: String(order.vatAmount || ''),
+      vatPercentage: String(order.vatPercentage || '15'),
+      vatAmount: String(order.vatAmount || '')
     });
     setFormErrors({});
     setIsModalOpen(true);
@@ -308,9 +391,9 @@ export default function PurchaseOrders({ onClose }: PurchaseOrdersProps) {
                     <td className="py-3 sm:py-4 text-gray-800 text-sm sm:text-base pr-2">{order.itemCode || 'N/A'}</td>
                     <td className="py-3 sm:py-4 text-gray-800 text-sm sm:text-base pr-2">{order.supplierName || 'N/A'}</td>
                     <td className="py-3 sm:py-4 text-gray-800 text-sm sm:text-base pr-2">{order.quantity} {order.unitName}</td>
-                    <td className="py-3 sm:py-4 text-gray-800 text-sm sm:text-base pr-2">{order.purchaseCost?.toFixed(2)}</td>
-                    <td className="py-3 sm:py-4 text-gray-800 text-sm sm:text-base pr-2">{order.vatPercentage?.toFixed(2)}%</td>
-                    <td className="py-3 sm:py-4 text-gray-800 text-sm sm:text-base pr-2">{order.vatAmount?.toFixed(2)}</td>
+                    <td className="py-3 sm:py-4 text-gray-800 text-sm sm:text-base pr-2">{order.purchaseCost}</td>
+                    <td className="py-3 sm:py-4 text-gray-800 text-sm sm:text-base pr-2">{order.vatPercentage}%</td>
+                    <td className="py-3 sm:py-4 text-gray-800 text-sm sm:text-base pr-2">{order.vatAmount}</td>
                      <td className="py-3 sm:py-4 text-gray-800 text-sm sm:text-base pr-2">
                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${order.purchaseOrderStatus === 'APPROVED' ? 'bg-green-100 text-green-700' : order.purchaseOrderStatus === 'PENDING' ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-700'}`}>
                             {order.purchaseOrderStatus || 'N/A'}
@@ -326,7 +409,17 @@ export default function PurchaseOrders({ onClose }: PurchaseOrdersProps) {
                     onClick={() => handleEditClick(order)}
                     disabled={poLoading}
                   >
-                    Edit
+                    Update
+                  </Button>
+
+                  <Button 
+                    variant="default" 
+                    size="sm" 
+                    className="rounded-full bg-[#339A89] text-white text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-1.5"
+                    onClick={() => handleEditClick(order)}
+                    disabled={poLoading}
+                  >
+                    Received Order?
                   </Button>
                   {/* <Button 
                     variant="destructive" 
@@ -381,7 +474,7 @@ export default function PurchaseOrders({ onClose }: PurchaseOrdersProps) {
                     name="itemId"
                     value={formData.itemId}
                     onChange={handleInputChange}
-                    options={MOCK_ITEM_OPTIONS}
+                    options={itemOptions}
                     className={`w-full bg-white ${formErrors.itemId ? 'border-red-500' : ''}`}
                     disabled={poLoading}
                 />
@@ -393,7 +486,7 @@ export default function PurchaseOrders({ onClose }: PurchaseOrdersProps) {
                 <Input
                     type="text"
                     name="categoryId"
-                    value={MOCK_CATEGORY_OPTIONS.find(c => c.value === formData.categoryId)?.label || 'Select item first'}
+                    value={formData.categoryId}
                     readOnly
                     className={`w-full bg-gray-100 ${formErrors.categoryId ? 'border-red-500' : ''}`}
                     disabled={poLoading}
@@ -407,7 +500,7 @@ export default function PurchaseOrders({ onClose }: PurchaseOrdersProps) {
                     name="supplierId"
                     value={formData.supplierId}
                     onChange={handleInputChange}
-                    options={MOCK_SUPPLIER_OPTIONS}
+                    options={supplierOptions}
                     className={`w-full bg-white ${formErrors.supplierId ? 'border-red-500' : ''}`}
                     disabled={poLoading}
                 />
@@ -416,18 +509,36 @@ export default function PurchaseOrders({ onClose }: PurchaseOrdersProps) {
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                    <label className="block text-gray-700 mb-2 font-medium">Select Unit</label>
+                    <label className="block text-gray-700 mb-2 font-medium">Unit Type</label>
                     <Select
-                        name="unit"
-                        value={formData.unit}
+                        name="unitType"
+                        value={formData.unitType}
                         onChange={handleInputChange}
-                        options={UNIT_OPTIONS}
-                        className={`w-full bg-white ${formErrors.unit ? 'border-red-500' : ''}`}
+                        options={[
+                          { label: "Primary Unit", value: "primary" },
+                          { label: "Secondary Unit", value: "secondary" }
+                        ]}
+                        className={`w-full bg-white ${formErrors.unitType ? 'border-red-500' : ''}`}
                         disabled={poLoading}
                     />
-                    {formErrors.unit && <p className="mt-1 text-red-500 text-sm">{formErrors.unit}</p>}
+                    {formErrors.unitType && <p className="mt-1 text-red-500 text-sm">{formErrors.unitType}</p>}
                 </div>
                 <div>
+                    <label className="block text-gray-700 mb-2 font-medium">Unit</label>
+                    <Select
+                        name="unitId"
+                        value={formData.unitId}
+                        onChange={handleInputChange}
+                        options={unitOptions}
+                        className={`w-full bg-white ${formErrors.unitId ? 'border-red-500' : ''}`}
+                        disabled={poLoading || !formData.itemId}
+                    />
+                    {formErrors.unitId && <p className="mt-1 text-red-500 text-sm">{formErrors.unitId}</p>}
+                </div>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                 <div>
                     <label className="block text-gray-700 mb-2 font-medium">Quantity</label>
                     <Input
                         type="number"
@@ -440,10 +551,7 @@ export default function PurchaseOrders({ onClose }: PurchaseOrdersProps) {
                     />
                     {formErrors.quantity && <p className="mt-1 text-red-500 text-sm">{formErrors.quantity}</p>}
                 </div>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                 <div>
+                <div>
                     <label className="block text-gray-700 mb-2 font-medium">Purchase Cost</label>
                     <div className="relative">
                         <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">USD</span>
