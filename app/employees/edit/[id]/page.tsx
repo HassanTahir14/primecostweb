@@ -69,35 +69,39 @@ export default function EditEmployeePage() {
 
     if (selectedEmployee && selectedEmployee.employeeId === employeeId) {
       const transformedData = {
-        // Personal Details
-        firstname: selectedEmployee.employeeDetailsDTO?.firstname || '',
-        familyName: selectedEmployee.employeeDetailsDTO?.familyName || '',
-        nationality: selectedEmployee.employeeDetailsDTO?.nationality || '',
-        mobileNumber: selectedEmployee.employeeDetailsDTO?.mobileNumber || '',
-        position: selectedEmployee.employeeDetailsDTO?.position || '',
-        healthCardNumber: selectedEmployee.employeeDetailsDTO?.healthCardNumber || '',
-        iqamaId: selectedEmployee.employeeDetailsDTO?.iqamaId || '',
-        healthCardExpiry: selectedEmployee.employeeDetailsDTO?.healthCardExpiry || '',
-        iqamaExpiryDate: selectedEmployee.employeeDetailsDTO?.iqamaExpiryDate || '',
-        dateOfBirth: selectedEmployee.employeeDetailsDTO?.dateOfBirth || '',
-        loginId: selectedEmployee.employeeDetailsDTO?.loginId || '',
-        password: selectedEmployee.employeeDetailsDTO?.password || '',
+        employeeDetailsDTO: {
+          firstname: selectedEmployee.employeeDetailsDTO?.firstname || '',
+          familyName: selectedEmployee.employeeDetailsDTO?.familyName || '',
+          nationality: selectedEmployee.employeeDetailsDTO?.nationality || '',
+          mobileNumber: selectedEmployee.employeeDetailsDTO?.mobileNumber || '',
+          position: selectedEmployee.employeeDetailsDTO?.position || '',
+          healthCardNumber: selectedEmployee.employeeDetailsDTO?.healthCardNumber || '',
+          iqamaId: selectedEmployee.employeeDetailsDTO?.iqamaId || '',
+          healthCardExpiry: selectedEmployee.employeeDetailsDTO?.healthCardExpiry || '',
+          iqamaExpiryDate: selectedEmployee.employeeDetailsDTO?.iqamaExpiryDate || '',
+          dateOfBirth: selectedEmployee.employeeDetailsDTO?.dateOfBirth || '',
+          loginId: selectedEmployee.employeeDetailsDTO?.loginId || '',
+          password: selectedEmployee.employeeDetailsDTO?.password || '',
+        },
         
         // Duty Schedule
         dutySchedulesDTO: selectedEmployee.dutyScheduleResponseList || [],
         
         // Salary Details
-        basicSalary: selectedEmployee.salaryDTO?.basicSalary?.toString() || '',
-        foodAllowance: selectedEmployee.salaryDTO?.foodAllowance?.toString() || '',
-        accommodationAllowance: selectedEmployee.salaryDTO?.accommodationAllowance?.toString() || '',
-        transportAllowance: selectedEmployee.salaryDTO?.transportAllowance?.toString() || '',
-        mobileAllowance: selectedEmployee.salaryDTO?.mobileAllowance?.toString() || '',
-        otherAllowance: selectedEmployee.salaryDTO?.otherAllowance?.toString() || '',
+        salaryDTO: {
+          basicSalary: selectedEmployee.salaryDTO?.basicSalary?.toString() || '',
+          foodAllowance: selectedEmployee.salaryDTO?.foodAllowance?.toString() || '',
+          accommodationAllowance: selectedEmployee.salaryDTO?.accommodationAllowance?.toString() || '',
+          transportAllowance: selectedEmployee.salaryDTO?.transportAllowance?.toString() || '',
+          mobileAllowance: selectedEmployee.salaryDTO?.mobileAllowance?.toString() || '',
+          otherAllowance: selectedEmployee.salaryDTO?.otherAllowance?.toString() || '',
+        },
         
         // Images
         existingImages: selectedEmployee.images || []
       };
       
+      console.log("Transformed Data for Forms:", transformedData);
       setEmployeeData(transformedData);
       setInitialLoadComplete(true);
     }

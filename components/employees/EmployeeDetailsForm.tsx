@@ -51,18 +51,7 @@ export default function EmployeeDetailsForm({ onNext, initialData }: EmployeeDet
   const [formData, setFormData] = useState(() => {
     console.log("Initializing EmployeeDetailsForm with data:", initialData);
     return {
-      firstname: initialData?.employeeDetailsDTO?.firstname || '',
-      familyName: initialData?.employeeDetailsDTO?.familyName || '',
-      nationality: initialData?.employeeDetailsDTO?.nationality || '',
-      mobileNumber: initialData?.employeeDetailsDTO?.mobileNumber || '',
-      position: initialData?.employeeDetailsDTO?.position || '',
-      healthCardNumber: initialData?.employeeDetailsDTO?.healthCardNumber || '',
-      iqamaId: initialData?.employeeDetailsDTO?.iqamaId || '',
-      healthCardExpiry: initialData?.employeeDetailsDTO?.healthCardExpiry || '',
-      iqamaExpiryDate: initialData?.employeeDetailsDTO?.iqamaExpiryDate || '',
-      dateOfBirth: initialData?.employeeDetailsDTO?.dateOfBirth || '',
-      loginId: initialData?.employeeDetailsDTO?.loginId || '',
-      password: initialData?.employeeDetailsDTO?.password || ''
+      ...initialData.employeeDetailsDTO
     };
   });
 
@@ -93,12 +82,11 @@ export default function EmployeeDetailsForm({ onNext, initialData }: EmployeeDet
 
   const handleNextClick = () => {
     if (!validateForm()) {
-        // Optionally show an alert or focus the first error field
-        console.warn("Validation failed:", errors);
-        return; 
+      console.warn("Validation failed:", errors);
+      return; 
     }
     console.log("Details Data:", formData);
-    onNext(formData);
+    onNext({ employeeDetailsDTO: formData });
   };
 
   return (
