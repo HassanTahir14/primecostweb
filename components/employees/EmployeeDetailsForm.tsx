@@ -48,20 +48,23 @@ const positionOptions = [
 ];
 
 export default function EmployeeDetailsForm({ onNext, initialData }: EmployeeDetailsFormProps) {
-  const [formData, setFormData] = useState<FormDataState>(() => ({
-    firstname: initialData?.firstname || '',
-    familyName: initialData?.familyName || '',
-    nationality: initialData?.nationality || '',
-    mobileNumber: initialData?.mobileNumber || '',
-    position: initialData?.position || '',
-    healthCardNumber: initialData?.healthCardNumber || '',
-    iqamaId: initialData?.iqamaId || '',
-    healthCardExpiry: initialData?.healthCardExpiry || '',
-    iqamaExpiryDate: initialData?.iqamaExpiryDate || '',
-    dateOfBirth: initialData?.dateOfBirth || '',
-    loginId: initialData?.loginId || '',
-    password: initialData?.password || ''
-  }));
+  const [formData, setFormData] = useState(() => {
+    console.log("Initializing EmployeeDetailsForm with data:", initialData);
+    return {
+      firstname: initialData?.employeeDetailsDTO?.firstname || '',
+      familyName: initialData?.employeeDetailsDTO?.familyName || '',
+      nationality: initialData?.employeeDetailsDTO?.nationality || '',
+      mobileNumber: initialData?.employeeDetailsDTO?.mobileNumber || '',
+      position: initialData?.employeeDetailsDTO?.position || '',
+      healthCardNumber: initialData?.employeeDetailsDTO?.healthCardNumber || '',
+      iqamaId: initialData?.employeeDetailsDTO?.iqamaId || '',
+      healthCardExpiry: initialData?.employeeDetailsDTO?.healthCardExpiry || '',
+      iqamaExpiryDate: initialData?.employeeDetailsDTO?.iqamaExpiryDate || '',
+      dateOfBirth: initialData?.employeeDetailsDTO?.dateOfBirth || '',
+      loginId: initialData?.employeeDetailsDTO?.loginId || '',
+      password: initialData?.employeeDetailsDTO?.password || ''
+    };
+  });
 
   // Add state for validation errors
   const [errors, setErrors] = useState<Partial<Record<keyof FormDataState, string>>>({});
