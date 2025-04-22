@@ -6,16 +6,10 @@ import Select from '@/components/common/select';
 interface TransferHeaderFormProps {
   formData: any;
   handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
+  branchOptions: { value: string; label: string; }[];
 }
 
-// Mock branch options - replace with actual data
-const branchOptions = [
-  { value: 'branch1', label: 'Main Branch' },
-  { value: 'branch2', label: 'Downtown Branch' },
-  { value: 'branch3', label: 'Westside Branch' },
-];
-
-export default function TransferHeaderForm({ formData, handleChange }: TransferHeaderFormProps) {
+export default function TransferHeaderForm({ formData, handleChange, branchOptions }: TransferHeaderFormProps) {
   return (
     <div className="bg-white rounded-lg shadow-sm p-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -40,23 +34,21 @@ export default function TransferHeaderForm({ formData, handleChange }: TransferH
           value={formData.transferBy} 
           readOnly 
           placeholder="User email" 
-          className="md:col-span-2" // Span across two columns on medium screens and up
+          className="md:col-span-2"
         />
         <Select 
           label="Source Branch" 
-          name="sourceBranch" 
-          value={formData.sourceBranch} 
+          name="sourceBranchId"
+          value={formData.sourceBranchId} 
           onChange={handleChange} 
-          options={branchOptions} 
-          placeholder="Select branch" 
+          options={branchOptions}
         />
         <Select 
           label="Target Branch" 
-          name="targetBranch" 
-          value={formData.targetBranch} 
+          name="targetBranchId"
+          value={formData.targetBranchId} 
           onChange={handleChange} 
-          options={branchOptions} 
-          placeholder="Select branch" 
+          options={branchOptions}
         />
       </div>
     </div>

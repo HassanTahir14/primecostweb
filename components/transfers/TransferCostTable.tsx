@@ -9,8 +9,7 @@ interface TransferCostTableProps {
     otherLogisticsPercent: number;
   };
   onChange: (costs: any) => void;
-  // Pass total item cost if calculation is needed here
-  // totalItemCost: number; 
+  totalItemCost: number; // Add prop for total cost of items
 }
 
 // Define cost types
@@ -20,38 +19,37 @@ const costTypes = [
     { name: 'Other Logistics', key: 'otherLogisticsPercent' },
 ];
 
-export default function TransferCostTable({ costs, onChange /*, totalItemCost */ }: TransferCostTableProps) {
+export default function TransferCostTable({ costs, onChange, totalItemCost }: TransferCostTableProps) {
   
   const handleCostChange = (key: string, value: number) => {
-    onChange({ ...costs, [key]: isNaN(value) ? 0 : value }); // Ensure value is a number
+    onChange({ ...costs, [key]: isNaN(value) ? 0 : value });
   };
 
-  // TODO: Implement actual calculation based on item costs and percentages
+  // Calculate amounts based on totalItemCost and percentages
   const calculateTaxAmount = (percent: number) => {
-    // const itemTotal = totalItemCost || 0;
-    // return (itemTotal * (percent / 100)).toFixed(2);
-    return (0).toFixed(2); // Placeholder
+    const itemTotal = totalItemCost || 0;
+    return (itemTotal * (percent / 100)).toFixed(2);
   };
 
   const calculateTotalWithTaxes = (percent: number) => {
-     // const itemTotal = totalItemCost || 0;
-     // const tax = itemTotal * (percent / 100);
-     // return (itemTotal + tax).toFixed(2);
-     return (0).toFixed(2); // Placeholder
+     const itemTotal = totalItemCost || 0;
+     const tax = itemTotal * (percent / 100);
+     // For this table structure, Total with Taxes probably just means the tax amount again?
+     // Or should it be itemTotal + tax? Adjust logic as needed.
+     // If it represents the total cost of *this specific tax line*, it's just the tax amount.
+     // If it represents the *running total* including this tax, that's more complex.
+     // Assuming it's just the calculated tax amount for now.
+     return tax.toFixed(2);
   };
 
-  const totalTransferAmount = costTypes.reduce((sum, type) => {
-      // const taxAmount = parseFloat(calculateTaxAmount(costs[type.key as keyof typeof costs] || 0));
-      // return sum + taxAmount;
-      return sum + 0; // Placeholder
+  // Calculate totals for the footer
+  const totalCalculatedTaxes = costTypes.reduce((sum, type) => {
+      const taxAmount = parseFloat(calculateTaxAmount(costs[type.key as keyof typeof costs] || 0));
+      return sum + taxAmount;
   }, 0).toFixed(2);
 
-  const grandTotal = costTypes.reduce((sum, type) => {
-      // const totalWithTax = parseFloat(calculateTotalWithTaxes(costs[type.key as keyof typeof costs] || 0));
-      // This logic likely needs totalItemCost from props
-      // return sum + totalWithTax;
-       return sum + 0; // Placeholder
-  }, 0 /* + (totalItemCost || 0) */).toFixed(2); // Add base item cost if needed
+  // Grand total is the sum of item costs plus all calculated tax amounts
+  const grandTotal = (totalItemCost + parseFloat(totalCalculatedTaxes)).toFixed(2);
 
   return (
     <div className="bg-white rounded-lg shadow-sm p-0 overflow-hidden">
@@ -61,8 +59,8 @@ export default function TransferCostTable({ costs, onChange /*, totalItemCost */
             <tr>
               <th className="p-3 text-left text-sm font-semibold">Cost Type</th>
               <th className="p-3 text-left text-sm font-semibold w-24">% Value</th>
-              <th className="p-3 text-left text-sm font-semibold w-32">Taxes Amount</th>
-              <th className="p-3 text-left text-sm font-semibold w-32">Total with Taxes</th>
+              <th className="p-3 text-left text-sm font-semibold w-32">Taxes Amount (USD)</th>
+              {/* <th className="p-3 text-left text-sm font-semibold w-32">Total with Taxes (USD)</th> -- Removing this column as it seems redundant with Taxes Amount */}
             </tr>
           </thead>
           <tbody>
@@ -85,26 +83,36 @@ export default function TransferCostTable({ costs, onChange /*, totalItemCost */
                   <Input 
                     value={calculateTaxAmount(costs[type.key as keyof typeof costs] || 0)}
                     readOnly 
-                    placeholder="Amount"
-                    prefix="USD" 
+                    placeholder="0.00"
+                    // prefix="USD" - Render prefix manually if Input doesn't support it well
+                    className="bg-gray-100"
                   />
                 </td>
-                <td className="p-2 align-top">
+                 {/* Removing the seemingly redundant "Total with Taxes" column
+                 <td className="p-2 align-top">
                    <Input 
                     value={calculateTotalWithTaxes(costs[type.key as keyof typeof costs] || 0)}
                     readOnly 
-                    placeholder="Total"
-                    prefix="USD" 
+                    placeholder="0.00"
+                    // prefix="USD" 
+                     className="bg-gray-100"
                   />
-                </td>
+                </td> 
+                */}
               </tr>
             ))}
-            {/* Footer Row */}
-            <tr className="bg-gray-50 font-semibold">
-                <td className="p-3 text-sm text-gray-800">Total Transfer Amount</td>
-                <td className="p-3"></td> {/* Empty cell */}
-                <td className="p-3 text-sm text-gray-800">Total: {totalTransferAmount}</td>
-                <td className="p-3 text-sm text-gray-800">Total: {grandTotal}</td> 
+            {/* Footer Row Updated */}
+            <tr className="bg-gray-100 font-semibold">
+                <td colSpan={2} className="p-3 text-right text-sm text-gray-800">Total Item Cost:</td>
+                <td className="p-3 text-right text-sm text-gray-800">{totalItemCost.toFixed(2)}</td>
+            </tr>
+             <tr className="bg-gray-100 font-semibold">
+                <td colSpan={2} className="p-3 text-right text-sm text-gray-800">Total Transfer Taxes:</td>
+                <td className="p-3 text-right text-sm text-gray-800">{totalCalculatedTaxes}</td>
+            </tr>
+             <tr className="bg-gray-50 font-bold border-t-2 border-gray-300">
+                <td colSpan={2} className="p-3 text-right text-sm text-gray-900">Grand Total:</td>
+                <td className="p-3 text-right text-sm text-gray-900">{grandTotal}</td>
             </tr>
           </tbody>
         </table>

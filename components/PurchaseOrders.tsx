@@ -444,7 +444,7 @@ export default function PurchaseOrders({ onClose }: PurchaseOrdersProps) {
             <div className="text-center py-10 text-gray-500">Loading purchase orders...</div>
           ) : (
             <table className="w-full text-left">
-              <thead>
+            <thead>
                 <tr className="border-b border-gray-200">
                   <th className="py-4 px-6 font-medium text-sm text-gray-500">Item Name</th>
                   <th className="py-4 px-6 font-medium text-sm text-gray-500">Item Code</th>
@@ -453,9 +453,9 @@ export default function PurchaseOrders({ onClose }: PurchaseOrdersProps) {
                   <th className="py-4 px-6 font-medium text-sm text-gray-500">Status</th>
                   <th className="py-4 px-6 font-medium text-sm text-gray-500">Created At</th>
                   <th className="py-4 px-6 font-medium text-sm text-gray-500 text-center">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
+              </tr>
+            </thead>
+            <tbody>
                 {purchaseOrders.length > 0 ? (
                   purchaseOrders.map((order) => (
                     <tr key={order.id} className="border-b border-gray-200 last:border-b-0">
@@ -469,52 +469,52 @@ export default function PurchaseOrders({ onClose }: PurchaseOrdersProps) {
                           order.purchaseOrderStatus === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
                           'bg-gray-100 text-gray-800'
                         }`}>
-                          {order.purchaseOrderStatus || 'N/A'}
+                            {order.purchaseOrderStatus || 'N/A'}
                         </span>
-                      </td>
+                    </td>
                       <td className="py-4 px-6 text-sm">{(order as any).createdAt || 'N/A'}</td>
                       <td className="py-4 px-6 text-center">
                         <div className="flex items-center justify-center space-x-2">
-                          <Button
-                            variant="default"
-                            size="sm"
+                        <Button 
+                          variant="default" 
+                          size="sm" 
                             className="rounded-full bg-[#05A49D] text-white text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-1.5"
-                            onClick={() => handleEditClick(order)}
+                          onClick={() => handleEditClick(order)}
                             disabled={poLoading}
-                          >
+                        >
                             Edit
-                          </Button>
-                          <Button
-                            variant="default"
-                            size="sm"
+                        </Button>
+                        <Button 
+                          variant="default" 
+                          size="sm" 
                             className="rounded-full bg-[#05A49D] text-white text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-1.5"
-                            onClick={() => handleReceiveClick(order)}
-                            disabled={poLoading || order.purchaseOrderStatus === 'RECEIVED'}
-                          >
-                            Received Order?
-                          </Button>
-                          {/* <Button
-                            variant="destructive"
-                            size="sm"
-                            className="rounded-full bg-red-500 text-white text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-1.5"
-                            onClick={() => handleDeleteClick(order.id)}
-                            disabled={poLoading}
-                          >
-                            Delete
-                          </Button> */}
-                        </div>
-                      </td>
-                    </tr>
-                  ))
+                          onClick={() => handleReceiveClick(order)}
+                          disabled={poLoading || order.purchaseOrderStatus === 'RECEIVED'}
+                        >
+                          Received Order?
+                        </Button>
+                        {/* <Button 
+                          variant="destructive" 
+                          size="sm" 
+                          className="rounded-full bg-red-500 text-white text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-1.5"
+                          onClick={() => handleDeleteClick(order.id)}
+                          disabled={poLoading}
+                        >
+                          Delete
+                        </Button> */}
+                      </div>
+                    </td>
+                  </tr>
+                ))
                 ) : (
                   <tr>
                     <td colSpan={7} className="text-center py-10 text-gray-500">
                       {poError ? 'Error loading data.' : 'No purchase orders found.'}
                     </td>
                   </tr>
-                )}
-              </tbody>
-            </table>
+              )}
+            </tbody>
+          </table>
           )}
         </div>
       </div>

@@ -215,11 +215,11 @@ export default function ItemsMasterList() {
           </div>
         ) : error && currentAction === 'fetch' ? (
           <div className="text-center py-10 text-red-500">
-            Error loading items: {typeof error === 'string' ? error : error?.message || 'Unknown error'}
-          </div>
+             Error loading items: {typeof error === 'string' ? error : error?.message || 'Unknown error'}
+           </div>
         ) : (
           <div>
-            <div className="overflow-x-auto">
+              <div className="overflow-x-auto">
               <table className="w-full">
                 <thead className="bg-gray-50 text-gray-700 uppercase text-xs">
                   <tr>
@@ -229,15 +229,15 @@ export default function ItemsMasterList() {
                     <th className="px-6 py-3 text-left">Primary Unit</th>
                     <th className="px-6 py-3 text-left">Cost (VAT Excl)</th>
                     <th className="px-6 py-3 text-left">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {items.length === 0 && (
-                     <tr>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {items.length === 0 && (
+                       <tr>
                        <td colSpan={6} className="px-6 py-4 text-center text-sm text-gray-500">No items found.</td>
-                     </tr>
-                  )}
-                  {items.map((item) => (
+                       </tr>
+                    )}
+                    {items.map((item) => (
                     <tr 
                       key={item.itemId} 
                       className="hover:bg-gray-50 cursor-pointer"
@@ -255,27 +255,27 @@ export default function ItemsMasterList() {
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{item.code || '-'}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{item.itemsBrandName || '-'}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                          {item.primaryUnitValue}
-                      </td>
+                            {item.primaryUnitValue}
+                        </td>
                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                          SAR {item.purchaseCostWithoutVat?.toFixed(2) ?? '0.00'}
-                      </td>
+                            SAR {item.purchaseCostWithoutVat?.toFixed(2) ?? '0.00'}
+                        </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center space-x-2 action-buttons">
-                          <Button 
+                             <Button 
                             variant="default" 
-                            size="sm" 
+                               size="sm" 
                             className="rounded-full bg-[#339A89] text-white text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-1.5"
                             onClick={(e) => {
                               e.stopPropagation();
                               handleEditClick(item);
                             }}
-                          >
-                            Edit
-                          </Button>
-                          <Button 
-                            variant="destructive" 
-                            size="sm" 
+                              >
+                                Edit
+                              </Button> 
+                             <Button 
+                               variant="destructive"
+                               size="sm" 
                             className="rounded-full bg-red-500 text-white text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-1.5"
                             onClick={(e) => {
                               e.stopPropagation();
@@ -283,39 +283,39 @@ export default function ItemsMasterList() {
                             }}
                           >
                             Delete
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            {pagination && pagination.totalPages > 1 && (
-              <div className="flex justify-between items-center p-4 border-t bg-gray-50">
-                 <span className="text-sm text-gray-600">
-                   Page {pagination.pageNumber + 1} of {pagination.totalPages} ({pagination.totalElements} items)
-                 </span>
-                <div className="flex gap-2">
-                   <Button 
-                     onClick={() => handlePageChange(pagination.pageNumber - 1)} 
-                     disabled={pagination.first || isLoading}
-                     variant="outline" 
-                     size="sm"
-                   >
-                     Previous
-                   </Button>
-                   <Button 
-                     onClick={() => handlePageChange(pagination.pageNumber + 1)} 
-                     disabled={pagination.last || isLoading}
-                     variant="outline" 
-                     size="sm"
-                   >
-                     Next
-                   </Button>
-                </div>
+                             </Button>
+                           </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
-            )}
+              {pagination && pagination.totalPages > 1 && (
+                <div className="flex justify-between items-center p-4 border-t bg-gray-50">
+                   <span className="text-sm text-gray-600">
+                     Page {pagination.pageNumber + 1} of {pagination.totalPages} ({pagination.totalElements} items)
+                   </span>
+                  <div className="flex gap-2">
+                     <Button 
+                       onClick={() => handlePageChange(pagination.pageNumber - 1)} 
+                       disabled={pagination.first || isLoading}
+                       variant="outline" 
+                       size="sm"
+                     >
+                       Previous
+                     </Button>
+                     <Button 
+                       onClick={() => handlePageChange(pagination.pageNumber + 1)} 
+                       disabled={pagination.last || isLoading}
+                       variant="outline" 
+                       size="sm"
+                     >
+                       Next
+                     </Button>
+                  </div>
+                </div>
+              )}
           </div>
         )}
       </div>

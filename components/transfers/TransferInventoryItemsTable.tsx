@@ -1,80 +1,132 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import Button from '@/components/common/button';
 import Input from '@/components/common/input';
 import Select from '@/components/common/select';
 import { Plus, Trash2 } from 'lucide-react';
 
+// Assuming Item structure from a potential itemsSlice
+interface Item {
+    itemId: number;
+    name: string;
+    code: string;
+    primaryUnitName?: string; // Optional UOM from item master
+    purchaseCostWithVat?: number;
+    purchaseCostWithoutVat?: number;
+    cost?: number; // Keep original cost field for internal state if needed
+}
+
 interface TransferInventoryItemsTableProps {
-  items: any[];
+  items: any[]; // Current items in the transfer
+  allItems: Item[]; // All available items from store
   onChange: (items: any[]) => void;
 }
 
-// Mock data for item selection - replace with actual data fetching/search
-const itemOptions = [
-  { value: 'item1', label: 'Flour (Item Code: FLR001)' },
-  { value: 'item2', label: 'Sugar (Item Code: SUG002)' },
-  { value: 'item3', label: 'Eggs (Item Code: EGG003)' },
-];
+// Mock data removed
 
 const uomOptions = [
     { value: 'kg', label: 'KG' },
     { value: 'ltr', label: 'Liter' },
     { value: 'pcs', label: 'Pieces' },
     { value: 'pack', label: 'Pack' },
+    // Add more standard UOMs if needed
 ]
 
-export default function TransferInventoryItemsTable({ items, onChange }: TransferInventoryItemsTableProps) {
+export default function TransferInventoryItemsTable({ items, allItems, onChange }: TransferInventoryItemsTableProps) {
   
+  // Prepare options for Select component (used for both source and target)
+  const itemOptions = useMemo(() => {
+    const options = allItems.map(item => ({ 
+        value: String(item.itemId), // Use ID as value
+        label: `${item.name} (${item.code})` 
+    }));
+    return [{ value: '', label: 'Select Item...', disabled: true }, ...options];
+  }, [allItems]);
+
   const handleItemChange = (index: number, field: string, value: any) => {
     const newItems = [...items];
-    newItems[index] = { ...newItems[index], [field]: value };
-    
-    // TODO: Add logic to auto-populate source/target codes based on selected item if needed
-    if (field === 'sourceItemName') {
-        const selectedItem = itemOptions.find(opt => opt.value === value);
-        // Example: Extract code from label or fetch details
-        newItems[index].sourceItemCode = selectedItem ? selectedItem.label.split(': ')[1]?.replace(')','') : '';
-        // Assume target item is the same for now
-        newItems[index].targetItemName = value;
-        newItems[index].targetItemCode = newItems[index].sourceItemCode;
+    const currentItem = { ...newItems[index], [field]: value };
+
+    // Auto-populate fields when SOURCE item is selected
+    if (field === 'itemId') {
+        const selectedItemData = allItems.find(opt => String(opt.itemId) === value);
+        if (selectedItemData) {
+            currentItem.itemId = selectedItemData.itemId; // Ensure ID is stored
+            currentItem.sourceItemCode = selectedItemData.code;
+            // Set default UOM and Cost based on SOURCE item
+            currentItem.uom = selectedItemData.primaryUnitName || currentItem.uom || ''; 
+            // Use purchaseCostWithVat for cost (adjust if needed)
+            currentItem.cost = selectedItemData.purchaseCostWithVat || 0;
+            // Pre-populate target item if not already set?
+            if (!currentItem.targetItemId) {
+                currentItem.targetItemId = selectedItemData.itemId;
+                currentItem.targetItemCode = selectedItemData.code;
+            }
+        } else {
+             // Clear fields if selection is invalid
+            currentItem.sourceItemCode = '';
+            // Don't clear target if source is cleared, maybe user wants to keep it?
+            // currentItem.targetItemId = ''; 
+            // currentItem.targetItemCode = ''; 
+            currentItem.uom = '';
+            currentItem.cost = 0;
+        }
+    }
+
+    // Auto-populate TARGET code when TARGET item is selected
+    if (field === 'targetItemId') {
+        const selectedTargetItemData = allItems.find(opt => String(opt.itemId) === value);
+        if (selectedTargetItemData) {
+             currentItem.targetItemId = selectedTargetItemData.itemId;
+             currentItem.targetItemCode = selectedTargetItemData.code;
+        } else {
+            // Clear target code if target item selection is invalid
+            currentItem.targetItemCode = '';
+        }
     }
     
+    // Ensure quantity and cost are numbers
+    if (field === 'quantity' || field === 'cost') {
+        currentItem[field] = parseFloat(value) || 0;
+    }
+    
+    newItems[index] = currentItem;
     onChange(newItems);
   };
 
   const addItem = () => {
-    onChange([...items, { 
-        sourceItemName: '', 
+    onChange([...items, {
+        itemId: '', // Source Item ID
         sourceItemCode: '', 
-        targetItemName: '', 
+        targetItemId: '', // +++ Add Target Item ID +++
         targetItemCode: '', 
-        quantity: 0, 
+        quantity: 1, // Default quantity to 1?
         uom: '', 
-        costWithVAT: 0 
+        cost: 0 
     }]);
   };
 
   const removeItem = (index: number) => {
-    const newItems = items.filter((_, i) => i !== index);
+    const newItems = items.filter((_, i) => i !== index); 
     onChange(newItems);
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-sm p-0 overflow-hidden"> 
+    <div className="bg-white rounded-lg shadow-sm p-0 overflow-hidden">
+      <h3 className="text-lg font-semibold p-4 border-b">Inventory Items</h3>
       <div className="overflow-x-auto">
         <table className="w-full min-w-[800px]"> 
             <thead className="bg-[#00997B] text-white">
                 <tr>
-                    <th className="p-3 text-left text-sm font-semibold">Source Item Name</th>
-                    <th className="p-3 text-left text-sm font-semibold w-32">Source Item Code</th>
-                    <th className="p-3 text-left text-sm font-semibold">Target Item Name</th>
-                    <th className="p-3 text-left text-sm font-semibold w-32">Target Item Code</th>
+                    <th className="p-3 text-left text-sm font-semibold">Source Item</th>
+                    <th className="p-3 text-left text-sm font-semibold w-24">Source Code</th>
+                    <th className="p-3 text-left text-sm font-semibold">Target Item</th>
+                    <th className="p-3 text-left text-sm font-semibold w-24">Target Code</th>
                     <th className="p-3 text-left text-sm font-semibold w-24">Quantity</th>
                     <th className="p-3 text-left text-sm font-semibold w-32">UOM</th>
-                    <th className="p-3 text-left text-sm font-semibold w-32">Cost With VAT</th>
-                    <th className="p-3 text-left text-sm font-semibold w-16"></th> { /* Action column */}
+                    <th className="p-3 text-left text-sm font-semibold w-24">Cost</th>
+                    <th className="p-3 text-left text-sm font-semibold w-16"></th>
                 </tr>
             </thead>
             <tbody>
@@ -82,10 +134,9 @@ export default function TransferInventoryItemsTable({ items, onChange }: Transfe
                 <tr key={index} className="border-b last:border-none">
                     <td className="p-2 align-top">
                         <Select 
-                            value={item.sourceItemName}
-                            onChange={(e) => handleItemChange(index, 'sourceItemName', e.target.value)}
-                            options={itemOptions}
-                            placeholder="Select Item"
+                            value={String(item.itemId || '')} // Source Item ID
+                            onChange={(e) => handleItemChange(index, 'itemId', e.target.value)}
+                            options={itemOptions} // Use dynamic options
                             className="w-full"
                         />
                     </td>
@@ -93,21 +144,23 @@ export default function TransferInventoryItemsTable({ items, onChange }: Transfe
                         <Input 
                             value={item.sourceItemCode}
                             readOnly 
+                            className="bg-gray-100"
                             placeholder="Code"
                         />
                     </td>
                     <td className="p-2 align-top">
-                         {/* Assuming target is same as source for now, could be a Select too */}
-                         <Input 
-                            value={item.sourceItemName ? itemOptions.find(opt => opt.value === item.sourceItemName)?.label.split(' (')[0] : ''} 
-                            readOnly 
-                            placeholder="Target Item"
+                        <Select 
+                            value={String(item.targetItemId || '')} // Target Item ID
+                            onChange={(e) => handleItemChange(index, 'targetItemId', e.target.value)}
+                            options={itemOptions} // Use same options
+                            className="w-full"
                         />
                     </td>
                      <td className="p-2 align-top">
                         <Input 
-                            value={item.targetItemCode}
+                            value={item.targetItemCode} // Populated by targetItemId change
                             readOnly 
+                             className="bg-gray-100"
                             placeholder="Code"
                         />
                     </td>
@@ -115,7 +168,7 @@ export default function TransferInventoryItemsTable({ items, onChange }: Transfe
                         <Input 
                             type="number"
                             value={item.quantity}
-                            onChange={(e) => handleItemChange(index, 'quantity', parseFloat(e.target.value) || 0)}
+                            onChange={(e) => handleItemChange(index, 'quantity', e.target.value)}
                             placeholder="Qty"
                         />
                     </td>
@@ -123,18 +176,19 @@ export default function TransferInventoryItemsTable({ items, onChange }: Transfe
                          <Select 
                             value={item.uom}
                             onChange={(e) => handleItemChange(index, 'uom', e.target.value)}
-                            options={uomOptions}
-                            placeholder="Select unit"
+                            options={[{ value: '', label: 'Select Unit...' }, ...uomOptions]} // Removed disabled prop
                             className="w-full"
                         />
                     </td>
                     <td className="p-2 align-top">
                         <Input 
                             type="number"
-                            value={item.costWithVAT}
-                            onChange={(e) => handleItemChange(index, 'costWithVAT', parseFloat(e.target.value) || 0)}
-                            placeholder="USD"
-                            prefix="USD"
+                            value={item.cost} // Use cost field
+                            onChange={(e) => handleItemChange(index, 'cost', e.target.value)}
+                            placeholder="Cost" 
+                            className="bg-gray-100" // Make cost read-only from master?
+                            readOnly // Assuming cost comes from selected item
+                            // prefix="USD" - Add manually if needed
                         />
                     </td>
                     <td className="p-2 align-top text-center">

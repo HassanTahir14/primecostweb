@@ -210,7 +210,7 @@ export default function EmployeesPage() {
                         <div className="flex items-center justify-center space-x-2 action-buttons">
                           <Button 
                             variant="default" 
-                            size="sm" 
+                             size="sm" 
                             className="rounded-full bg-[#339A89] text-white text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-1.5"
                             disabled={employeesLoading}
                             onClick={async (e) => {
@@ -231,7 +231,7 @@ export default function EmployeesPage() {
                           </Button>
                           <Button 
                             variant="destructive" 
-                            size="sm" 
+                             size="sm" 
                             className="rounded-full bg-red-500 text-white text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-1.5"
                             onClick={(e) => {
                               e.stopPropagation();
