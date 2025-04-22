@@ -1,9 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import PageLayout from '@/components/PageLayout';
 import Button from '@/components/common/button';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import api from '@/store/api';
 
 type TransferTab = 'Inventory Items' | 'Recipe' | 'Sub Recipe';
 
@@ -13,42 +15,110 @@ const tabs: { name: TransferTab; param: string }[] = [
   { name: 'Sub Recipe', param: 'sub-recipe' },
 ];
 
+const DEFAULT_PAYLOAD = {
+  page: 0,
+  size: 10,
+  sortBy: "createdAt",
+  direction: "asc"
+};
+
 export default function TransfersPage() {
   const [activeTab, setActiveTab] = useState<TransferTab>('Inventory Items');
+  const [data, setData] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
-  const renderContent = () => {
-    // In a real app, you would fetch data based on the active tab
-    // For now, we just show the empty state
-    
-    let emptyMessage = '';
-    let createLink = '';
+  useEffect(() => {
+    fetchData();
+  }, [activeTab]);
 
-    switch (activeTab) {
-      case 'Inventory Items':
-        emptyMessage = 'No transfer item found!';
-        createLink = '/transfers/create?type=inventory';
-        break;
-      case 'Recipe':
-        emptyMessage = 'No transfer recipe found!';
-        createLink = '/transfers/create?type=recipe';
-        break;
-      case 'Sub Recipe':
-        emptyMessage = 'No transfer sub recipe found!';
-        createLink = '/transfers/create?type=sub-recipe';
-        break;
-      default:
-        return null;
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      let endpoint = '';
+      let responseKey = '';
+
+      switch (activeTab) {
+        case 'Inventory Items':
+          endpoint = '/transfer/view/items';
+          responseKey = 'itemList';
+          break;
+        case 'Recipe':
+          endpoint = '/transfer/view/prepared-main-recipe';
+          responseKey = 'transferPreparedMainRecipeList';
+          break;
+        case 'Sub Recipe':
+          endpoint = '/transfer/view/prepared-sub-recipe';
+          responseKey = 'transferPreparedSubRecipeList';
+          break;
+      }
+
+      const result: any = await api.post(endpoint, DEFAULT_PAYLOAD);
+      
+      // Extract the correct list based on the response key
+      const items = result.data[responseKey] || [];
+      setData(items);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      setData([]);
+    } finally {
+      setLoading(false);
     }
+  };
 
+  const handleRowClick = (item: any) => {
+    // Get the correct param from tabs array
+    const currentTab = tabs.find(tab => tab.name === activeTab);
+    // Navigate to detail page with the transfer data using the param
+    router.push(`/transfers/detail?type=${currentTab?.param}&id=${item.transferReferenceNumber}`);
+  };
+
+  const renderTable = () => {
     return (
-      <div className="bg-white rounded-lg shadow-sm p-6 mt-6">
-        <div className="flex justify-between items-center">
-          <p className="text-gray-500">{emptyMessage}</p>
-          <Link href={createLink}>
+      <div className="flex flex-col">
+        {/* Create New Button - Always visible */}
+        <div className="flex justify-end p-4 border-b">
+          <Link href={`/transfers/create?type=${tabs.find(tab => tab.name === activeTab)?.param}`}>
             <Button>Create New</Button>
           </Link>
         </div>
-         {/* TODO: Add table here when data exists */}
+
+        {/* Loading State */}
+        {loading ? (
+          <div className="text-center py-4">Loading...</div>
+        ) : !data.length ? (
+          <div className="text-center py-4 text-gray-500">No transfers found</div>
+        ) : (
+          /* Table Content */
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[800px]">
+              <thead className="bg-[#00997B] text-white">
+                <tr>
+                  <th className="p-3 text-left text-sm font-semibold">Reference No.</th>
+                  <th className="p-3 text-left text-sm font-semibold">Transfer Date</th>
+                  <th className="p-3 text-left text-sm font-semibold">Status</th>
+                  <th className="p-3 text-left text-sm font-semibold">Transferred By</th>
+                  <th className="p-3 text-left text-sm font-semibold">Approved By</th>
+                </tr>
+              </thead>
+              <tbody>
+                {data.map((item, index) => (
+                  <tr 
+                    key={item.transferReferenceNumber || index}
+                    onClick={() => handleRowClick(item)}
+                    className="border-b hover:bg-gray-50 cursor-pointer"
+                  >
+                    <td className="p-3 text-sm">{item.transferReferenceNumber}</td>
+                    <td className="p-3 text-sm">{new Date(item.transferDate).toLocaleDateString()}</td>
+                    <td className="p-3 text-sm">{item.transferStatus}</td>
+                    <td className="p-3 text-sm">{item.transferredBy}</td>
+                    <td className="p-3 text-sm">{item.approvedBy || 'N/A'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     );
   };
@@ -65,15 +135,17 @@ export default function TransfersPage() {
               ${activeTab === tab.name
                 ? 'bg-[#00997B] text-white'
                 : 'text-gray-600 bg-gray-100 hover:bg-gray-200'
-            }`}
+              }`}
           >
             Transfer {tab.name}
           </button>
         ))}
       </div>
 
-      {/* Tab Content */}
-      {renderContent()}
+      {/* Table Content */}
+      <div className="bg-white rounded-lg shadow-sm mt-6">
+        {renderTable()}
+      </div>
     </PageLayout>
   );
 } 

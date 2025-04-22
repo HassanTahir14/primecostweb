@@ -52,7 +52,7 @@ const IqamaExpiryReportPage: React.FC = () => {
     setValidationError(null);
     // Clear previous errors before fetching
     dispatch(clearEmployeeReportError('iqamaExpiry'));
-    const payload = { startDate, endDate };
+    const payload = { startDate, endDate, sortBy: "preparedDate", page: 0, size: 100, direction: "asc" };
     dispatch(fetchIqamaExpiry(payload));
   };
 

@@ -21,6 +21,9 @@ import itemCategoryReducer from './itemCategorySlice';
 import itemsReducer from './itemsSlice';
 import employeeReportsReducer from './employeeReportsSlice';
 import transferReportsReducer from './transferReportsSlice';
+import otherPayrollReducer from './otherPayrollSlice';
+import subRecipeCategoryReducer from './subRecipeCategorySlice';
+import taxReducer from './taxSlice';
 // import unitSlice if it exists and is needed
 // import inventorySlice if it exists and is needed
 
@@ -46,6 +49,9 @@ export const store = configureStore({
     recipeReports: recipeReportsReducer,
     employeeReports: employeeReportsReducer,
     transferReports: transferReportsReducer,
+    otherPayroll: otherPayrollReducer,
+    subRecipeCategory: subRecipeCategoryReducer,
+    tax: taxReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

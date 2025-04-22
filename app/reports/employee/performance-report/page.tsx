@@ -51,7 +51,7 @@ const PerformanceReportPage: React.FC = () => {
     setValidationError(null);
     // Clear previous errors before fetching
     dispatch(clearEmployeeReportError('performanceReport'));
-    const payload = { startDate, endDate };
+    const payload = { startDate, endDate, sortBy: "preparedDate", page: 0, size: 100, direction: "asc" };
     dispatch(fetchPerformanceReport(payload));
   };
 

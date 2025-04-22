@@ -20,11 +20,24 @@ import { ArrowLeft } from 'lucide-react';
 // --- !!! PLACEHOLDER COLUMN DEFINITION !!! ---
 // --- Update this based on the actual API response for Yield Analysis ---
 const yieldAnalysisColumns: ColumnDefinition<any>[] = [
-    { header: 'Recipe Name', accessorKey: 'recipeName' }, // Example field
-    { header: 'Expected Yield', accessorKey: 'expectedYield', cellClassName: 'text-right' }, // Example field
-    { header: 'Actual Yield', accessorKey: 'actualYield', cellClassName: 'text-right' }, // Example field
-    { header: 'Variance (%)', accessorKey: 'variancePercentage', cellClassName: 'text-right' }, // Example field
-    // Add more columns based on the actual API response
+    { header: 'Item Name', accessorKey: 'itemName' },
+    { header: 'Quantity Used', accessorKey: 'quantityUsed' },
+    { header: 'Yield %', accessorKey: 'percentageYield' },
+    { header: 'Waste %', accessorKey: 'wastePercentage' },
+    { header: 'Yield Quantity', accessorKey: 'yieldQuantity' },
+    { 
+        header: 'Yield Cost', 
+        accessorKey: 'yieldCost',
+        cellClassName: 'text-right',
+        cell: (v) => parseFloat(v).toLocaleString('en-US', { style: 'currency', currency: 'USD' })
+    },
+    { header: 'Waste Quantity', accessorKey: 'wasteQuantity' },
+    { 
+        header: 'Waste Cost', 
+        accessorKey: 'wasteCost',
+        cellClassName: 'text-right',
+        cell: (v) => parseFloat(v).toLocaleString('en-US', { style: 'currency', currency: 'USD' })
+    }
 ];
 // --- !!! END PLACEHOLDER !!! ---
 
@@ -43,7 +56,8 @@ export default function YieldAnalysisReportPage() {
         }
         setValidationError(null);
         dispatch(clearRecipeReportError('yieldAnalysis')); 
-        dispatch(fetchYieldAnalysis({ startDate, endDate }));
+        dispatch(fetchYieldAnalysis({ startDate, endDate, sortBy: "preparedDate" }));
+        console.log(data.details, 'data');
     };
 
     const handleCloseErrorModal = () => {
@@ -78,8 +92,8 @@ export default function YieldAnalysisReportPage() {
             {/* Report Table Section */}
             <ReportTypeTable
                 title="Yield Analysis"
-                data={data}
-                columns={yieldAnalysisColumns} // Use placeholder columns
+                data={data?.details || []}
+                columns={yieldAnalysisColumns}
                 isLoading={loading}
             />
             {/* Error Modal */}

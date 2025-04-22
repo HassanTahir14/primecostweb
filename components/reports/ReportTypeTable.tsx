@@ -3,6 +3,7 @@
 import React from 'react';
 import Button from '@/components/common/button';
 import { Download } from 'lucide-react';
+import { exportToCSV } from '@/utils/exportUtils';
 
 // Generic Column Definition
 export interface ColumnDefinition<T> {
@@ -22,6 +23,7 @@ interface ReportTypeTableProps<T> {
   title?: string; // Optional title for the table card
   // Add props for pagination, filtering, sorting if needed later
   showExportButton?: boolean;
+  exportFileName?: string;
 }
 
 // Helper to get nested values
@@ -34,22 +36,49 @@ function ReportTypeTable<T extends { [key: string]: any }>({
   columns = [], 
   isLoading = false, 
   title = "Report Data",
-  showExportButton = true
+  showExportButton = true,
+  exportFileName = "report"
 }: ReportTypeTableProps<T>) {
 
+  // Ensure data is always an array
+  const safeData = Array.isArray(data) ? data : [];
+
   const handleExport = () => {
-    console.log("Export data clicked");
-    // TODO: Implement actual data export logic (e.g., CSV)
+    if (safeData.length === 0) {
+      console.warn('No data available for export');
+      return;
+    }
+
+    // Create headers mapping from columns
+    const headers = columns.reduce((acc, col) => {
+      acc[String(col.accessorKey)] = col.header;
+      return acc;
+    }, {} as Record<string, string>);
+
+    // Transform data to match column structure
+    const exportData = safeData.map(row => {
+      const transformedRow: Record<string, any> = {};
+      columns.forEach(col => {
+        const key = String(col.accessorKey);
+        const value = getNestedValue(row, key);
+        transformedRow[key] = col.cell ? col.cell(value, row) : value;
+      });
+      return transformedRow;
+    });
+
+    const date = new Date().toISOString().split('T')[0];
+    const filename = `${exportFileName}-${date}`;
+    exportToCSV(exportData, filename, headers);
   };
 
   return (
     <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl sm:text-2xl font-semibold text-gray-800">{title}</h2>
-        {showExportButton && (
+        {showExportButton && safeData.length > 0 && (
           <Button onClick={handleExport} variant="outline" size="sm">
             <Download size={16} className="mr-2" />
-            Export Data
+            Export to CSV
           </Button>
         )}
       </div>
@@ -68,24 +97,22 @@ function ReportTypeTable<T extends { [key: string]: any }>({
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
-            {isLoading && data.length === 0 ? (
+            {isLoading ? (
               <tr>
                 <td colSpan={columns.length} className="text-center py-10 text-gray-500">Loading...</td>
               </tr>
-            ) : !isLoading && data.length === 0 ? (
+            ) : safeData.length === 0 ? (
               <tr>
                 <td colSpan={columns.length} className="text-center py-10 text-gray-500">No data available.</td>
               </tr>
             ) : (
-              data.map((row, rowIndex) => (
+              safeData.map((row, rowIndex) => (
                 <tr key={rowIndex} className="hover:bg-gray-50">
                   {columns.map((col) => {
-                    // Get potentially nested value
                     const rawValue = getNestedValue(row, String(col.accessorKey));
-                    // Check if a custom cell renderer is provided
                     const cellContent = col.cell 
                       ? col.cell(rawValue, row)
-                      : rawValue !== null && rawValue !== undefined ? String(rawValue) : '-'; // Default rendering
+                      : rawValue !== null && rawValue !== undefined ? String(rawValue) : '-';
                       
                     return (
                       <td 

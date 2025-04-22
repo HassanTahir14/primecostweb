@@ -20,7 +20,7 @@ import { ArrowLeft } from 'lucide-react';
 const rejectedPOColumns: ColumnDefinition<RejectedPODetail>[] = [
     { header: 'Item Name', accessorKey: 'itemName' },
     { header: 'Quantity', accessorKey: 'quantity', cellClassName: 'text-right' },
-    { header: 'Unit', accessorKey: 'unitId', cellClassName: 'text-center' },
+    { header: 'Unit', accessorKey: 'unit', cellClassName: 'text-center' },
     { header: 'Date', accessorKey: 'dated', cellClassName: 'text-center' },
     { header: 'Reason', accessorKey: 'reason' },
 ];

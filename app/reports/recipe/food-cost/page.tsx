@@ -20,12 +20,11 @@ import { ArrowLeft } from 'lucide-react';
 // --- !!! PLACEHOLDER COLUMN DEFINITION !!! ---
 // --- Update this based on the actual API response for Food Cost ---
 const foodCostColumns: ColumnDefinition<any>[] = [
-    { header: 'Recipe Name', accessorKey: 'recipeName' }, // Example
-    { header: 'Category', accessorKey: 'categoryName' }, // Example
-    { header: 'Ideal Food Cost ($)', accessorKey: 'idealCost', cellClassName: 'text-right', cell: (v) => v?.toFixed(2) }, // Example
-    { header: 'Actual Food Cost ($)', accessorKey: 'actualCost', cellClassName: 'text-right', cell: (v) => v?.toFixed(2) }, // Example
-    { header: 'Variance ($)', accessorKey: 'varianceAmount', cellClassName: 'text-right', cell: (v) => v?.toFixed(2) }, // Example
-    // Add more columns based on the actual API response
+    { header: 'Recipe Name', accessorKey: 'recipeName' },
+    { header: 'Budget Food Cost', accessorKey: 'foodCostBudget' },
+    { header: 'Actual Food Cost', accessorKey: 'foodCostActual' },
+    { header: 'Ideal Selling Price', accessorKey: 'idealSellingPrice', cellClassName: 'text-right', 
+      cell: (v) => parseFloat(v).toLocaleString('en-US', { style: 'currency', currency: 'USD' }) }
 ];
 // --- !!! END PLACEHOLDER !!! ---
 
@@ -44,7 +43,7 @@ export default function FoodCostReportPage() {
         }
         setValidationError(null);
         dispatch(clearRecipeReportError('foodCost')); 
-        dispatch(fetchFoodCost({ startDate, endDate }));
+        dispatch(fetchFoodCost({ startDate, endDate, sortBy: "preparedDate" }));
     };
 
      const handleCloseErrorModal = () => {
@@ -79,8 +78,8 @@ export default function FoodCostReportPage() {
             {/* Report Table Section */}
             <ReportTypeTable
                 title="Food Cost Details"
-                data={data}
-                columns={foodCostColumns} // Use placeholder columns
+                data={Array.isArray(data) ? data : data?.details || []}
+                columns={foodCostColumns}
                 isLoading={loading}
             />
              {/* Error Modal */}

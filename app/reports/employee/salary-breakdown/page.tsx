@@ -54,7 +54,7 @@ const SalaryBreakdownReportPage: React.FC = () => {
     }
     setValidationError(null);
     dispatch(clearEmployeeReportError('salaryBreakdown'));
-    const payload = { startDate, endDate };
+    const payload = { startDate, endDate, sortBy: "preparedDate", page: 0, size: 100, direction: "asc" };
     dispatch(fetchSalaryBreakdown(payload));
   };
 

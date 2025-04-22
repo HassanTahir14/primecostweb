@@ -20,12 +20,25 @@ import { ArrowLeft } from 'lucide-react';
 // --- !!! PLACEHOLDER COLUMN DEFINITION !!! ---
 // --- Update this based on the actual API response for Profit Margin ---
 const profitMarginColumns: ColumnDefinition<any>[] = [
-    { header: 'Recipe Name', accessorKey: 'recipeName' }, // Example
-    { header: 'Selling Price', accessorKey: 'sellingPrice', cellClassName: 'text-right', cell: (v) => v?.toFixed(2) }, // Example
-    { header: 'Food Cost', accessorKey: 'foodCost', cellClassName: 'text-right', cell: (v) => v?.toFixed(2) }, // Example
-    { header: 'Profit Margin ($)', accessorKey: 'profitAmount', cellClassName: 'text-right', cell: (v) => v?.toFixed(2) }, // Example
-    { header: 'Profit Margin (%)', accessorKey: 'profitPercentage', cellClassName: 'text-right', cell: (v) => v?.toFixed(2) + '%' }, // Example
-    // Add more columns based on the actual API response
+    { header: 'Recipe Name', accessorKey: 'recipeName' },
+    { 
+        header: 'Cost Per Recipe', 
+        accessorKey: 'costPerRecipe',
+        cellClassName: 'text-right',
+        cell: (v) => parseFloat(v).toLocaleString('en-US', { style: 'currency', currency: 'USD' })
+    },
+    { 
+        header: 'Cost Per Portion', 
+        accessorKey: 'costPerPortion',
+        cellClassName: 'text-right',
+        cell: (v) => parseFloat(v).toLocaleString('en-US', { style: 'currency', currency: 'USD' })
+    },
+    { 
+        header: 'Profit Margin Per Portion', 
+        accessorKey: 'profitMarginPerPortion',
+        cellClassName: 'text-right',
+        cell: (v) => parseFloat(v).toLocaleString('en-US', { style: 'currency', currency: 'USD' })
+    }
 ];
 // --- !!! END PLACEHOLDER !!! ---
 
@@ -44,7 +57,7 @@ export default function ProfitMarginReportPage() {
         }
         setValidationError(null);
         dispatch(clearRecipeReportError('profitMargin')); 
-        dispatch(fetchProfitMargin({ startDate, endDate }));
+        dispatch(fetchProfitMargin({ startDate, endDate, sortBy: "preparedDate" }));
     };
 
      const handleCloseErrorModal = () => {
@@ -79,8 +92,8 @@ export default function ProfitMarginReportPage() {
             {/* Report Table Section */}
             <ReportTypeTable
                 title="Profit Margin Details"
-                data={data}
-                columns={profitMarginColumns} // Use placeholder columns
+                data={Array.isArray(data) ? data : data?.details || []}
+                columns={profitMarginColumns}
                 isLoading={loading}
             />
              {/* Error Modal */}

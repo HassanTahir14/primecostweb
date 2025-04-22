@@ -66,7 +66,7 @@ const GeneralEmployeeReportPage: React.FC = () => {
     setValidationError(null);
     // Clear previous errors before fetching
     dispatch(clearEmployeeReportError('general'));
-    const payload = { startDate, endDate };
+    const payload = { startDate, endDate, sortBy: "preparedDate", page: 0, size: 100, direction: "asc"};
     dispatch(fetchGeneralEmployeeReport(payload));
   };
 

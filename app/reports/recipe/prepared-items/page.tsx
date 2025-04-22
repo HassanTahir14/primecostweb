@@ -20,12 +20,36 @@ import { ArrowLeft } from 'lucide-react';
 // --- !!! PLACEHOLDER COLUMN DEFINITION !!! ---
 // --- Update this based on the actual API response for Prepared Items ---
 const preparedItemsColumns: ColumnDefinition<any>[] = [
-    { header: 'Date', accessorKey: 'date' }, // Example
-    { header: 'Recipe Name', accessorKey: 'recipeName' }, // Example
-    { header: 'Quantity Prepared', accessorKey: 'quantity', cellClassName: 'text-right' }, // Example
-    { header: 'Prepared By', accessorKey: 'preparedBy' }, // Example
-    { header: 'Cost', accessorKey: 'cost', cellClassName: 'text-right', cell: (v) => v?.toFixed(2) }, // Example
-    // Add more columns based on the actual API response
+    { header: 'Employee Name', accessorKey: 'employeeName' },
+    { header: 'Item Name', accessorKey: 'itemName' },
+    { header: 'Category', accessorKey: 'category' },
+    { header: 'Batch Number', accessorKey: 'batchNumber' },
+    { 
+        header: 'Quantity Prepared', 
+        accessorKey: 'quantityPrepared',
+        cellClassName: 'text-right',
+        cell: (v) => v.toFixed(2)
+    },
+    { header: 'Unit', accessorKey: 'unitOfMeasurement' },
+    { 
+        header: 'Item Cost', 
+        accessorKey: 'itemCost',
+        cellClassName: 'text-right',
+        cell: (v) => parseFloat(v).toLocaleString('en-US', { style: 'currency', currency: 'USD' })
+    },
+    { header: 'Storage Location', accessorKey: 'storageLocation' },
+    { header: 'Branch', accessorKey: 'branch' },
+    { 
+        header: 'Prepared Date', 
+        accessorKey: 'preparedDate',
+        cell: (v) => new Date(v).toLocaleDateString()
+    },
+    { 
+        header: 'Expiration Date', 
+        accessorKey: 'expirationDate',
+        cell: (v) => new Date(v).toLocaleDateString()
+    },
+    { header: 'Status', accessorKey: 'preparationStatus' }
 ];
 // --- !!! END PLACEHOLDER !!! ---
 
@@ -43,7 +67,7 @@ export default function PreparedItemsReportPage() {
         }
         setValidationError(null);
         dispatch(clearRecipeReportError('preparedItems')); 
-        dispatch(fetchPreparedItems({ startDate, endDate }));
+        dispatch(fetchPreparedItems({ startDate, endDate, sortBy: "preparedDate" }));
     };
 
     const handleCloseErrorModal = () => {
@@ -78,8 +102,8 @@ export default function PreparedItemsReportPage() {
             {/* Report Table Section */}
             <ReportTypeTable
                 title="Prepared Items Details"
-                data={data}
-                columns={preparedItemsColumns} // Use placeholder columns
+                data={Array.isArray(data) ? data : data?.details || []}
+                columns={preparedItemsColumns}
                 isLoading={loading}
             />
              {/* Error Modal */}

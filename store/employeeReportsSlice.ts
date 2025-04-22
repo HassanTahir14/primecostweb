@@ -45,6 +45,7 @@ const initialState: EmployeeReportsState = {
 
 // --- Common Payload Type ---
 interface DateRangePayload {
+    sortBy?: string;
     startDate: string;
     endDate: string;
 }

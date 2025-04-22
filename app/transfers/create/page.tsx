@@ -234,11 +234,24 @@ function CreateTransferContent() {
   const renderItemTable = () => {
     switch (transferTypeParam) {
       case 'inventory':
-        return <TransferInventoryItemsTable items={formData.items} allItems={itemsData || []} onChange={handleItemsChange} />;
+        return <TransferInventoryItemsTable 
+          items={formData.items} 
+          allItems={itemsData || []} 
+          onChange={handleItemsChange} 
+          selectedBranchId={formData.sourceBranchId} // Pass selected branch ID
+        />;
       case 'recipe':
-        return <TransferRecipeTable items={formData.items} allRecipes={recipesData || []} onChange={handleItemsChange} />;
+        return <TransferRecipeTable 
+          items={formData.items} 
+          allRecipes={recipesData || []} 
+          onChange={handleItemsChange} 
+        />;
       case 'sub-recipe':
-        return <TransferSubRecipeTable items={formData.items} allSubRecipes={subRecipesData || []} onChange={handleItemsChange} />;
+        return <TransferSubRecipeTable 
+          items={formData.items} 
+          allSubRecipes={subRecipesData || []} 
+          onChange={handleItemsChange} 
+        />;
       default:
         return <p className="text-red-500">Invalid transfer type.</p>;
     }

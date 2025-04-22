@@ -5,82 +5,105 @@ import Button from '@/components/common/button';
 import Input from '@/components/common/input';
 import Select from '@/components/common/select';
 import { Plus, Trash2 } from 'lucide-react';
+import { useUnits } from '@/hooks/useUnits';
 
 // Assuming SubRecipe structure from a potential subRecipeSlice
 interface SubRecipe {
-    subRecipeId: number;
+    id: number;
     name: string;
     subRecipeCode: string;
-    unitName?: string; // Optional UOM from sub-recipe master
-    costPerPortion?: number; // Optional cost from sub-recipe master
+    costPerPortion?: number;
+    ingredients: {
+        unit: string;
+    }[];
+    status: string;  // Add status field
 }
 
 interface TransferSubRecipeTableProps {
-  items: any[]; // Current sub-recipes in the transfer
-  allSubRecipes: SubRecipe[]; // All available sub-recipes from store
+  items: any[];
+  allSubRecipes: SubRecipe[];
   onChange: (items: any[]) => void;
+  selectedBranchId: string;
+  sourceBranchId: string;
 }
 
-// Mock data removed
-
-const uomOptions = [
-    { value: 'liter', label: 'Liter' },
-    { value: 'kg', label: 'KG' },
-    { value: 'batch', label: 'Batch' },
-]
-
-export default function TransferSubRecipeTable({ items, allSubRecipes, onChange }: TransferSubRecipeTableProps) {
+export default function TransferSubRecipeTable({ 
+  items, 
+  allSubRecipes, 
+  onChange,
+  selectedBranchId,
+  sourceBranchId
+}: TransferSubRecipeTableProps) {
+  // Get units from the hook
+  const { units, loading: unitsLoading } = useUnits();
 
   // Prepare options for Select component
   const subRecipeOptions = useMemo(() => {
-      const options = allSubRecipes.map(subRecipe => ({
-          value: String(subRecipe.subRecipeId), // Use ID as value
+      if (selectedBranchId === sourceBranchId) {
+        return [{ 
+          value: '', 
+          label: 'Cannot transfer to same branch', 
+          disabled: true 
+        }];
+      }
+
+      const options = allSubRecipes
+        .filter(subRecipe => subRecipe.status === 'APPROVED')
+        .map(subRecipe => ({
+          value: String(subRecipe.id),
           label: `${subRecipe.name} (${subRecipe.subRecipeCode})`
-      }));
-      return [{ value: '', label: 'Select Sub-Recipe...' }, ...options]; // Add default option
-  }, [allSubRecipes]);
+        }));
+      return [{ value: '', label: 'Select Sub Recipe...', disabled: true }, ...options];
+  }, [allSubRecipes, selectedBranchId, sourceBranchId]);
+
+  // Get unique units from sub-recipe ingredients
+  const getUnitOptions = (subRecipe: SubRecipe | undefined) => {
+    if (!subRecipe) return [];
+    const uniqueUnits = Array.from(new Set(subRecipe.ingredients.map(item => item.unit)));
+    return uniqueUnits.map(unit => ({
+      value: unit,
+      label: unit
+    }));
+  };
 
   const handleItemChange = (index: number, field: string, value: any) => {
     const newItems = [...items];
     const currentItem = { ...newItems[index], [field]: value };
 
-    // Auto-populate fields when SOURCE sub-recipe is selected
+    // Auto-populate fields when sub-recipe is selected
     if (field === 'subRecipeId') {
-        const selectedSubRecipeData = allSubRecipes.find(opt => String(opt.subRecipeId) === value);
+        const selectedSubRecipeData = allSubRecipes.find(opt => String(opt.id) === value);
         if (selectedSubRecipeData) {
-            currentItem.subRecipeId = selectedSubRecipeData.subRecipeId; // Ensure ID is stored
+            currentItem.subRecipeId = selectedSubRecipeData.id;
             currentItem.subRecipeCode = selectedSubRecipeData.subRecipeCode;
-            // Use unitName if available, otherwise keep existing or empty. Default to 'Batch'?
-            currentItem.uom = selectedSubRecipeData.unitName || 'Batch';
-            currentItem.cost = selectedSubRecipeData.costPerPortion || 0; // Get cost from sub-recipe master
-             // Pre-populate target sub-recipe if not already set
-             if (!currentItem.targetSubRecipeId) {
-                currentItem.targetSubRecipeId = selectedSubRecipeData.subRecipeId;
-                currentItem.targetSubRecipeCode = selectedSubRecipeData.subRecipeCode;
+            
+            // Get available units for this sub-recipe
+            const availableUnits = getUnitOptions(selectedSubRecipeData);
+            
+            // Set first available unit as default if exists
+            if (availableUnits.length > 0) {
+                currentItem.uom = availableUnits[0].value;
+            } else {
+                currentItem.uom = '';
             }
+            
+            // Store the base cost (cost per unit/portion)
+            currentItem.baseCost = selectedSubRecipeData.costPerPortion || 0;
+            currentItem.cost = currentItem.baseCost * (currentItem.quantity || 1);
         } else {
             currentItem.subRecipeCode = '';
-            currentItem.uom = ''; // Clear UOM
+            currentItem.uom = '';
+            currentItem.baseCost = 0;
             currentItem.cost = 0;
-            // Don't clear target if source is cleared
         }
     }
 
-    // Auto-populate TARGET code when TARGET sub-recipe is selected
-    if (field === 'targetSubRecipeId') {
-        const selectedTargetData = allSubRecipes.find(opt => String(opt.subRecipeId) === value);
-        if (selectedTargetData) {
-             currentItem.targetSubRecipeId = selectedTargetData.subRecipeId;
-             currentItem.targetSubRecipeCode = selectedTargetData.subRecipeCode;
-        } else {
-            // Clear target code if target sub-recipe selection is invalid
-            currentItem.targetSubRecipeCode = '';
-        }
-    }
-
-    // Ensure quantity and cost are numbers
-    if (field === 'quantity' || field === 'cost') {
-        currentItem[field] = parseFloat(value) || 0;
+    // Update cost when quantity changes
+    if (field === 'quantity') {
+        const quantity = parseFloat(value) || 0;
+        currentItem.quantity = quantity;
+        // Calculate new cost based on base cost and quantity
+        currentItem.cost = (currentItem.baseCost || 0) * quantity;
     }
 
     newItems[index] = currentItem;
@@ -89,12 +112,10 @@ export default function TransferSubRecipeTable({ items, allSubRecipes, onChange 
 
   const addItem = () => {
     onChange([...items, {
-        subRecipeId: '', // Source Sub-Recipe ID
+        subRecipeId: '',
         subRecipeCode: '',
-        targetSubRecipeId: '', // +++ Add Target Sub-Recipe ID +++
-        targetSubRecipeCode: '', // +++ Add Target Sub-Recipe Code +++
         quantity: 1,
-        uom: 'Batch', // Default UOM
+        uom: '',
         cost: 0
     }]);
   };
@@ -104,6 +125,10 @@ export default function TransferSubRecipeTable({ items, allSubRecipes, onChange 
     onChange(newItems);
   };
 
+  if (unitsLoading) {
+    return <div>Loading units...</div>;
+  }
+
   return (
     <div className="bg-white rounded-lg shadow-sm p-0 overflow-hidden">
        <h3 className="text-lg font-semibold p-4 border-b">Sub-Recipes</h3>
@@ -111,10 +136,8 @@ export default function TransferSubRecipeTable({ items, allSubRecipes, onChange 
         <table className="w-full min-w-[800px]">
             <thead className="bg-[#00997B] text-white">
                 <tr>
-                    <th className="p-3 text-left text-sm font-semibold">Source Sub-Recipe</th>
-                    <th className="p-3 text-left text-sm font-semibold w-24">Source Code</th>
-                    <th className="p-3 text-left text-sm font-semibold">Target Sub-Recipe</th>
-                    <th className="p-3 text-left text-sm font-semibold w-24">Target Code</th>
+                    <th className="p-3 text-left text-sm font-semibold">Sub-Recipe</th>
+                    <th className="p-3 text-left text-sm font-semibold w-24">Code</th>
                     <th className="p-3 text-left text-sm font-semibold w-24">Quantity</th>
                     <th className="p-3 text-left text-sm font-semibold w-32">UOM</th>
                     <th className="p-3 text-left text-sm font-semibold w-24">Cost</th>
@@ -126,31 +149,15 @@ export default function TransferSubRecipeTable({ items, allSubRecipes, onChange 
                 <tr key={index} className="border-b last:border-none">
                     <td className="p-2 align-top">
                         <Select
-                            value={String(item.subRecipeId || '')} // Source Sub-Recipe ID
+                            value={String(item.subRecipeId || '')}
                             onChange={(e) => handleItemChange(index, 'subRecipeId', e.target.value)}
-                            options={subRecipeOptions} // Use dynamic options
+                            options={subRecipeOptions}
                             className="w-full"
                         />
                     </td>
                     <td className="p-2 align-top">
                         <Input
-                            value={item.subRecipeCode} // Source Code
-                            readOnly
-                            className="bg-gray-100"
-                            placeholder="Code"
-                        />
-                    </td>
-                    <td className="p-2 align-top">
-                        <Select
-                            value={String(item.targetSubRecipeId || '')} // Target Sub-Recipe ID
-                            onChange={(e) => handleItemChange(index, 'targetSubRecipeId', e.target.value)}
-                            options={subRecipeOptions} // Use same sub-recipe options
-                            className="w-full"
-                        />
-                    </td>
-                    <td className="p-2 align-top">
-                        <Input
-                            value={item.targetSubRecipeCode || ''} // Target Code
+                            value={item.subRecipeCode}
                             readOnly
                             className="bg-gray-100"
                             placeholder="Code"
@@ -162,23 +169,26 @@ export default function TransferSubRecipeTable({ items, allSubRecipes, onChange 
                             value={item.quantity}
                             onChange={(e) => handleItemChange(index, 'quantity', e.target.value)}
                             placeholder="Qty"
+                            min="0"
+                            step="any"
                         />
                     </td>
                     <td className="p-2 align-top">
                          <Select
                             value={item.uom}
                             onChange={(e) => handleItemChange(index, 'uom', e.target.value)}
-                            options={[{ value: '', label: 'Select Unit...' }, ...uomOptions]} // Add default
+                            options={getUnitOptions(allSubRecipes.find(subRecipe => String(subRecipe.id) === String(item.subRecipeId)))}
                             className="w-full"
+                            disabled={!item.subRecipeId || getUnitOptions(allSubRecipes.find(subRecipe => String(subRecipe.id) === String(item.subRecipeId))).length === 0}
                         />
                     </td>
                     <td className="p-2 align-top">
                         <Input
                             type="number"
-                            value={item.cost} // Use cost
+                            value={item.cost}
                             onChange={(e) => handleItemChange(index, 'cost', e.target.value)}
                             placeholder="Cost"
-                            readOnly // Cost from master
+                            readOnly
                             className="bg-gray-100"
                         />
                     </td>
