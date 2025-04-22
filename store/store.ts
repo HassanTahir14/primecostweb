@@ -20,6 +20,7 @@ import recipeReportsReducer from './recipeReportsSlice';
 import itemCategoryReducer from './itemCategorySlice';
 import itemsReducer from './itemsSlice';
 import employeeReportsReducer from './employeeReportsSlice';
+import transferReportsReducer from './transferReportsSlice';
 // import unitSlice if it exists and is needed
 // import inventorySlice if it exists and is needed
 
@@ -44,6 +45,7 @@ export const store = configureStore({
     purchaseReports: purchaseReportsReducer,
     recipeReports: recipeReportsReducer,
     employeeReports: employeeReportsReducer,
+    transferReports: transferReportsReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
