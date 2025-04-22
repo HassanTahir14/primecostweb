@@ -1,20 +1,42 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import PageLayout from '@/components/PageLayout';
 import NonConformanceReportTable from '@/components/non-conformance/NonConformanceReportTable';
 import Button from '@/components/common/button';
 import { Plus } from 'lucide-react';
 import Link from 'next/link';
+import { AppDispatch, RootState } from '@/store/store'; // Import store types
+import { fetchAllNonConformanceReports, clearError } from '@/store/nonConformanceSlice'; // Import actions
+import ConfirmationModal from '@/components/common/ConfirmationModal'; // For error display
 
 // This page will display the list/table of non-conformance reports.
 // Data fetching logic (e.g., using Redux or local state with useEffect)
 // would be added here in a real application.
 
 export default function NonConformanceReportsPage() {
-  // Placeholder state - replace with actual data fetching
-  const isLoading = false;
-  const reports = undefined; // Use mock data from the table component by default
+  const dispatch = useDispatch<AppDispatch>();
+  const { 
+    reports, 
+    loading: isLoading, 
+    error 
+  } = useSelector((state: RootState) => state.nonConformance);
+
+  useEffect(() => {
+    dispatch(fetchAllNonConformanceReports());
+    // Optional: Clear error on component mount if needed
+    // dispatch(clearError()); 
+
+    // Optional: Cleanup function to clear error on unmount
+    return () => {
+      // dispatch(clearError()); 
+    };
+  }, [dispatch]);
+
+  const handleCloseErrorModal = () => {
+    dispatch(clearError()); // Clear error state when modal is closed
+  };
 
   return (
     <PageLayout title="Non Conformance Reports">
@@ -33,6 +55,16 @@ export default function NonConformanceReportsPage() {
           reports={reports} 
         />
       </div>
+
+      {/* Error Modal */}
+      <ConfirmationModal
+        isOpen={!!error} // Open modal if error exists
+        onClose={handleCloseErrorModal}
+        title="Error"
+        message={typeof error === 'string' ? error : (error as any)?.message || 'An unexpected error occurred while fetching reports.'}
+        isAlert={true}
+        okText="OK"
+      />
     </PageLayout>
   );
 } 

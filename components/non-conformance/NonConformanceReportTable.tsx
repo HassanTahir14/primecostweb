@@ -1,84 +1,83 @@
 'use client';
 
 import React from 'react';
-import Button from '@/components/common/button'; // Assuming Button component exists
+// Import the correct interface from the slice
+import { NonConformanceReport } from '@/store/nonConformanceSlice'; 
 
-// Interface for Non Conformance Report Data
-interface NonConformanceReport {
-  id: string;
-  issue: string;
-  raisedBy: string;
-  raisedDate: string;
-  findings: string;
-  actions: string;
-  evidence: string;
-  status: 'Closed' | 'Open' | 'Pending';
-}
-
-// Mock Data based on image
-const mockReports: NonConformanceReport[] = [
-  { id: '001', issue: 'Defect in Beef', raisedBy: 'Muhammad Hamza', raisedDate: '2/8/2024', findings: 'Smelling', actions: 'Replace', evidence: 'No Evidence', status: 'Closed' },
-  { id: '002', issue: 'Packaging Issue', raisedBy: 'Ali Khan', raisedDate: '3/8/2024', findings: 'Broken seal', actions: 'Repack', evidence: 'No Evidence', status: 'Open' },
-  { id: '003', issue: 'Wrong Labeling', raisedBy: 'Ayesha Siddiqui', raisedDate: '4/8/2024', findings: 'Incorrect details', actions: 'Relabel', evidence: 'No Evidence', status: 'Pending' },
-];
-
+// Interface for the props using the imported type
 interface NonConformanceReportTableProps {
-  reports?: NonConformanceReport[]; // Make reports optional, use mock if not provided
+  reports: NonConformanceReport[]; 
   isLoading?: boolean;
-  // Add handlers for actions if needed (e.g., onViewDetails)
 }
 
 const NonConformanceReportTable: React.FC<NonConformanceReportTableProps> = ({ 
-  reports = mockReports, // Use mock data as default
+  reports = [], // Default to empty array
   isLoading = false 
 }) => {
 
-  const getStatusColor = (status: NonConformanceReport['status']) => {
-    switch (status) {
-      case 'Closed': return 'bg-gray-100 text-gray-700';
-      case 'Open': return 'bg-red-100 text-red-700';
-      case 'Pending': return 'bg-yellow-100 text-yellow-700';
-      default: return 'bg-gray-100 text-gray-700';
+  // Status logic based on API data (using approvedStatus)
+  const getStatusColor = (status?: string) => {
+    switch (status?.toUpperCase()) {
+      case 'APPROVED': return 'bg-green-100 text-green-700';
+      case 'REJECTED': return 'bg-red-100 text-red-700';
+      case 'PENDING': return 'bg-yellow-100 text-yellow-700';
+      default: return 'bg-gray-100 text-gray-700'; // Default/Unknown status
     }
+  };
+
+  const renderStatus = (status?: string) => {
+      return status || 'N/A'; // Display status or N/A if undefined/null
   };
 
   return (
     <div className="overflow-x-auto bg-white rounded-lg shadow p-4 sm:p-6">
-      <table className="w-full min-w-[800px]">
+      <table className="w-full min-w-[1200px]"> {/* Adjusted min-width for more columns */}
         <thead>
           <tr className="border-b bg-gray-50">
-            <th className="text-left py-3 px-3 text-gray-600 font-semibold text-sm">#</th>
-            <th className="text-left py-3 px-3 text-gray-600 font-semibold text-sm">Issue</th>
-            <th className="text-left py-3 px-3 text-gray-600 font-semibold text-sm">Raised By</th>
-            <th className="text-left py-3 px-3 text-gray-600 font-semibold text-sm">Raised</th>
-            <th className="text-left py-3 px-3 text-gray-600 font-semibold text-sm">Findings</th>
-            <th className="text-left py-3 px-3 text-gray-600 font-semibold text-sm">Actions</th>
-            <th className="text-left py-3 px-3 text-gray-600 font-semibold text-sm">Evidence</th>
+            {/* Update Headers to match API response fields */}
+            <th className="text-left py-3 px-3 text-gray-600 font-semibold text-sm">Order #</th>
+            <th className="text-left py-3 px-3 text-gray-600 font-semibold text-sm">NCR #</th>
+            <th className="text-left py-3 px-3 text-gray-600 font-semibold text-sm">Date</th>
+            <th className="text-left py-3 px-3 text-gray-600 font-semibold text-sm">Supplier</th>
+            <th className="text-left py-3 px-3 text-gray-600 font-semibold text-sm">Branch</th>
+            <th className="text-left py-3 px-3 text-gray-600 font-semibold text-sm">Issue Desc.</th> 
+            <th className="text-left py-3 px-3 text-gray-600 font-semibold text-sm">NC Desc.</th>
+            <th className="text-left py-3 px-3 text-gray-600 font-semibold text-sm">Correction</th>
+            <th className="text-left py-3 px-3 text-gray-600 font-semibold text-sm">Prepared By</th>
+            <th className="text-left py-3 px-3 text-gray-600 font-semibold text-sm">Approved By</th>
             <th className="text-center py-3 px-3 text-gray-600 font-semibold text-sm">Status</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-gray-100">
-          {isLoading && reports.length === 0 ? (
+          {isLoading ? (
             <tr>
-              <td colSpan={8} className="text-center py-10 text-gray-500">Loading...</td>
+               {/* Update colspan to match new number of columns */}
+              <td colSpan={11} className="text-center py-10 text-gray-500">Loading...</td>
             </tr>
-          ) : !isLoading && reports.length === 0 ? (
+          ) : reports.length === 0 ? (
              <tr>
-              <td colSpan={8} className="text-center py-10 text-gray-500">No reports found.</td>
+               {/* Update colspan */}
+              <td colSpan={11} className="text-center py-10 text-gray-500">No reports found.</td>
             </tr>
           ) : (
-            reports.map((report) => (
-              <tr key={report.id} className="hover:bg-gray-50">
-                <td className="py-3 px-3 text-sm text-gray-700">{report.id}</td>
-                <td className="py-3 px-3 text-sm text-gray-700">{report.issue}</td>
-                <td className="py-3 px-3 text-sm text-gray-700">{report.raisedBy}</td>
-                <td className="py-3 px-3 text-sm text-gray-700">{report.raisedDate}</td>
-                <td className="py-3 px-3 text-sm text-gray-700">{report.findings}</td>
-                <td className="py-3 px-3 text-sm text-gray-700">{report.actions}</td>
-                <td className="py-3 px-3 text-sm text-gray-700">{report.evidence}</td>
+            // Map over the actual reports data
+            reports.map((report, index) => ( 
+              // Use a more reliable key if ncrNo is available and unique
+              <tr key={report.ncrNo ? `ncr-${report.ncrNo}` : `ncr-index-${index}`} className="hover:bg-gray-50"> 
+                {/* Render actual data fields */}
+                <td className="py-3 px-3 text-sm text-gray-700">{report.orderNo ?? 'N/A'}</td>
+                <td className="py-3 px-3 text-sm text-gray-700">{report.ncrNo ?? 'N/A'}</td>
+                <td className="py-3 px-3 text-sm text-gray-700">{report.date ?? 'N/A'}</td>
+                <td className="py-3 px-3 text-sm text-gray-700">{report.supplierName ?? 'N/A'}</td>
+                <td className="py-3 px-3 text-sm text-gray-700">{report.branchName ?? 'N/A'}</td>
+                <td className="py-3 px-3 text-sm text-gray-700">{report.description ?? 'N/A'}</td>
+                <td className="py-3 px-3 text-sm text-gray-700">{report.nonConformanceDescription ?? 'N/A'}</td>
+                <td className="py-3 px-3 text-sm text-gray-700">{report.correctiveAction ?? 'N/A'}</td>
+                <td className="py-3 px-3 text-sm text-gray-700">{report.preparedBy ?? 'N/A'}</td>
+                <td className="py-3 px-3 text-sm text-gray-700">{report.approvedBy ?? 'N/A'}</td>
                 <td className="py-3 px-3 text-center">
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(report.status)}`}>
-                    {report.status}
+                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(report.approvedStatus)}`}>
+                    {renderStatus(report.approvedStatus)}
                   </span>
                 </td>
               </tr>

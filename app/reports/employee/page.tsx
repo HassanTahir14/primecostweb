@@ -7,15 +7,15 @@ import ReportIndexPage from '@/components/reports/ReportIndexPage';
 // Note: Image 8 shows the same links as Purchase Reports, which might be an error in the images.
 // Using distinct paths assuming they are different reports logically.
 const employeeReportLinks = [
-  { name: 'Items Expiry Date', path: '/reports/employee/items-expiry' }, // Path differs from purchase
-  { name: 'Items By Supplier', path: '/reports/employee/items-supplier' }, // Path differs
-  { name: 'Purchase Report', path: '/reports/employee/purchase-summary' }, // Path differs
-  { name: 'Stock Summary Report', path: '/reports/employee/stock-summary' }, // Path differs
-  { name: 'Purchase By Supplier', path: '/reports/employee/purchase-supplier' }, // Path differs
-  { name: 'Purchase By Category', path: '/reports/employee/purchase-category' }, // Path differs
+  { name: 'Salary Breakdown Report', path: '/reports/employee/salary-breakdown' }, // Path differs from purchase
+  { name: 'Performance Report', path: '/reports/employee/performance-report' }, // Path differs
+  { name: 'Iqama Expiry Report', path: '/reports/employee/iqama-expiry' }, // Path differs
+  { name: 'General Employee Report', path: '/reports/employee/general' }, // Path differs
+  { name: 'Health Card Expiry Report', path: '/reports/employee/health-card-expiry' }, // Path differs
   // Add specific employee reports if needed based on actual requirements, e.g.:
   // { name: 'Employee Iqama Expiry', path: '/reports/employee/iqama-expiry' }, 
 ];
+
 
 export default function EmployeeReportsLandingPage() {
   return (
