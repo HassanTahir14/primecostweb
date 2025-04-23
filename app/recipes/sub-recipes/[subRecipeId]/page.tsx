@@ -7,6 +7,14 @@ import { selectAllSubRecipes } from '@/store/subRecipeSlice';
 import GenericDetailPage, { DetailFieldConfig } from '@/components/common/GenericDetailPage';
 import PageLayout from '@/components/PageLayout';
 
+// Add interface for auth user
+interface AuthUser {
+  username: string;
+  userId: number;
+  role: string;
+  dashboardMenuList: Array<{ menuName: string }>;
+}
+
 export default function SubRecipeDetailPage() {
   const router = useRouter();
   const params = useParams();
@@ -16,6 +24,20 @@ export default function SubRecipeDetailPage() {
   const [subRecipe, setSubRecipe] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  // Get user role from localStorage
+  useEffect(() => {
+    const authUserStr = localStorage.getItem('authUser');
+    if (authUserStr) {
+      try {
+        const authUser: AuthUser = JSON.parse(authUserStr);
+        setIsAdmin(authUser.role === 'Admin');
+      } catch (error) {
+        console.error('Error parsing auth user:', error);
+      }
+    }
+  }, []);
 
   useEffect(() => {
     if (subRecipes) {
@@ -37,7 +59,7 @@ export default function SubRecipeDetailPage() {
     { 
       key: 'tokenStatus', 
       label: 'Status',
-      render: (value) => (
+      render: (value: string) => (
         <span className={`px-2 py-1 rounded-full text-xs font-medium ${
           value === 'APPROVED' 
             ? 'bg-green-100 text-green-800' 
@@ -51,45 +73,48 @@ export default function SubRecipeDetailPage() {
     },
     { key: 'numberOfPortions', label: 'Number of Portions' },
     { key: 'servingSize', label: 'Serving Size' },
-    { 
-      key: 'costPerRecipe', 
-      label: 'Cost Per Recipe',
-      render: (value) => `$${value.toFixed(2)}`
-    },
-    { 
-      key: 'costPerPortion', 
-      label: 'Cost Per Portion',
-      render: (value) => `$${value.toFixed(2)}`
-    },
-    { 
-      key: 'menuPrice', 
-      label: 'Menu Price',
-      render: (value) => `$${value.toFixed(2)}`
-    },
-    { 
-      key: 'idealSellingPrice', 
-      label: 'Ideal Selling Price',
-      render: (value) => `$${value.toFixed(2)}`
-    },
-    { 
-      key: 'marginPerPortion', 
-      label: 'Margin Per Portion',
-      render: (value) => `$${value.toFixed(2)}`
-    },
-    {
-      key: 'foodCostBudgetPercentage',
-      label: 'Food Cost Budget %',
-      render: (value) => `${value}%`
-    },
-    {
-      key: 'foodCostActualPercentage',
-      label: 'Food Cost Actual %',
-      render: (value) => `${value}%`
-    },
+    // Only show price and cost-related fields to admin users
+    ...(isAdmin ? [
+      { 
+        key: 'costPerRecipe', 
+        label: 'Cost Per Recipe',
+        render: (value: number) => `$${value.toFixed(2)}`
+      },
+      { 
+        key: 'costPerPortion', 
+        label: 'Cost Per Portion',
+        render: (value: number) => `$${value.toFixed(2)}`
+      },
+      { 
+        key: 'menuPrice', 
+        label: 'Menu Price',
+        render: (value: number) => `$${value.toFixed(2)}`
+      },
+      { 
+        key: 'idealSellingPrice', 
+        label: 'Ideal Selling Price',
+        render: (value: number) => `$${value.toFixed(2)}`
+      },
+      { 
+        key: 'marginPerPortion', 
+        label: 'Margin Per Portion',
+        render: (value: number) => `$${value.toFixed(2)}`
+      },
+      {
+        key: 'foodCostBudgetPercentage',
+        label: 'Food Cost Budget %',
+        render: (value: number) => `${value}%`
+      },
+      {
+        key: 'foodCostActualPercentage',
+        label: 'Food Cost Actual %',
+        render: (value: number) => `${value}%`
+      }
+    ] : []),
     {
       key: 'ingredients',
       label: 'Ingredients',
-      render: (ingredients) => (
+      render: (ingredients: any[]) => (
         <div className="space-y-2">
           {ingredients?.map((ing: any, index: number) => (
             <div key={ing.id || index} className="text-sm">
@@ -97,7 +122,7 @@ export default function SubRecipeDetailPage() {
               <span className="text-gray-600">
                 {' - '}{ing.quantity} {ing.unit}
                 {' ('}{ing.yieldPercentage}% yield)
-                {' - $'}{ing.recipeCost.toFixed(2)}
+                {isAdmin && ` - $${ing.recipeCost.toFixed(2)}`}
               </span>
             </div>
           ))}
@@ -107,7 +132,7 @@ export default function SubRecipeDetailPage() {
     {
       key: 'procedures',
       label: 'Procedures',
-      render: (procedures) => (
+      render: (procedures: any[]) => (
         <div className="space-y-2">
           {procedures?.map((proc: any, index: number) => (
             <div key={index} className="text-sm">
@@ -126,7 +151,7 @@ export default function SubRecipeDetailPage() {
     {
       key: 'lastUpdatedByName',
       label: 'Last Updated By',
-      render: (value, data) => value ? `${value} (${data.lastUpdatedByDesignation || 'N/A'})` : 'N/A'
+      render: (value: string | null, data: any) => value ? `${value} (${data.lastUpdatedByDesignation || 'N/A'})` : 'N/A'
     }
   ];
 

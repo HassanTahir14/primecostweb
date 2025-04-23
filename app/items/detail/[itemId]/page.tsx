@@ -54,6 +54,14 @@ interface ApiUnit {
     unitDescription?: string;
 }
 
+// Add interface for auth user
+interface AuthUser {
+  username: string;
+  userId: number;
+  role: string;
+  dashboardMenuList: Array<{ menuName: string }>;
+}
+
 // --- Helper function for formatting currency ---
 const formatCurrency = (value: number | null | undefined, currency = 'SAR') => {
   if (value === null || value === undefined) return 'N/A';
@@ -93,6 +101,21 @@ export default function ItemDetailPage() {
   const [item, setItem] = useState<Item | null>(null);
   const [loading, setLoading] = useState<boolean>(true); 
   const [error, setError] = useState<string | null>(null);
+
+  // Get user role from localStorage
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    const authUserStr = localStorage.getItem('authUser');
+    if (authUserStr) {
+      try {
+        const authUser: AuthUser = JSON.parse(authUserStr);
+        setIsAdmin(authUser.role === 'Admin');
+      } catch (error) {
+        console.error('Error parsing auth user:', error);
+      }
+    }
+  }, []);
 
   // Fetch Units directly (since we don't have a slice/selector yet)
   useEffect(() => {
@@ -200,7 +223,7 @@ export default function ItemDetailPage() {
     {
       key: 'secondaryUnitValue',
       label: 'Secondary Unit Value',
-      render: (value, data) => data.secondaryUnitId ? (value ?? 'N/A') : 'N/A' // Show only if secondary unit exists
+      render: (value, data) => data.secondaryUnitId ? (value ?? 'N/A') : 'N/A'
     }, 
     {
       key: 'taxId',
@@ -208,25 +231,27 @@ export default function ItemDetailPage() {
       render: (taxId) => taxes.find(t => t.taxId === taxId)?.taxName || taxId || 'N/A'
     },
     {
-      key: 'taxId', // Use taxId again to find rate
+      key: 'taxId',
       label: 'Tax Rate',
       render: (taxId) => {
           const tax = taxes.find(t => t.taxId === taxId);
           return tax ? `${tax.taxRate}%` : 'N/A';
       }
     },
-    { 
-      key: 'purchaseCostWithoutVat', 
-      label: 'Cost (VAT Excl)',
-      render: (value) => formatCurrency(value) 
-    },
-    { 
-      key: 'purchaseCostWithVat', 
-      label: 'Cost (VAT Incl)', 
-      render: (value) => formatCurrency(value)
-    },
+    // Only show price-related fields to admin users
+    ...(isAdmin ? [
+      { 
+        key: 'purchaseCostWithoutVat', 
+        label: 'Cost (VAT Excl)',
+        render: (value: number | null | undefined) => formatCurrency(value) 
+      },
+      { 
+        key: 'purchaseCostWithVat', 
+        label: 'Cost (VAT Incl)', 
+        render: (value: number | null | undefined) => formatCurrency(value)
+      }
+    ] : []),
     { key: 'countryOrigin', label: 'Country of Origin' },
-    // Conditionally render date field only if data exists
     { key: 'createdAt', label: 'Created At', render: (value) => value ? formatDate(value) : 'N/A' }, 
     { key: 'updatedAt', label: 'Last Updated', render: (value) => value ? formatDate(value) : 'N/A' },
   ];

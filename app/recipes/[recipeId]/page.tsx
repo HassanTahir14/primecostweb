@@ -7,6 +7,14 @@ import { selectAllRecipes } from '@/store/recipeSlice';
 import GenericDetailPage, { DetailFieldConfig } from '@/components/common/GenericDetailPage';
 import PageLayout from '@/components/PageLayout';
 
+// Add interface for auth user
+interface AuthUser {
+  username: string;
+  userId: number;
+  role: string;
+  dashboardMenuList: Array<{ menuName: string }>;
+}
+
 export default function RecipeDetailPage() {
   const router = useRouter();
   const params = useParams();
@@ -16,6 +24,20 @@ export default function RecipeDetailPage() {
   const [recipe, setRecipe] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  // Get user role from localStorage
+  useEffect(() => {
+    const authUserStr = localStorage.getItem('authUser');
+    if (authUserStr) {
+      try {
+        const authUser: AuthUser = JSON.parse(authUserStr);
+        setIsAdmin(authUser.role === 'Admin');
+      } catch (error) {
+        console.error('Error parsing auth user:', error);
+      }
+    }
+  }, []);
 
   useEffect(() => {
     if (recipes) {
@@ -36,7 +58,7 @@ export default function RecipeDetailPage() {
     { 
       key: 'tokenStatus', 
       label: 'Status',
-      render: (value) => (
+      render: (value: string) => (
         <span className={`px-2 py-1 rounded-full text-xs font-medium ${
           value === 'APPROVED' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
         }`}>
@@ -48,21 +70,24 @@ export default function RecipeDetailPage() {
       key: 'numberOfPortions', 
       label: 'Number of Portions'
     },
-    { 
-      key: 'costPerRecipe', 
-      label: 'Recipe Cost',
-      render: (value) => `$${(value / 100).toFixed(2)}`
-    },
-    { 
-      key: 'costPerPortion', 
-      label: 'Cost Per Portion',
-      render: (value) => value ? `$${(value / 100).toFixed(2)}` : 'N/A'
-    },
+    // Only show cost-related fields to admin users
+    ...(isAdmin ? [
+      { 
+        key: 'costPerRecipe', 
+        label: 'Recipe Cost',
+        render: (value: number) => `$${(value / 100).toFixed(2)}`
+      },
+      { 
+        key: 'costPerPortion', 
+        label: 'Cost Per Portion',
+        render: (value: number | null) => value ? `$${(value / 100).toFixed(2)}` : 'N/A'
+      }
+    ] : []),
     { key: 'description', label: 'Description' },
     {
       key: 'ingredients',
       label: 'Ingredients',
-      render: (ingredients) => (
+      render: (ingredients: any[]) => (
         <div className="space-y-2">
           {ingredients?.map((ing: any, index: number) => (
             <div key={ing.id || index} className="text-sm">
@@ -70,7 +95,7 @@ export default function RecipeDetailPage() {
               <span className="text-gray-600">
                 {' - '}{ing.quantity} {ing.unit}
                 {' ('}{ing.yieldPercentage}% yield)
-                {' - $'}{ing.recipeCost.toFixed(2)}
+                {isAdmin && ` - $${ing.recipeCost.toFixed(2)}`}
               </span>
             </div>
           ))}
@@ -80,7 +105,7 @@ export default function RecipeDetailPage() {
     {
       key: 'instructions',
       label: 'Instructions',
-      render: (instructions) => (
+      render: (instructions: any[]) => (
         <div className="space-y-2">
           {instructions?.map((inst: any, index: number) => (
             <div key={index} className="text-sm">
@@ -94,12 +119,12 @@ export default function RecipeDetailPage() {
     { 
       key: 'createdAt', 
       label: 'Created At',
-      render: (value) => new Date(value).toLocaleDateString()
+      render: (value: string) => new Date(value).toLocaleDateString()
     },
     { 
       key: 'updatedAt', 
       label: 'Last Updated',
-      render: (value) => value ? new Date(value).toLocaleDateString() : 'N/A'
+      render: (value: string | null) => value ? new Date(value).toLocaleDateString() : 'N/A'
     }
   ];
 

@@ -7,17 +7,31 @@
     "rewrites": [
       {
         "source": "/api-proxy/:path*",
-        "destination": "http://212.85.26.46:8082/api/v1/:path*"
+        "destination": "http://212.85.26.46:8082/api/v1/:path*",
+        "headers": [
+          {
+            "key": "Access-Control-Allow-Origin",
+            "value": "*"
+          },
+          {
+            "key": "Access-Control-Allow-Methods",
+            "value": "GET, POST, PUT, DELETE, OPTIONS"
+          },
+          {
+            "key": "Access-Control-Allow-Headers",
+            "value": "X-Requested-With, Content-Type, Accept"
+          }
+        ]
       }
     ],
     "env": {
-      "NEXT_PUBLIC_API_URL": "http://212.85.26.46:8082/api/v1",
-      "NEXT_PUBLIC_IMAGE_URL": "http://212.85.26.46:8082/api/v1/images/view"
+      "NEXT_PUBLIC_API_URL": "/api-proxy",
+      "NEXT_PUBLIC_IMAGE_URL": "/api-proxy/images/view"
     },
     "build": {
       "env": {
-        "NEXT_PUBLIC_API_URL": "http://212.85.26.46:8082/api/v1",
-        "NEXT_PUBLIC_IMAGE_URL": "http://212.85.26.46:8082/api/v1/images/view"
+        "NEXT_PUBLIC_API_URL": "/api-proxy",
+        "NEXT_PUBLIC_IMAGE_URL": "/api-proxy/images/view"
       }
     }
   }
