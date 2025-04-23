@@ -10,6 +10,25 @@
         "destination": "http://212.85.26.46:8082/api/v1/:path*"
       }
     ],
+    "headers": [
+      {
+        "source": "/api-proxy/(.*)",
+        "headers": [
+          {
+            "key": "Access-Control-Allow-Origin",
+            "value": "*"
+          },
+          {
+            "key": "Access-Control-Allow-Methods",
+            "value": "GET, POST, PUT, DELETE, OPTIONS"
+          },
+          {
+            "key": "Access-Control-Allow-Headers",
+            "value": "X-Requested-With, Content-Type, Accept, Authorization"
+          }
+        ]
+      }
+    ],
     "env": {
       "NEXT_PUBLIC_API_URL": "/api-proxy",
       "NEXT_PUBLIC_IMAGE_URL": "/api-proxy/images/view"
