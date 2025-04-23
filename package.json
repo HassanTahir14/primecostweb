@@ -76,6 +76,7 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
-    "@types/lodash": "^4.17.16"
+    "@types/lodash": "^4.17.16",
+    "@types/react-simple-maps": "^3.0.6"
   }
 }

@@ -10,36 +10,60 @@ interface RecipeCostingFormProps {
 }
 
 export default function RecipeCostingForm({ onNext, onBack, initialData }: RecipeCostingFormProps) {
-  console.log(initialData, 'initialData');
+  // Get total ingredients cost from previous step if available
+  const totalIngredientsCost = calculateTotalIngredientsCost(initialData.ingredients || []);
+  
   const [menuPrice, setMenuPrice] = useState(initialData.menuPrice || '');
   const [foodCostBudgetPercent, setFoodCostBudgetPercent] = useState(initialData.foodCostBudget || '');
-  const [foodCostActualPercent, setFoodCostActualPercent] = useState(initialData.foodCostActual || '');
-  const [idealSellingPrice, setIdealSellingPrice] = useState(initialData.idealSellingPrice || '');
-  const [costPerPortion, setCostPerPortion] = useState(initialData.costPerPortion || '');
-  const [costPerRecipe, setCostPerRecipe] = useState(initialData.costPerRecipe || '');
-  const [marginPerPortion, setMarginPerPortion] = useState(initialData.marginPerPortion || '');
+  const [costPerPortion, setCostPerPortion] = useState('');
+  const [foodCostActualPercent, setFoodCostActualPercent] = useState('');
+  const [idealSellingPrice, setIdealSellingPrice] = useState('');
+  const [costPerRecipe, setCostPerRecipe] = useState('');
+  const [marginPerPortion, setMarginPerPortion] = useState('');
 
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
+  // Calculate cost per portion based on ingredients cost and portions
   useEffect(() => {
-    if (menuPrice && costPerPortion) {
-      const actualPercent = (parseFloat(costPerPortion) / parseFloat(menuPrice)) * 100;
-      setFoodCostActualPercent(actualPercent.toFixed(2));
-
-      const margin = parseFloat(menuPrice) - parseFloat(costPerPortion);
-      setMarginPerPortion(margin.toFixed(2));
+    if (totalIngredientsCost > 0 && initialData.portions && parseInt(initialData.portions) > 0) {
+      const perPortion = totalIngredientsCost / parseInt(initialData.portions);
+      setCostPerPortion(perPortion.toFixed(2));
     }
+  }, [totalIngredientsCost, initialData.portions]);
 
-    if (foodCostBudgetPercent && costPerPortion) {
-      const idealPrice = parseFloat(costPerPortion) / (parseFloat(foodCostBudgetPercent) / 100);
-      setIdealSellingPrice(idealPrice.toFixed(2));
-    }
-
+  // Calculate other values based on inputs
+  useEffect(() => {
+    // Cost per recipe
     if (costPerPortion && initialData.portions) {
       const recipeCost = parseFloat(costPerPortion) * parseInt(initialData.portions);
       setCostPerRecipe(recipeCost.toFixed(2));
     }
+
+    // Food cost % actual
+    if (menuPrice && costPerPortion) {
+      const actualPercent = (parseFloat(costPerPortion) / parseFloat(menuPrice)) * 100;
+      setFoodCostActualPercent(actualPercent.toFixed(2));
+    }
+
+    // Margin per portion
+    if (menuPrice && costPerPortion) {
+      const margin = parseFloat(menuPrice) - parseFloat(costPerPortion);
+      setMarginPerPortion(margin.toFixed(2));
+    }
+
+    // Ideal selling price
+    if (foodCostBudgetPercent && costPerPortion) {
+      const idealPrice = parseFloat(costPerPortion) / (parseFloat(foodCostBudgetPercent) / 100);
+      setIdealSellingPrice(idealPrice.toFixed(2));
+    }
   }, [menuPrice, costPerPortion, foodCostBudgetPercent, initialData.portions]);
+
+  // Calculate total cost from ingredients
+  function calculateTotalIngredientsCost(ingredients: any[]) {
+    return ingredients.reduce((total, ingredient) => {
+      return total + (ingredient.recipeCost || 0);
+    }, 0);
+  }
 
   const validate = () => {
     const newErrors: { [key: string]: string } = {};
@@ -56,12 +80,6 @@ export default function RecipeCostingForm({ onNext, onBack, initialData }: Recip
       newErrors.foodCostBudgetPercent = 'Must be greater than 0.';
     }
 
-    if (!costPerPortion) {
-      newErrors.costPerPortion = 'Cost Per Portion is required.';
-    } else if (parseFloat(costPerPortion) <= 0) {
-      newErrors.costPerPortion = 'Must be greater than 0.';
-    }
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -71,8 +89,8 @@ export default function RecipeCostingForm({ onNext, onBack, initialData }: Recip
 
     const costingData = {
       menuPrice,
-      foodCostBudgetPercent,
-      foodCostActualPercent,
+      foodCostBudget: foodCostBudgetPercent,
+      foodCostActual: foodCostActualPercent,
       idealSellingPrice,
       costPerPortion,
       costPerRecipe,
@@ -93,13 +111,16 @@ export default function RecipeCostingForm({ onNext, onBack, initialData }: Recip
           {/* Menu Price */}
           <div>
             <label className="block text-gray-700 font-medium mb-2">Menu Price</label>
-            <input
-              type="number"
-              placeholder="Enter value"
-              className={`${inputClasses} border-gray-300 ${errors.menuPrice ? 'border-red-500' : ''}`}
-              value={menuPrice}
-              onChange={(e) => setMenuPrice(e.target.value)}
-            />
+            <div className="relative">
+              <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">$</span>
+              <input
+                type="number"
+                placeholder="Enter value"
+                className={`${inputClasses} pl-8 border-gray-300 ${errors.menuPrice ? 'border-red-500' : ''}`}
+                value={menuPrice}
+                onChange={(e) => setMenuPrice(e.target.value)}
+              />
+            </div>
             {errors.menuPrice && <p className={errorClasses}>{errors.menuPrice}</p>}
           </div>
 
@@ -149,20 +170,18 @@ export default function RecipeCostingForm({ onNext, onBack, initialData }: Recip
         </div>
 
         <div className="space-y-4">
-          {/* Cost Per Portion */}
+          {/* Cost Per Portion (read-only) */}
           <div>
             <label className="block text-gray-700 font-medium mb-2">Cost Per Portion</label>
             <div className="relative">
               <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">$</span>
               <input
-                type="number"
-                placeholder="Enter value"
-                className={`${inputClasses} pl-8 border-gray-300 ${errors.costPerPortion ? 'border-red-500' : ''}`}
+                type="text"
+                readOnly
+                className="w-full p-3 border border-gray-300 rounded-lg bg-gray-100 pl-8"
                 value={costPerPortion}
-                onChange={(e) => setCostPerPortion(e.target.value)}
               />
             </div>
-            {errors.costPerPortion && <p className={errorClasses}>{errors.costPerPortion}</p>}
           </div>
 
           {/* Cost Per Recipe (read-only) */}

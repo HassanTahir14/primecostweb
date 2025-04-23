@@ -11,8 +11,9 @@ export const createRecipe = createAsyncThunk(
       const response = await addRecipe(formData);
       return response;
     } catch (error: any) {
+
       console.error('Error in createRecipe thunk:', error);
-      return rejectWithValue(error);
+      return error;
     }
   }
 );

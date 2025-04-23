@@ -7,6 +7,7 @@ import Button from '@/components/common/button';
 import { Plus, Trash2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { AppDispatch } from '@/store/store';
+import ConfirmationModal from '@/components/common/ConfirmationModal';
 
 interface RecipeProcedureFormProps {
   onNext: (data: any) => void;
@@ -28,7 +29,9 @@ export default function RecipeProcedureForm({ onNext, onBack, initialData }: Rec
       : [{ stepDescription: '', criticalPoint: 'CP' }]
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errors, setErrors] = useState<{[key: number]: string}>({});
+  const [showErrorModal, setShowErrorModal] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [errorDetails, setErrorDetails] = useState<{[key: string]: string}>({});
 
   const handleAddStep = () => {
     setSteps([...steps, { stepDescription: '', criticalPoint: 'CP' }]);
@@ -42,7 +45,7 @@ export default function RecipeProcedureForm({ onNext, onBack, initialData }: Rec
     
     // Clear error for this step when user types
     if (field === 'stepDescription') {
-      setErrors(prev => {
+      setErrorDetails(prev => {
         const newErrors = { ...prev };
         delete newErrors[index];
         return newErrors;
@@ -68,7 +71,7 @@ export default function RecipeProcedureForm({ onNext, onBack, initialData }: Rec
       }
     });
 
-    setErrors(newErrors);
+    setErrorDetails(newErrors);
     return isValid;
   };
 
@@ -154,17 +157,18 @@ export default function RecipeProcedureForm({ onNext, onBack, initialData }: Rec
 
      
       const result = await dispatch(createRecipe(formData)).unwrap();
+      console.log(result, 'result')
       
       
     } catch (error: any) {
-     
+      console.log(error, 'error')
     } finally {
       setIsSubmitting(false);
     }
   };
 
   // Mock data for step type select
-  const stepTypes = ['CP', 'Standard', 'Prep'];
+  const stepTypes = ['CP', 'CPP'];
 
   return (
     <div className="space-y-6">
@@ -185,7 +189,7 @@ export default function RecipeProcedureForm({ onNext, onBack, initialData }: Rec
             <input
               type="text"
               placeholder="Enter procedure description"
-              className={`flex-grow p-3 border ${errors[index] ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00997B]`}
+              className={`flex-grow p-3 border ${errorDetails[index] ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00997B]`}
               value={step.stepDescription}
               onChange={(e) => handleStepChange(index, 'stepDescription', e.target.value)}
             />
@@ -207,11 +211,23 @@ export default function RecipeProcedureForm({ onNext, onBack, initialData }: Rec
               <Trash2 className="w-4 h-4" />
             </Button>
           </div>
-          {errors[index] && (
-            <p className="text-red-500 text-sm ml-24">{errors[index]}</p>
+          {errorDetails[index] && (
+            <p className="text-red-500 text-sm ml-24">{errorDetails[index]}</p>
           )}
         </div>
       ))}
+
+      {/* Error Modal */}
+      <ConfirmationModal
+        isOpen={showErrorModal}
+        onClose={() => setShowErrorModal(false)}
+        title="Validation Error"
+        message={`${errorMessage}\n\n${Object.entries(errorDetails)
+          .map(([key, value]) => `• ${value}`)
+          .join('\n')}`}
+        isAlert={true}
+        okText="Close"
+      />
 
       <div className="flex justify-between mt-8">
         <Button variant="secondary" onClick={onBack} disabled={isSubmitting}>Back</Button>

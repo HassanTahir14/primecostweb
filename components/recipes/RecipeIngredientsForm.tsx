@@ -5,6 +5,7 @@ import Button from '@/components/common/button';
 import { fetchAllItems } from '@/store/itemsSlice';
 import { useDispatch } from 'react-redux';
 import { AppDispatch } from '@/store/store';
+import { useUnits } from '@/hooks/useUnits';
 
 interface Ingredient {
   id: number;
@@ -18,6 +19,7 @@ interface Ingredient {
   apUsdUnit: number;
   epUsdUnit: number;
   item?: string;
+  unitId: number | null;
 }
 
 interface RecipeIngredientsFormProps {
@@ -39,16 +41,83 @@ export default function RecipeIngredientsForm({ onNext, onBack, initialData }: R
   const [recipeCost, setRecipeCost] = useState(0.00);
   const [itemList, setItemList] = useState<any[]>([]);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const [selectedUnitId, setSelectedUnitId] = useState<number | null>(null);
+  const [availableUnits, setAvailableUnits] = useState<any[]>([]);
 
+  const { units } = useUnits();
   const dispatch = useDispatch<AppDispatch>();
 
   useEffect(() => {
     dispatch(fetchAllItems({}))
       .unwrap()
       .then((res) => {
-        setItemList(res.itemList || []);
+        // Filter items to only show those with quantity > 0 in any branch
+        const availableItems = res.itemList.filter((item: any) => {
+          return item.branchDetails.some((branch: any) => branch.quantity > 0);
+        });
+        setItemList(availableItems);
       });
   }, [dispatch]);
+
+  // Update available units when item changes
+  useEffect(() => {
+    if (item) {
+      const selectedItem = itemList.find(i => i.name.split('@')[0] === item);
+      if (selectedItem) {
+        // Get primary and secondary units for the selected item
+        const primaryUnit = units.find(u => u.unitOfMeasurementId === selectedItem.primaryUnitId);
+        const secondaryUnit = units.find(u => u.unitOfMeasurementId === selectedItem.secondaryUnitId);
+        
+        const availableUnitsList = [];
+        if (primaryUnit) availableUnitsList.push(primaryUnit);
+        if (secondaryUnit) availableUnitsList.push(secondaryUnit);
+        
+        setAvailableUnits(availableUnitsList);
+        
+        // Set default unit to primary unit
+        if (primaryUnit) {
+          setSelectedUnitId(primaryUnit.unitOfMeasurementId);
+        }
+      }
+    }
+  }, [item, itemList, units]);
+
+  // Calculate AP USD/Unit based on selected unit
+  useEffect(() => {
+    if (item && selectedUnitId) {
+      const selectedItem = itemList.find(i => i.name.split('@')[0] === item);
+      if (selectedItem) {
+        const basePrice = selectedItem.purchaseCostWithoutVat;
+        let calculatedPrice = basePrice;
+
+        // If selected unit is secondary unit, adjust price based on conversion
+        if (selectedUnitId === selectedItem.secondaryUnitId) {
+          calculatedPrice = basePrice / selectedItem.secondaryUnitValue;
+        }
+
+        setApUsdUnit(calculatedPrice.toFixed(4));
+      }
+    }
+  }, [item, selectedUnitId, itemList]);
+
+  // Calculate EP USD/Unit based on yield percentage
+  useEffect(() => {
+    if (apUsdUnit && yieldPercent) {
+      const yieldValue = parseFloat(yieldPercent);
+      if (yieldValue > 0) {
+        const calculatedEpUsd = parseFloat(apUsdUnit) / (yieldValue / 100);
+        setEpUsdUnit(calculatedEpUsd.toFixed(4));
+      }
+    }
+  }, [apUsdUnit, yieldPercent]);
+
+  // Calculate recipe cost
+  useEffect(() => {
+    if (quantity && epUsdUnit) {
+      const calculatedCost = parseFloat(quantity) * parseFloat(epUsdUnit);
+      setRecipeCost(calculatedCost);
+    }
+  }, [quantity, epUsdUnit]);
 
   const resetForm = () => {
     setItem('');
@@ -60,6 +129,8 @@ export default function RecipeIngredientsForm({ onNext, onBack, initialData }: R
     setErrors({});
     setSelectedIngredientIndex(null);
     setShowForm(false);
+    setSelectedUnitId(null);
+    setAvailableUnits([]);
   };
 
   const handleEditIngredient = (index: number) => {
@@ -72,6 +143,7 @@ export default function RecipeIngredientsForm({ onNext, onBack, initialData }: R
     setApUsdUnit(ingredient.apUsdUnit.toString());
     setEpUsdUnit(ingredient.epUsdUnit.toString());
     setRecipeCost(ingredient.recipeCost);
+    setSelectedUnitId(ingredient.unitId || null);
     
     setSelectedIngredientIndex(index);
     setShowForm(true);
@@ -94,16 +166,12 @@ export default function RecipeIngredientsForm({ onNext, onBack, initialData }: R
     return Object.keys(newErrors).length === 0;
   };
 
-  const calculateIngredientCost = (qty: number, epUsd: number) => {
-    return qty * epUsd;
-  };
-
   const handleSaveIngredient = () => {
     if (!validateFields()) return;
 
     const selectedItem = itemList.find(i => i.name.split('@')[0] === item);
     const [, itemType] = selectedItem?.name.split('@') || [];
-    const cost = calculateIngredientCost(Number(quantity), Number(epUsdUnit));
+    const selectedUnit = units.find(u => u.unitOfMeasurementId === selectedUnitId);
     
     const updatedIngredient = {
       id: selectedIngredientIndex !== null ? ingredients[selectedIngredientIndex].id : Date.now(),
@@ -113,10 +181,11 @@ export default function RecipeIngredientsForm({ onNext, onBack, initialData }: R
       yieldPercentage: Number(yieldPercent),
       apUsdUnit: Number(apUsdUnit),
       epUsdUnit: Number(epUsdUnit),
-      unit: selectedItem?.unit || 'KG',
-      weight: selectedItem?.weight || 'KG',
-      volume: selectedItem?.volume || null,
-      recipeCost: cost
+      unit: selectedUnit?.unitName || 'KG',
+      weight: selectedUnit?.unitName || 'KG',
+      volume: null,
+      recipeCost: Number(recipeCost),
+      unitId: selectedUnitId
     };
 
     if (selectedIngredientIndex !== null) {
@@ -202,84 +271,105 @@ export default function RecipeIngredientsForm({ onNext, onBack, initialData }: R
 
           {/* Form Fields */}
           <div className="space-y-4">
-      {/* Select Item */}
-      <div>
-        <label className="block text-gray-700 font-medium mb-2">Select Item</label>
-        <select
-          className={`w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00997B] ${errors.item ? 'border-red-500' : 'border-gray-300'}`}
-          value={item}
-          onChange={(e) => setItem(e.target.value)}
-        >
-          <option value="">Select an item</option>
-          {itemList.map((item: any) => (
+            {/* Select Item */}
+            <div>
+              <label className="block text-gray-700 font-medium mb-2">Select Item</label>
+              <select
+                className={`w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00997B] ${errors.item ? 'border-red-500' : 'border-gray-300'}`}
+                value={item}
+                onChange={(e) => setItem(e.target.value)}
+              >
+                <option value="">Select an item</option>
+                {itemList.map((item: any) => (
                   <option key={item.itemId} value={item.name.split('@')[0]}>
                     {item.name.split('@')[0]}
                   </option>
-          ))}
-        </select>
-        {errors.item && <p className="text-red-500 text-sm mt-1">{errors.item}</p>}
-      </div>
+                ))}
+              </select>
+              {errors.item && <p className="text-red-500 text-sm mt-1">{errors.item}</p>}
+            </div>
 
-      {/* Quantity */}
-      <div>
-        <label className="block text-gray-700 font-medium mb-2">Quantity</label>
-        <input
-          type="number"
-          placeholder="Enter value"
-          className={`w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00997B] ${errors.quantity ? 'border-red-500' : 'border-gray-300'}`}
-          value={quantity}
-          onChange={(e) => setQuantity(e.target.value)}
-        />
-        {errors.quantity && <p className="text-red-500 text-sm mt-1">{errors.quantity}</p>}
-      </div>
+            {/* Unit Selection */}
+            <div>
+              <label className="block text-gray-700 font-medium mb-2">Unit</label>
+              <select
+                className={`w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00997B] ${errors.unit ? 'border-red-500' : 'border-gray-300'}`}
+                value={selectedUnitId || ''}
+                onChange={(e) => setSelectedUnitId(Number(e.target.value))}
+                disabled={!item}
+              >
+                <option value="">Select a unit</option>
+                {availableUnits.map((unit) => (
+                  <option key={unit.unitOfMeasurementId} value={unit.unitOfMeasurementId}>
+                    {unit.unitName} - {unit.unitDescription}
+                  </option>
+                ))}
+              </select>
+              {errors.unit && <p className="text-red-500 text-sm mt-1">{errors.unit}</p>}
+            </div>
 
-      {/* Yield Percent */}
-      <div>
-        <label className="block text-gray-700 font-medium mb-2">Yield %</label>
-        <div className="relative">
-          <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">%</span>
-          <input
-            type="number"
-            placeholder="Enter value"
-            className={`w-full p-3 border rounded-lg pl-8 focus:outline-none focus:ring-2 focus:ring-[#00997B] ${errors.yieldPercent ? 'border-red-500' : 'border-gray-300'}`}
-            value={yieldPercent}
-            onChange={(e) => setYieldPercent(e.target.value)}
-          />
-        </div>
-        {errors.yieldPercent && <p className="text-red-500 text-sm mt-1">{errors.yieldPercent}</p>}
-      </div>
+            {/* Quantity */}
+            <div>
+              <label className="block text-gray-700 font-medium mb-2">Quantity</label>
+              <input
+                type="number"
+                placeholder="Enter value"
+                className={`w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00997B] ${errors.quantity ? 'border-red-500' : 'border-gray-300'}`}
+                value={quantity}
+                onChange={(e) => setQuantity(e.target.value)}
+              />
+              {errors.quantity && <p className="text-red-500 text-sm mt-1">{errors.quantity}</p>}
+            </div>
 
-      {/* AP USD / Unit */}
-      <div>
-        <label className="block text-gray-700 font-medium mb-2">AP USD / Unit</label>
-        <input
-          type="number"
-          className={`w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00997B] ${errors.apUsdUnit ? 'border-red-500' : 'border-gray-300'}`}
-          value={apUsdUnit}
-          onChange={(e) => setApUsdUnit(e.target.value)}
-        />
-        {errors.apUsdUnit && <p className="text-red-500 text-sm mt-1">{errors.apUsdUnit}</p>}
-      </div>
+            {/* Yield Percent */}
+            <div>
+              <label className="block text-gray-700 font-medium mb-2">Yield %</label>
+              <div className="relative">
+                <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">%</span>
+                <input
+                  type="number"
+                  placeholder="Enter value"
+                  className={`w-full p-3 border rounded-lg pl-8 focus:outline-none focus:ring-2 focus:ring-[#00997B] ${errors.yieldPercent ? 'border-red-500' : 'border-gray-300'}`}
+                  value={yieldPercent}
+                  onChange={(e) => setYieldPercent(e.target.value)}
+                />
+              </div>
+              {errors.yieldPercent && <p className="text-red-500 text-sm mt-1">{errors.yieldPercent}</p>}
+            </div>
 
-      {/* EP USD / Unit */}
-      <div>
-        <label className="block text-gray-700 font-medium mb-2">EP USD / Unit</label>
-        <input
-          type="number"
-          className={`w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00997B] ${errors.epUsdUnit ? 'border-red-500' : 'border-gray-300'}`}
-          value={epUsdUnit}
-          onChange={(e) => setEpUsdUnit(e.target.value)}
-        />
-        {errors.epUsdUnit && <p className="text-red-500 text-sm mt-1">{errors.epUsdUnit}</p>}
-      </div>
+            {/* AP USD / Unit */}
+            <div>
+              <label className="block text-gray-700 font-medium mb-2">AP USD / Unit</label>
+              <input
+                type="number"
+                className={`w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00997B] ${errors.apUsdUnit ? 'border-red-500' : 'border-gray-300'}`}
+                value={apUsdUnit}
+                onChange={(e) => setApUsdUnit(e.target.value)}
+                readOnly
+              />
+              {errors.apUsdUnit && <p className="text-red-500 text-sm mt-1">{errors.apUsdUnit}</p>}
+            </div>
 
-      {/* Recipe Cost */}
-      <div>
-        <label className="block text-gray-700 font-medium mb-2">Recipe cost</label>
-        <div className="w-full p-3 border border-gray-300 rounded-lg bg-gray-100">
-          USD {recipeCost.toFixed(2)}
-        </div>
-      </div>
+            {/* EP USD / Unit */}
+            <div>
+              <label className="block text-gray-700 font-medium mb-2">EP USD / Unit</label>
+              <input
+                type="number"
+                className={`w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00997B] ${errors.epUsdUnit ? 'border-red-500' : 'border-gray-300'}`}
+                value={epUsdUnit}
+                onChange={(e) => setEpUsdUnit(e.target.value)}
+                readOnly
+              />
+              {errors.epUsdUnit && <p className="text-red-500 text-sm mt-1">{errors.epUsdUnit}</p>}
+            </div>
+
+            {/* Recipe Cost */}
+            <div>
+              <label className="block text-gray-700 font-medium mb-2">Recipe cost</label>
+              <div className="w-full p-3 border border-gray-300 rounded-lg bg-gray-100">
+                USD {recipeCost.toFixed(2)}
+              </div>
+            </div>
 
             <Button 
               size="lg" 

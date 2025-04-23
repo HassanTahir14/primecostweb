@@ -122,9 +122,7 @@ export default function RecipeDetailsForm({ onNext, initialData, isEditMode = fa
     const newErrors: any = {};
 
     if (!name) newErrors.name = 'Name is required';
-    if (!recipeCode) newErrors.recipeCode = 'Recipe code is required';
-    else if (recipeCode.length < 3 || recipeCode.length > 100) 
-      newErrors.recipeCode = 'Recipe code must be between 3 and 100 characters';
+   
     if (!category) newErrors.category = 'Category is required';
     if (!portions || isNaN(Number(portions)) || Number(portions) <= 0)
       newErrors.portions = 'Portions must be a positive number';
@@ -206,7 +204,7 @@ export default function RecipeDetailsForm({ onNext, initialData, isEditMode = fa
         {errors.name && <p className="text-red-500 text-sm">{errors.name}</p>}
       </div>
 
-      <div>
+      {/* <div>
         <label className="block text-gray-700 font-medium mb-2">Recipe Code</label>
         <input
           type="text"
@@ -216,7 +214,7 @@ export default function RecipeDetailsForm({ onNext, initialData, isEditMode = fa
           onChange={(e) => setRecipeCode(e.target.value)}
         />
         {errors.recipeCode && <p className="text-red-500 text-sm">{errors.recipeCode}</p>}
-      </div>
+      </div> */}
 
       <div>
         <label className="block text-gray-700 font-medium mb-2">Recipe Category</label>
