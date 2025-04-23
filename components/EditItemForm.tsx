@@ -17,6 +17,7 @@ import {
 } from '@/store/itemsSlice';
 import { fetchAllCategories as fetchItemCategories, selectAllCategories as selectItemCategories } from '@/store/itemCategorySlice';
 import { fetchAllTaxes, selectAllTaxes } from '@/store/taxSlice'; 
+import { fetchCountries, formatCountryOptions } from '@/utils/countryUtils';
 
 // Define Item interface matching the structure in itemsSlice/ItemsMasterList
 interface ItemImage {
@@ -82,11 +83,6 @@ interface UnitOption {
 //   { label: "Location 2", value: "loc2" },
 // ];
 
-const COUNTRY_OPTIONS = [
-  { label: "Saudi Arabia", value: "SA" },
-  { label: "UAE", value: "AE" },
-];
-
 const ITEM_TYPE_OPTIONS = [
   { label: "Solid Item", value: "Solid Item" },
   { label: "Liquid Item", value: "Liquid Item" },
@@ -135,6 +131,8 @@ export default function EditItemForm({ itemToEdit, onClose, onSuccess }: EditIte
     newImages: [],
     imageIdsToRemove: [],
   });
+
+  const [countryOptions, setCountryOptions] = useState<{ label: string; value: string; }[]>([]);
 
   // Populate form with itemToEdit data
   useEffect(() => {
@@ -208,6 +206,15 @@ export default function EditItemForm({ itemToEdit, onClose, onSuccess }: EditIte
       handleShowMessage('Error Updating Item', errorMsg);
     }
   }, [itemStatus, currentAction]); // Depend only on status and action changes
+
+  // Add useEffect to fetch countries
+  useEffect(() => {
+    const loadCountries = async () => {
+      const countries = await fetchCountries();
+      setCountryOptions(formatCountryOptions(countries));
+    };
+    loadCountries();
+  }, []);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -526,7 +533,7 @@ export default function EditItemForm({ itemToEdit, onClose, onSuccess }: EditIte
                  name="countryOfOrigin"
                  value={formData.countryOfOrigin}
                  onChange={handleInputChange}
-                 options={COUNTRY_OPTIONS}
+                 options={countryOptions}
                />
                <Select
                  label="Item Category *"

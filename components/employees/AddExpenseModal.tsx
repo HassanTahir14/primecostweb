@@ -17,11 +17,13 @@ interface AddExpenseModalProps {
 }
 
 interface ExpenseFormData {
-    employeeId: string;
+    userId: number;
     expenseType: string;
-    amount: string; // Use string for form state, parse on submit
-    expenseDate: string; // Use YYYY-MM-DD for date input
-    description: string;
+    employeeName: string;
+    employeeId: number;
+    ticketType: string;
+    amountPaid: number;
+    notifyAdmin: boolean;
 }
 
 const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
@@ -33,11 +35,13 @@ const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
   error
 }) => {
   const [formData, setFormData] = useState<ExpenseFormData>({
-    employeeId: '',
+    userId: 0,
     expenseType: '',
-    amount: '',
-    expenseDate: new Date().toISOString().split('T')[0], // Default to today
-    description: ''
+    employeeName: '',
+    employeeId: 0,
+    ticketType: '',
+    amountPaid: 0,
+    notifyAdmin: true
   });
   const [formErrors, setFormErrors] = useState<Partial<Record<keyof ExpenseFormData, string>>>({});
 
@@ -45,11 +49,13 @@ const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
   useEffect(() => {
     if (isOpen) {
       setFormData({
-        employeeId: '',
+        userId: 0,
         expenseType: '',
-        amount: '',
-        expenseDate: new Date().toISOString().split('T')[0],
-        description: ''
+        employeeName: '',
+        employeeId: 0,
+        ticketType: '',
+        amountPaid: 0,
+        notifyAdmin: true
       });
       setFormErrors({});
     }
@@ -57,8 +63,7 @@ const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
 
   // Employee options for dropdown
   const employeeOptions = useMemo(() => [
-    { label: "Select Employee", value: "", disabled: true },
-    // Assuming Employee interface has employeeId and employeeDetailsDTO.firstname
+   
     ...employees.map(emp => ({ 
       label: `${emp.employeeDetailsDTO?.firstname || 'Unknown'} (ID: ${emp.employeeId})`, 
       value: String(emp.employeeId)
@@ -66,34 +71,55 @@ const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
   ], [employees]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    const { name, value, type } = e.target;
+    
+    if (name === 'employeeId') {
+      const selectedEmployee = employees.find(emp => String(emp.employeeId) === value);
+      setFormData(prev => ({
+        ...prev,
+        employeeId: Number(value),
+        employeeName: selectedEmployee?.employeeDetailsDTO?.firstname || '',
+        userId: Number(value) // Set userId same as employeeId
+      }));
+    } else if (name === 'amountPaid') {
+      setFormData(prev => ({
+        ...prev,
+        [name]: parseFloat(value) || 0
+      }));
+    } else if (name === 'notifyAdmin') {
+      setFormData(prev => ({
+        ...prev,
+        [name]: (e.target as HTMLInputElement).checked
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: value
+      }));
+    }
+
     if (formErrors[name as keyof ExpenseFormData]) {
       setFormErrors(prev => ({ ...prev, [name]: undefined }));
     }
   };
 
   const validateForm = (): boolean => {
-      const errors: Partial<Record<keyof ExpenseFormData, string>> = {};
-      if (!formData.employeeId) errors.employeeId = 'Employee is required';
-      if (!formData.expenseType.trim()) errors.expenseType = 'Expense type is required';
-      if (!formData.amount || parseFloat(formData.amount) <= 0) errors.amount = 'Valid amount is required';
-      if (!formData.expenseDate) errors.expenseDate = 'Date is required';
-      
-      setFormErrors(errors);
-      return Object.keys(errors).length === 0;
+    const errors: Partial<Record<keyof ExpenseFormData, string>> = {};
+    
+    if (!formData.employeeName) errors.employeeName = 'Employee name is required';
+    if (!formData.amountPaid || formData.amountPaid <= 0) errors.amountPaid = 'Amount is required';
+    if (!formData.userId) errors.userId = 'User ID is required';
+    if (!formData.expenseType.trim()) errors.expenseType = 'Expense type is required';
+    if (!formData.ticketType.trim()) errors.ticketType = 'Ticket type is required';
+    
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateForm()) return;
-    
-    // Parse amount before submitting
-    const payload = {
-        ...formData,
-        amount: parseFloat(formData.amount)
-    };
-    onSubmit(payload);
+    onSubmit(formData);
   };
 
   return (
@@ -101,7 +127,7 @@ const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
       isOpen={isOpen}
       onClose={() => !loading && onClose()}
       title="Add New Expense"
-      size="md" // Adjust size as needed
+      size="md"
     >
       <form onSubmit={handleSubmit} className="w-full">
         <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-2">
@@ -117,13 +143,13 @@ const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
                 <label className="block text-gray-700 mb-1 font-medium text-sm">Employee</label>
                 <Select 
                     name="employeeId" 
-                    value={formData.employeeId} 
+                    value={String(formData.employeeId)} 
                     onChange={handleInputChange} 
                     options={employeeOptions} 
-                    className={`w-full bg-white ${formErrors.employeeId ? 'border-red-500' : ''}`}
+                    className={`w-full bg-white ${formErrors.employeeName ? 'border-red-500' : ''}`}
                     disabled={loading || employees.length === 0}
                 />
-                {formErrors.employeeId && <p className="mt-1 text-red-500 text-xs">{formErrors.employeeId}</p>}
+                {formErrors.employeeName && <p className="mt-1 text-red-500 text-xs">{formErrors.employeeName}</p>}
             </div>
 
             <div>
@@ -140,47 +166,46 @@ const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
                  {formErrors.expenseType && <p className="mt-1 text-red-500 text-xs">{formErrors.expenseType}</p>}
             </div>
             
-             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                    <label className="block text-gray-700 mb-1 font-medium text-sm">Amount</label>
-                    <Input 
-                        type="number" 
-                        name="amount" 
-                        value={formData.amount} 
-                        onChange={handleInputChange} 
-                        placeholder="0.00"
-                        prefix="USD" // Assuming USD
-                        step="0.01"
-                        className={`w-full bg-white ${formErrors.amount ? 'border-red-500' : ''}`}
-                        disabled={loading}
-                    />
-                    {formErrors.amount && <p className="mt-1 text-red-500 text-xs">{formErrors.amount}</p>}
-                </div>
-                 <div>
-                    <label className="block text-gray-700 mb-1 font-medium text-sm">Date</label>
-                    <Input 
-                        type="date" 
-                        name="expenseDate" 
-                        value={formData.expenseDate} 
-                        onChange={handleInputChange} 
-                        className={`w-full bg-white ${formErrors.expenseDate ? 'border-red-500' : ''}`}
-                        disabled={loading}
-                    />
-                    {formErrors.expenseDate && <p className="mt-1 text-red-500 text-xs">{formErrors.expenseDate}</p>}
-                 </div>
-            </div>
-
             <div>
-                <label className="block text-gray-700 mb-1 font-medium text-sm">Description (Optional)</label>
-                <textarea
-                    name="description"
-                    value={formData.description}
-                    onChange={handleInputChange}
-                    rows={3}
-                    placeholder="Add any relevant details..."
-                    className={`w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00997B] text-sm bg-white disabled:bg-gray-100`}
+                <label className="block text-gray-700 mb-1 font-medium text-sm">Ticket Type</label>
+                <Input 
+                    type="text" 
+                    name="ticketType" 
+                    value={formData.ticketType} 
+                    onChange={handleInputChange} 
+                    placeholder="Enter ticket type"
+                    className={`w-full bg-white ${formErrors.ticketType ? 'border-red-500' : ''}`}
                     disabled={loading}
                 />
+                {formErrors.ticketType && <p className="mt-1 text-red-500 text-xs">{formErrors.ticketType}</p>}
+            </div>
+            
+            <div>
+                <label className="block text-gray-700 mb-1 font-medium text-sm">Amount Paid</label>
+                <Input 
+                    type="number" 
+                    name="amountPaid" 
+                    value={formData.amountPaid} 
+                    onChange={handleInputChange} 
+                    placeholder="0.00"
+                    step="0.01"
+                    className={`w-full bg-white ${formErrors.amountPaid ? 'border-red-500' : ''}`}
+                    disabled={loading}
+                />
+                {formErrors.amountPaid && <p className="mt-1 text-red-500 text-xs">{formErrors.amountPaid}</p>}
+            </div>
+
+            <div className="flex items-center">
+                <input
+                    type="checkbox"
+                    name="notifyAdmin"
+                    checked={formData.notifyAdmin}
+                    onChange={handleInputChange}
+                    className="h-4 w-4 text-[#00997B] focus:ring-[#00997B] border-gray-300 rounded"
+                />
+                <label className="ml-2 block text-sm text-gray-700">
+                    Notify Admin
+                </label>
             </div>
         </div>
 

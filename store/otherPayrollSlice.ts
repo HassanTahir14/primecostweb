@@ -4,13 +4,11 @@ import { otherPayrollApi } from './otherPayrollApi';
 // Re-define or import the interface for a single item
 // Adjust based on your actual API response
 export interface OtherPayrollItem {
-  id: number;
-  employeeId: number;
+  userId: number;
   employeeName: string;
-  payrollType: string;
+  type: string;
+  dated: string;
   amount: number;
-  date: string;
-  description?: string;
 }
 
 interface OtherPayrollState {
@@ -29,10 +27,9 @@ export const fetchOtherPayrolls = createAsyncThunk<
   async (_, { rejectWithValue }) => {
     try {
       const response = await otherPayrollApi.fetchAll();
-      // Assuming the list is nested under 'otherPayrolls' based on ApiRespone interface
-      // Adjust if the API returns the array directly or under a different key
+      // Check if the response is successful
       if (response && response.responseCode === '0000') {
-          return response.otherPayrolls || [];
+          return response.payrollExpenses || [];
       } else {
           return rejectWithValue(response?.description || 'Failed to fetch other payrolls');
       }

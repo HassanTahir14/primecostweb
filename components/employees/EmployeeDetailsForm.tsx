@@ -4,6 +4,7 @@ import { useState, useEffect, ChangeEvent } from 'react';
 import Button from '@/components/common/button';
 import Input from '../common/input'; // Assuming SelectField component
 import Select from '../common/select';
+import { fetchCountries, formatCountryOptions } from '@/utils/countryUtils';
 
 interface EmployeeDetailsFormProps {
   onNext: (data: any) => void;
@@ -27,15 +28,15 @@ interface FormDataState {
   [key: string]: any; // Allow for additional properties from initialData
 }
 
-// Add default disabled option
-const nationalityOptions = [
-  { value: '', label: 'Select country', disabled: true },
-  { value: 'sa', label: 'Saudi Arabian' },
-  { value: 'eg', label: 'Egyptian' },
-  { value: 'pk', label: 'Pakistani' },
-  { value: 'in', label: 'Indian' },
-  // Add more nationalities
-];
+// Remove hardcoded nationality options
+// const nationalityOptions = [
+//   { value: '', label: 'Select country', disabled: true },
+//   { value: 'sa', label: 'Saudi Arabian' },
+//   { value: 'eg', label: 'Egyptian' },
+//   { value: 'pk', label: 'Pakistani' },
+//   { value: 'in', label: 'Indian' },
+//   // Add more nationalities
+// ];
 
 // Update position options to match backend roles
 const positionOptions = [
@@ -62,6 +63,24 @@ export default function EmployeeDetailsForm({ onNext, initialData }: EmployeeDet
     loginId: initialData?.loginId || '',
     password: initialData?.password || ''
   });
+
+  // Add state for country options
+  const [nationalityOptions, setNationalityOptions] = useState<{ label: string; value: string; disabled?: boolean }[]>([
+    { value: '', label: 'Select country', disabled: true }
+  ]);
+
+  // Fetch countries on component mount
+  useEffect(() => {
+    const loadCountries = async () => {
+      const countries = await fetchCountries();
+      const formattedOptions = formatCountryOptions(countries);
+      setNationalityOptions([
+        { value: '', label: 'Select country', disabled: true },
+        ...formattedOptions
+      ]);
+    };
+    loadCountries();
+  }, []);
 
   // Ensure initial data uses empty string if value is null/undefined for selects
   useEffect(() => {

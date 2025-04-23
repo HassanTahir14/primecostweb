@@ -11,6 +11,7 @@ import { addItem, clearError as clearItemsError, resetCurrentAction, selectItems
 import { fetchAllCategories as fetchItemCategories, selectAllCategories as selectItemCategories } from '@/store/itemCategorySlice';
 import { fetchAllTaxes, selectAllTaxes } from '@/store/taxSlice';
 import { fetchAllBranches } from "@/store/branchSlice";
+import { fetchCountries, formatCountryOptions } from '@/utils/countryUtils';
 // TODO: Import actions/selectors for Units and Tax Types when available
 // import { fetchAllUnits, selectAllUnits } from '@/store/unitSlice'; 
 // import { fetchAllTaxTypes, selectAllTaxTypes } from '@/store/taxTypeSlice';
@@ -68,11 +69,6 @@ interface UnitOption {
 //   { label: "Location 2", value: "loc2" },
 // ];
 
-const COUNTRY_OPTIONS = [
-  { label: "Saudi Arabia", value: "SA" }, // Ensure values match API expectations
-  { label: "UAE", value: "AE" },
-];
-
 const ITEM_TYPE_OPTIONS = [
   { label: "Solid Item", value: "Solid Item" },
   { label: "Liquid Item", value: "Liquid Item" },
@@ -123,6 +119,8 @@ export default function AddItemForm({ onClose, onSuccess }: AddItemFormProps) {
   const [unitsLoading, setUnitsLoading] = useState(false);
   const [unitsError, setUnitsError] = useState<string | null>(null);
 
+  const [countryOptions, setCountryOptions] = useState<{ label: string; value: string; }[]>([]);
+
   // Fetch dropdown data on mount
   useEffect(() => {
     dispatch(fetchItemCategories());
@@ -155,6 +153,15 @@ export default function AddItemForm({ onClose, onSuccess }: AddItemFormProps) {
 
     fetchUnits();
   }, [dispatch]);
+
+  // Add useEffect to fetch countries
+  useEffect(() => {
+    const loadCountries = async () => {
+      const countries = await fetchCountries();
+      setCountryOptions(formatCountryOptions(countries));
+    };
+    loadCountries();
+  }, []);
 
   // useEffect for showing modal based on status/action
   useEffect(() => {
@@ -478,7 +485,7 @@ export default function AddItemForm({ onClose, onSuccess }: AddItemFormProps) {
                 name="countryOfOrigin"
                 value={formData.countryOfOrigin}
                 onChange={handleInputChange}
-                 options={COUNTRY_OPTIONS} // Replace with fetched data
+                options={countryOptions}
               />
               <Select
                  label="Item Category *"

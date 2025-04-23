@@ -26,7 +26,7 @@ interface TransferRecipeTableProps {
   selectedBranchId: string;
   sourceBranchId: string;
   targetBranchId: string;
-  units: UnitOfMeasurement[];
+  units: any[];
 }
 
 export default function TransferRecipeTable({ 

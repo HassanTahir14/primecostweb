@@ -3,13 +3,11 @@ import api from './api';
 // Define the expected structure for a single 'other payroll' item
 // Adjust this interface based on your actual API response
 interface OtherPayrollItem {
-  id: number;
-  employeeId: number;
-  employeeName: string; // Assuming name is included
-  payrollType: string;
+  userId: number;
+  employeeName: string;
+  type: string;
+  dated: string;
   amount: number;
-  date: string; // Assuming ISO date string
-  description?: string;
 }
 
 // Define the expected structure of the API response
@@ -17,7 +15,7 @@ interface OtherPayrollItem {
 interface ApiResponse {
   responseCode: string;
   description: string;
-  otherPayrolls: OtherPayrollItem[]; // Assuming the list is nested
+  payrollExpenses: OtherPayrollItem[]; // Changed from otherPayrolls to payrollExpenses
 }
 
 export const otherPayrollApi = {
