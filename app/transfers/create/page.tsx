@@ -23,22 +23,98 @@ import TransferRecipeTable from '@/components/transfers/TransferRecipeTable';
 import TransferSubRecipeTable from '@/components/transfers/TransferSubRecipeTable';
 import TransferCostTable from '@/components/transfers/TransferCostTable';
 
+// Define interfaces for better type safety
+interface UnitOfMeasurement {
+  unitOfMeasurementId: number;
+  unitName: string;
+  unitDescription: string;
+}
+
+interface Branch {
+  branchId: number;
+  branchName: string;
+  storageLocations: Array<{
+    storageLocationId: number;
+    storageLocationName: string;
+  }>;
+}
+
+interface Item {
+  itemId: number;
+  name: string;
+  code: string;
+  categoryId: number;
+  primaryUnitId: number;
+  secondaryUnitId: number;
+  tokenStatus: string;
+  branchDetails: Array<{
+    branchId: number;
+    branchName: string;
+    storageLocationId: number;
+    storageLocationName: string;
+    quantity: number;
+  }>;
+}
+
+interface Recipe {
+  id: number;
+  name: string;
+  recipeCode: string;
+  tokenStatus: string;
+}
+
+interface SubRecipe {
+  id: number;
+  name: string;
+  subRecipeCode: string;
+  tokenStatus: string;
+}
+
 function CreateTransferContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const dispatch: AppDispatch = useDispatch();
   const transferTypeParam = searchParams.get('type') || 'inventory'; // Default to inventory
 
+  // Get auth user from localStorage
+  const [authUser, setAuthUser] = useState<any>(null);
+
+  useEffect(() => {
+    const storedAuthUser = localStorage.getItem('authUser');
+    if (storedAuthUser) {
+      setAuthUser(JSON.parse(storedAuthUser));
+    }
+  }, []);
+
   // --- Selectors --- 
   const { branches, loading: branchesLoading, error: branchesError } = useSelector((state: RootState) => state.branch);
   const { items: itemsData, status: itemsStatus, error: itemsError } = useSelector((state: RootState) => state.items);
   const { recipes: recipesData, status: recipeStatus, error: recipesError } = useSelector((state: RootState) => state.recipe);
   const { subRecipes: subRecipesData, status: subRecipeStatus, error: subRecipesError } = useSelector((state: RootState) => state.subRecipe);
+  
+  // State for units of measurement
+  const [units, setUnits] = useState<UnitOfMeasurement[]>([]);
+
+  // Fetch units of measurement
+  useEffect(() => {
+    const fetchUnits = async () => {
+      try {
+        const response = await api.get('/units-of-measurement/all');
+        if (response.data && response.data.unitsOfMeasurement) {
+          setUnits(response.data.unitsOfMeasurement);
+        }
+      } catch (error) {
+        console.error('Error fetching units:', error);
+      }
+    };
+    
+    fetchUnits();
+  }, []);
 
   const [formData, setFormData] = useState<any>({
       transferType: transferTypeParam.charAt(0).toUpperCase() + transferTypeParam.slice(1), // Set initial type from param
       transferDate: new Date().toISOString().split('T')[0], // Default to today
-      transferBy: 'current_user_id', // Placeholder - Get from auth state
+      transferBy: authUser?.username || '', // Get username from auth user
       sourceBranchId: '', // Changed to sourceBranchId
       targetBranchId: '', // Changed to targetBranchId
       items: [], // To hold items/recipes/sub-recipes
@@ -48,6 +124,17 @@ function CreateTransferContent() {
           otherLogisticsPercent: 0,
       }
   });
+
+  // Update formData when authUser is loaded
+  useEffect(() => {
+    if (authUser?.username) {
+      setFormData(prev => ({
+        ...prev,
+        transferBy: authUser.username
+      }));
+    }
+  }, [authUser]);
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   // Modal State
   const [modalOpen, setModalOpen] = useState(false);
@@ -71,7 +158,7 @@ function CreateTransferContent() {
           label: b.branchName || `Branch ${b.branchId}` // Changed from b.name
       }));
       // Add a default, disabled option
-      return [{ value: '', label: 'Select branch...', disabled: true }, ...options]; 
+      return [ ...options]; 
   }, [branches]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -113,6 +200,12 @@ function CreateTransferContent() {
       }
   };
 
+  // Function to get unit name by ID
+  const getUnitName = (unitId: number) => {
+    const unit = units.find(u => u.unitOfMeasurementId === unitId);
+    return unit ? unit.unitName : 'N/A';
+  };
+
   const handleSubmit = async () => {
     console.log("Attempting to Submit Transfer Data:", formData);
     setIsSubmitting(true);
@@ -123,6 +216,13 @@ function CreateTransferContent() {
     // --- Input Validation (Basic) ---
     if (!formData.transferDate || !formData.sourceBranchId || !formData.targetBranchId || formData.items.length === 0) {
         showModal("Validation Error", "Please fill in Transfer Date, Source Branch, Target Branch, and add at least one item.");
+        setIsSubmitting(false);
+        return;
+    }
+
+    // Check if source and target branches are the same
+    if (formData.sourceBranchId === formData.targetBranchId) {
+        showModal("Validation Error", "Source and target branches cannot be the same.");
         setIsSubmitting(false);
         return;
     }
@@ -153,6 +253,7 @@ function CreateTransferContent() {
     let requestBodyBase: any = {
         transferType: formData.transferType,
         transferDate: formData.transferDate,
+        transferBy: formData.transferBy,
         costBreakdowns: calculatedCostBreakdowns.map(cost => ({ 
             costType: cost.costType,
             percentage: cost.percentage, // Already a number
@@ -231,26 +332,70 @@ function CreateTransferContent() {
     }
   };
 
+  // Filter items based on source branch and token status
+  const filteredItems = useMemo(() => {
+    if (!itemsData || !formData.sourceBranchId) return [];
+    
+    return itemsData.filter((item: Item) => {
+      // Check if item has the selected source branch
+      const hasSourceBranch = item.branchDetails.some(detail => 
+        String(detail.branchId) === formData.sourceBranchId
+      );
+      
+      // For inventory items, we want to show all items that exist in the source branch
+      return hasSourceBranch;
+    });
+  }, [itemsData, formData.sourceBranchId]);
+
+  // Filter recipes based on token status
+  const filteredRecipes = useMemo(() => {
+    if (!recipesData) return [];
+    
+    return recipesData.filter((recipe: Recipe) => 
+      recipe.tokenStatus === 'APPROVED'
+    );
+  }, [recipesData]);
+
+  // Filter sub-recipes based on token status
+  const filteredSubRecipes = useMemo(() => {
+    if (!subRecipesData) return [];
+    
+    return subRecipesData.filter((subRecipe: SubRecipe) => 
+      subRecipe.tokenStatus === 'APPROVED'
+    );
+  }, [subRecipesData]);
+
   const renderItemTable = () => {
     switch (transferTypeParam) {
       case 'inventory':
         return <TransferInventoryItemsTable 
           items={formData.items} 
-          allItems={itemsData || []} 
+          allItems={filteredItems || []} 
           onChange={handleItemsChange} 
+          sourceBranchId={formData.sourceBranchId} // Pass source branch ID
           selectedBranchId={formData.sourceBranchId} // Pass selected branch ID
+          targetBranchId={formData.targetBranchId} // Pass target branch ID
+          units={units} // Pass units for display
         />;
       case 'recipe':
         return <TransferRecipeTable 
           items={formData.items} 
-          allRecipes={recipesData || []} 
+          allRecipes={filteredRecipes || []} 
           onChange={handleItemsChange} 
+          selectedBranchId={formData.sourceBranchId} // Pass selected branch ID
+          sourceBranchId={formData.sourceBranchId} // Pass source branch ID
+          targetBranchId={formData.targetBranchId} // Pass target branch ID
+          units={units} // Pass units for display
         />;
       case 'sub-recipe':
         return <TransferSubRecipeTable 
+          selectedBranchId={formData.sourceBranchId} // Pass selected branch ID
+          sourceBranchId={formData.sourceBranchId} // Pass source branch ID
+          targetBranchId={formData.targetBranchId} // Pass target branch ID
           items={formData.items} 
-          allSubRecipes={subRecipesData || []} 
+          allSubRecipes={filteredSubRecipes || []} 
           onChange={handleItemsChange} 
+          units={units} // Pass units for display
         />;
       default:
         return <p className="text-red-500">Invalid transfer type.</p>;

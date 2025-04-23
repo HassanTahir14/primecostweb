@@ -13,6 +13,7 @@ import Image from 'next/image';
 import ConfirmationModal from '@/components/common/ConfirmationModal';
 import { useRouter } from 'next/navigation';
 import SearchInput from '@/components/common/SearchInput';
+import AssignModal from '@/components/recipes/AssignModal';
 
 export default function RecipesPage() {
   const dispatch = useDispatch<AppDispatch>();
@@ -29,6 +30,10 @@ export default function RecipesPage() {
   const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
+  const [selectedRecipeForAssign, setSelectedRecipeForAssign] = useState<any>(null);
+  const [confirmationMessage, setConfirmationMessage] = useState('');
+  const [isSuccessMessage, setIsSuccessMessage] = useState(false);
 
   const router = useRouter();
 
@@ -81,6 +86,21 @@ export default function RecipesPage() {
     } finally {
       setIsDeleting(false);
     }
+  };
+
+  const handleAssignClick = (recipe: any) => {
+    setSelectedRecipeForAssign(recipe);
+    setIsAssignModalOpen(true);
+  };
+
+  const handleAssignSuccess = (message: string) => {
+    setConfirmationMessage(message);
+    setIsSuccessMessage(true);
+  };
+
+  const handleAssignError = (message: string) => {
+    setConfirmationMessage(message);
+    setIsSuccessMessage(false);
   };
 
   const filteredRecipes = recipes?.filter((recipe: any) =>
@@ -165,7 +185,7 @@ export default function RecipesPage() {
                         {recipe.images && recipe.images.length > 0 ? (
                           <div className="w-12 h-12 rounded-md overflow-hidden relative">
                             <Image 
-                              src={`http://13.61.61.180:8080/api/v1/images/view/${recipe.images[0].path}`}
+                              src={`http://212.85.26.46:8082/api/v1/images/view/${recipe.images[0].path}`}
                               alt={recipe.name}
                               fill
                               className="object-cover"
@@ -192,6 +212,24 @@ export default function RecipesPage() {
                       <td className="px-6 py-4 whitespace-nowrap">${(recipe.costPerRecipe / 100).toFixed(2)}</td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center space-x-2 action-buttons">
+                          <Button 
+                            variant="default" 
+                            size="sm" 
+                            className={`rounded-full text-white text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-1.5 ${
+                              recipe.tokenStatus === 'APPROVED' 
+                                ? 'bg-[#28addb] hover:bg-[#2299c2]' 
+                                : 'bg-gray-400 cursor-not-allowed'
+                            }`}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (recipe.tokenStatus === 'APPROVED') {
+                                handleAssignClick(recipe);
+                              }
+                            }}
+                            disabled={recipe.tokenStatus !== 'APPROVED'}
+                          >
+                            Assign to?
+                          </Button>
                           <Link href={`/recipes/edit/${recipe.id}`}>
                             <Button 
                               variant="default" 
@@ -263,6 +301,19 @@ export default function RecipesPage() {
         message={errorMessage}
         isAlert={true}
         okText="OK"
+      />
+
+      {/* Add the AssignModal */}
+      <AssignModal
+        isOpen={isAssignModalOpen}
+        onClose={() => {
+          setIsAssignModalOpen(false);
+          setSelectedRecipeForAssign(null);
+        }}
+        onSuccess={handleAssignSuccess}
+        onError={handleAssignError}
+        recipeId={selectedRecipeForAssign?.id || 0}
+        isSubRecipe={false}
       />
     </PageLayout>
   );

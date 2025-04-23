@@ -112,6 +112,7 @@ export default function AddItemForm({ onClose, onSuccess }: AddItemFormProps) {
     countryOfOrigin: "",
     itemType: "",
     taxType: "", // Will hold taxId as string
+    taxRate: "",
     purchaseCostWithoutVAT: "",
     purchaseCostWithVAT: "",
     images: [],
@@ -170,7 +171,24 @@ export default function AddItemForm({ onClose, onSuccess }: AddItemFormProps) {
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
-    setFormData((prev: any) => ({ ...prev, [name]: value }));
+    setFormData((prev: any) => {
+      const newData = { ...prev, [name]: value };
+
+      // If changing tax type, update tax rate
+      if (name === 'taxType') {
+        const selectedTax = taxes.find(tax => tax.taxId.toString() === value);
+        newData.taxRate = selectedTax ? selectedTax.taxRate : '';
+      }
+
+      // If changing purchase cost without VAT or tax type, recalculate with VAT
+      if (name === 'purchaseCostWithoutVAT' || name === 'taxType') {
+        const costWithoutVAT = parseFloat(newData.purchaseCostWithoutVAT) || 0;
+        const taxRate = parseFloat(newData.taxRate) || 0;
+        newData.purchaseCostWithVAT = (costWithoutVAT * (1 + taxRate / 100)).toFixed(2);
+      }
+
+      return newData;
+    });
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -542,24 +560,34 @@ export default function AddItemForm({ onClose, onSuccess }: AddItemFormProps) {
               name="taxType"
               value={formData.taxType}
               onChange={handleInputChange}
-               options={taxTypeOptions} // Use fetched taxes
+               options={taxTypeOptions}
                required
             />
 
             <div className="relative">
               <Input
+                label="Tax Rate (%)"
+                name="taxRate"
+                value={formData.taxRate}
+                disabled
+                className="bg-gray-50"
+              />
+            </div>
+
+            <div className="relative">
+              <Input
                 label="Purchase Cost (Without VAT)"
                 name="purchaseCostWithoutVAT"
-                 type="number" // Use number type
+                 type="number"
                 value={formData.purchaseCostWithoutVAT}
                 onChange={handleInputChange}
                  placeholder="Enter value"
                 className="pl-12"
-                 step="any" // Allow decimals
+                 step="any"
                  min="0"
               />
               <span className="absolute bottom-2 left-3 text-gray-500">
-                 USD {/* TODO: Make currency dynamic if needed */} 
+                 USD
               </span>
             </div>
 
@@ -567,16 +595,13 @@ export default function AddItemForm({ onClose, onSuccess }: AddItemFormProps) {
               <Input
                 label="Purchase Cost (With VAT)"
                 name="purchaseCostWithVAT"
-                 type="number" // Use number type
+                 type="number"
                 value={formData.purchaseCostWithVAT}
-                onChange={handleInputChange}
-                 placeholder="Enter value"
-                className="pl-12"
-                 step="any" // Allow decimals
-                 min="0"
+                disabled
+                className="pl-12 bg-gray-50"
               />
               <span className="absolute bottom-2 left-3 text-gray-500">
-                 USD {/* TODO: Make currency dynamic if needed */} 
+                 USD
               </span>
             </div>
 

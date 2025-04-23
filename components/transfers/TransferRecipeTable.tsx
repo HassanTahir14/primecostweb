@@ -16,7 +16,7 @@ interface Recipe {
     ingredientsItems: {
         unit: string;
     }[];
-    status: string;  // Add status field
+    tokenStatus: string;  // Changed from status to tokenStatus
 }
 
 interface TransferRecipeTableProps {
@@ -25,6 +25,8 @@ interface TransferRecipeTableProps {
   onChange: (items: any[]) => void;
   selectedBranchId: string;
   sourceBranchId: string;
+  targetBranchId: string;
+  units: UnitOfMeasurement[];
 }
 
 export default function TransferRecipeTable({ 
@@ -32,14 +34,16 @@ export default function TransferRecipeTable({
   allRecipes, 
   onChange,
   selectedBranchId,
-  sourceBranchId
+  sourceBranchId,
+  targetBranchId,
+  units
 }: TransferRecipeTableProps) {
   // Get units from the hook
-  const { units, loading: unitsLoading } = useUnits();
+  const { units: hookUnits, loading: unitsLoading } = useUnits();
 
   // Prepare options for Select component
   const recipeOptions = useMemo(() => {
-      if (selectedBranchId === sourceBranchId) {
+      if (sourceBranchId === targetBranchId) {
         return [{ 
           value: '', 
           label: 'Cannot transfer to same branch', 
@@ -48,13 +52,13 @@ export default function TransferRecipeTable({
       }
 
       const options = allRecipes
-        .filter(recipe => recipe.status === 'APPROVED')
+        .filter(recipe => recipe.tokenStatus === 'APPROVED')
         .map(recipe => ({
           value: String(recipe.id),
           label: `${recipe.name} (${recipe.recipeCode})`
         }));
-      return [{ value: '', label: 'Select Recipe...', disabled: true }, ...options];
-  }, [allRecipes, selectedBranchId, sourceBranchId]);
+      return [ ...options];
+  }, [allRecipes, sourceBranchId, targetBranchId]);
 
   // Get unique units from recipe ingredients
   const getUnitOptions = (selectedRecipeId: string) => {
@@ -68,7 +72,7 @@ export default function TransferRecipeTable({
     const recipeUnits = units
       .filter(unit => recipeUnitNames.includes(unit.unitName))
       .map(unit => ({
-        value: String(unit.unitOfMeasurementId),
+        value: unit.unitName,
         label: unit.unitName
       }));
 

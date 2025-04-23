@@ -23,6 +23,8 @@ import { fetchAllItems } from '@/store/itemsSlice';
 import { fetchAllSuppliers } from '@/store/supplierSlice';
 import { fetchAllBranches, Branch } from '@/store/branchSlice';
 import { fetchAllStorageLocations, StorageLocation } from '@/store/storageLocationSlice';
+import { useUnits } from '@/hooks/useUnits';
+import { fetchAllCategories } from '@/store/itemCategorySlice';
 
 // Extend the PurchaseOrder type to include createdAt
 interface PurchaseOrder extends PurchaseOrderType {
@@ -98,14 +100,30 @@ export default function PurchaseOrders({ onClose }: PurchaseOrdersProps) {
     error: poError 
   } = useSelector((state: RootState) => state.purchaseOrder);
   
-  // Get items and suppliers from state
+  // Get items, suppliers, and categories from state
   const items = useSelector((state: RootState) => state.items.items || []) as unknown as Item[];
   const suppliers = useSelector((state: RootState) => state.supplier.suppliers || []) as unknown as Supplier[];
+  const categories = useSelector((state: RootState) => state.itemCategory.categories || []);
+  
+  // Get units using the hook
+  const { units, loading: unitsLoading } = useUnits();
   
   // Get branches and storage locations from state
   const branches = useSelector((state: RootState) => state.branch.branches || []) as Branch[];
   console.log("branches", branches);
   const storageLocations = useSelector((state: RootState) => state.storageLocation.locations || []) as StorageLocation[];
+
+  // Function to get unit name by ID
+  const getUnitName = (unitId: number) => {
+    const unit = units.find(u => u.unitOfMeasurementId === unitId);
+    return unit?.unitName || 'N/A';
+  };
+
+  // Function to get category name by ID
+  const getCategoryName = (categoryId: number) => {
+    const category = categories.find(c => c.categoryId === categoryId);
+    return category?.name || 'N/A';
+  };
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingOrder, setEditingOrder] = useState<PurchaseOrder | null>(null);
@@ -152,7 +170,7 @@ export default function PurchaseOrders({ onClose }: PurchaseOrdersProps) {
     ];
   }, [suppliers]);
 
-  // Add unit options based on selected item and unit type
+  // Update unit options based on selected item and unit type
   const unitOptions = useMemo(() => {
     if (!formData.itemId) return [];
     
@@ -160,17 +178,19 @@ export default function PurchaseOrders({ onClose }: PurchaseOrdersProps) {
     if (!selectedItem) return [];
 
     if (formData.unitType === 'primary') {
+      const primaryUnit = units.find(u => u.unitOfMeasurementId === selectedItem.primaryUnitId);
       return [{
-        label: `Primary Unit (ID: ${selectedItem.primaryUnitId})`,
+        label: `${primaryUnit?.unitName || 'Primary Unit'} (${primaryUnit?.unitDescription || ''})`,
         value: String(selectedItem.primaryUnitId)
       }];
     } else {
+      const secondaryUnit = units.find(u => u.unitOfMeasurementId === selectedItem.secondaryUnitId);
       return [{
-        label: `Secondary Unit (ID: ${selectedItem.secondaryUnitId})`,
+        label: `${secondaryUnit?.unitName || 'Secondary Unit'} (${secondaryUnit?.unitDescription || ''})`,
         value: String(selectedItem.secondaryUnitId)
       }];
     }
-  }, [items, formData.itemId, formData.unitType]);
+  }, [items, formData.itemId, formData.unitType, units]);
 
   // Update form data when item changes
   useEffect(() => {
@@ -194,6 +214,7 @@ export default function PurchaseOrders({ onClose }: PurchaseOrdersProps) {
     dispatch(fetchAllItems({}));
     dispatch(fetchAllBranches());
     dispatch(fetchAllStorageLocations());
+    dispatch(fetchAllCategories());
     console.log("items", items);
   }, [dispatch]);
 
@@ -450,6 +471,7 @@ export default function PurchaseOrders({ onClose }: PurchaseOrdersProps) {
                   <th className="py-4 px-6 font-medium text-sm text-gray-500">Item Code</th>
                   <th className="py-4 px-6 font-medium text-sm text-gray-500">Quantity</th>
                   <th className="py-4 px-6 font-medium text-sm text-gray-500">Unit</th>
+                  <th className="py-4 px-6 font-medium text-sm text-gray-500">Category</th>
                   <th className="py-4 px-6 font-medium text-sm text-gray-500">Status</th>
                   <th className="py-4 px-6 font-medium text-sm text-gray-500">Created At</th>
                   <th className="py-4 px-6 font-medium text-sm text-gray-500 text-center">Actions</th>
@@ -457,58 +479,55 @@ export default function PurchaseOrders({ onClose }: PurchaseOrdersProps) {
             </thead>
             <tbody>
                 {purchaseOrders.length > 0 ? (
-                  purchaseOrders.map((order) => (
-                    <tr key={order.id} className="border-b border-gray-200 last:border-b-0">
-                      <td className="py-4 px-6 text-sm">{(order.itemName || 'N/A').split('@')[0]}</td>
-                      <td className="py-4 px-6 text-sm">{order.itemCode || 'N/A'}</td>
-                      <td className="py-4 px-6 text-sm">{order.quantity} {order.unitName}</td>
-                      <td className="py-4 px-6 text-sm">{order.unitName || 'N/A'}</td>
-                      <td className="py-4 px-6 text-sm">
-                        <span className={`px-2 py-1 rounded-full text-xs ${
-                          order.purchaseOrderStatus === 'RECEIVED' ? 'bg-green-100 text-green-800' :
-                          order.purchaseOrderStatus === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
-                          'bg-gray-100 text-gray-800'
-                        }`}>
-                            {order.purchaseOrderStatus || 'N/A'}
-                        </span>
-                    </td>
-                      <td className="py-4 px-6 text-sm">{(order as any).createdAt || 'N/A'}</td>
-                      <td className="py-4 px-6 text-center">
-                        <div className="flex items-center justify-center space-x-2">
-                        <Button 
-                          variant="default" 
-                          size="sm" 
-                            className="rounded-full bg-[#05A49D] text-white text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-1.5"
-                          onClick={() => handleEditClick(order)}
-                            disabled={poLoading}
-                        >
-                            Edit
-                        </Button>
-                        <Button 
-                          variant="default" 
-                          size="sm" 
-                            className="rounded-full bg-[#05A49D] text-white text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-1.5"
-                          onClick={() => handleReceiveClick(order)}
-                          disabled={poLoading || order.purchaseOrderStatus === 'RECEIVED'}
-                        >
-                          Received Order?
-                        </Button>
-                        {/* <Button 
-                          variant="destructive" 
-                          size="sm" 
-                          className="rounded-full bg-red-500 text-white text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-1.5"
-                          onClick={() => handleDeleteClick(order.id)}
-                          disabled={poLoading}
-                        >
-                          Delete
-                        </Button> */}
-                      </div>
-                    </td>
-                  </tr>
-                ))
+                  purchaseOrders.map((order) => {
+                    const categoryName = getCategoryName(order.categoryId);
+                    const unitName = getUnitName(order.unitId);
+                    
+                    return (
+                      <tr key={order.id} className="border-b border-gray-200 last:border-b-0">
+                        <td className="py-4 px-6 text-sm">{(order.itemName || 'N/A').split('@')[0]}</td>
+                        <td className="py-4 px-6 text-sm">{order.itemCode || 'N/A'}</td>
+                        <td className="py-4 px-6 text-sm">{order.quantity} {unitName}</td>
+                        <td className="py-4 px-6 text-sm">{unitName}</td>
+                        <td className="py-4 px-6 text-sm">{categoryName}</td>
+                        <td className="py-4 px-6 text-sm">
+                          <span className={`px-2 py-1 rounded-full text-xs ${
+                            order.purchaseOrderStatus === 'RECEIVED' ? 'bg-green-100 text-green-800' :
+                            order.purchaseOrderStatus === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
+                            'bg-gray-100 text-gray-800'
+                          }`}>
+                              {order.purchaseOrderStatus || 'N/A'}
+                          </span>
+                        </td>
+                        <td className="py-4 px-6 text-sm">{(order as any).createdAt || 'N/A'}</td>
+                        <td className="py-4 px-6 text-center">
+                          <div className="flex items-center justify-center space-x-2">
+                            <Button 
+                              variant="default" 
+                              size="sm" 
+                                className="rounded-full bg-[#05A49D] text-white text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-1.5"
+                              onClick={() => handleEditClick(order)}
+                                disabled={poLoading}
+                            >
+                                Edit
+                            </Button>
+                            <Button 
+                              variant="default" 
+                              size="sm" 
+                              className="rounded-full bg-[#28addb] text-white text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-1.5"
+                              onClick={() => handleReceiveClick(order)}
+                              disabled={poLoading || order.purchaseOrderStatus === 'RECEIVED' || order.purchaseOrderStatus === 'CANCELLED'}
+                            >
+                              Received Order?
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
                 ) : (
                   <tr>
-                    <td colSpan={7} className="text-center py-10 text-gray-500">
+                    <td colSpan={8} className="text-center py-10 text-gray-500">
                       {poError ? 'Error loading data.' : 'No purchase orders found.'}
                     </td>
                   </tr>
@@ -545,7 +564,7 @@ export default function PurchaseOrders({ onClose }: PurchaseOrdersProps) {
                 <Input
                     type="text"
                     name="categoryId"
-                    value={formData.categoryId}
+                    value={getCategoryName(parseInt(formData.categoryId))}
                     readOnly
                     className={`w-full bg-gray-100 ${formErrors.categoryId ? 'border-red-500' : ''}`}
                     disabled={poLoading}

@@ -24,6 +24,7 @@ import transferReportsReducer from './transferReportsSlice';
 import otherPayrollReducer from './otherPayrollSlice';
 import subRecipeCategoryReducer from './subRecipeCategorySlice';
 import taxReducer from './taxSlice';
+import servingSizeReducer from './servingSizeSlice';
 // import unitSlice if it exists and is needed
 // import inventorySlice if it exists and is needed
 
@@ -52,6 +53,7 @@ export const store = configureStore({
     otherPayroll: otherPayrollReducer,
     subRecipeCategory: subRecipeCategoryReducer,
     tax: taxReducer,
+    servingSize: servingSizeReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

@@ -17,7 +17,6 @@ import {
   ComposableMap,
   Geographies,
   Geography,
-  GeographiesChildrenArgument,
 } from "react-simple-maps";
 import { BarChart3, Box, Users, PenTool, ChevronDown, ArrowLeft } from "lucide-react";
 import Link from "next/link";
@@ -34,6 +33,18 @@ import PageLayout from '@/components/PageLayout';
 
 // URL for world map TopoJSON data
 const geoUrl = "https://unpkg.com/world-atlas@2.0.2/countries-110m.json";
+
+// Add this type definition before the Dashboard component
+type GeographiesChildrenProps = {
+  geographies: Array<{
+    rsmKey: string;
+    properties: {
+      name: string;
+      [key: string]: any;
+    };
+    [key: string]: any;
+  }>;
+};
 
 // --- Helper Function to get today's date in YYYY-MM-DD format ---
 const getTodaysDate = () => {
@@ -326,11 +337,11 @@ export default function Dashboard() {
           <div className="bg-white p-4 sm:p-6 md:p-8 rounded-2xl shadow-sm">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4 md:mb-6">
               <h2 className="text-base md:text-lg font-bold">Top Brands/Suppliers by Item Count</h2>
-              <Link href="/suppliers" passHref legacyBehavior>
+              {/* <Link href="/suppliers" passHref legacyBehavior>
                 <a className="bg-[#339A89] text-white px-4 md:px-6 py-1.5 md:py-2 rounded-full hover:bg-[#2b8274] transition-colors text-xs md:text-sm w-full sm:w-auto no-underline">
-                  View All Suppliers
+                 
                 </a>
-              </Link>
+              </Link> */}
             </div>
             {itemsLoading ? (
               <div className="text-gray-500">Loading suppliers...</div>
@@ -366,7 +377,7 @@ export default function Dashboard() {
               ) : (
                 <ComposableMap projection="geoMercator" projectionConfig={{ scale: 100 }}>
                   <Geographies geography={geoUrl}>
-                    {({ geographies }: GeographiesChildrenArgument) =>
+                    {({ geographies }: GeographiesChildrenProps) =>
                       geographies.map((geo: any) => {
                         const countryName = geo.properties?.name || '';
                         

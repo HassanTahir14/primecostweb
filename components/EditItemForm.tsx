@@ -128,11 +128,12 @@ export default function EditItemForm({ itemToEdit, onClose, onSuccess }: EditIte
     countryOfOrigin: "",
     itemType: "",
     taxType: "",
+    taxRate: "",
     purchaseCostWithoutVAT: "",
     purchaseCostWithVAT: "",
-    existingImages: [], // Store existing images separately
-    newImages: [], // Store newly added images
-    imageIdsToRemove: [], // Store IDs of images marked for removal
+    existingImages: [],
+    newImages: [],
+    imageIdsToRemove: [],
   });
 
   // Populate form with itemToEdit data
@@ -140,6 +141,11 @@ export default function EditItemForm({ itemToEdit, onClose, onSuccess }: EditIte
     if (itemToEdit) {
       // Split the name into itemName and itemType if it contains @
       const [itemName, itemType] = itemToEdit.name.split('@');
+      
+      // Find the tax to get its rate
+      const selectedTax = taxes.find(tax => tax.taxId === itemToEdit.taxId);
+      const taxRate = selectedTax ? selectedTax.taxRate : '';
+
       setFormData({
         itemName: itemName || "",
         itemCode: itemToEdit.code || "",
@@ -149,12 +155,12 @@ export default function EditItemForm({ itemToEdit, onClose, onSuccess }: EditIte
         primaryUnitValue: itemToEdit.primaryUnitValue?.toString() || "",
         secondaryUnit: itemToEdit.secondaryUnitId?.toString() || "",
         secondaryUnitValue: itemToEdit.secondaryUnitValue?.toString() || "",
-        // Assuming branch, storageLocation, itemType aren't directly on itemToEdit - fetch/map if needed
-        branch: "", // Replace with actual mapping if needed
-        storageLocation: "", // Replace with actual mapping if needed
+        branch: "",
+        storageLocation: "",
         countryOfOrigin: itemToEdit.countryOrigin || "",
-        itemType: itemType || "", // Use the extracted type
+        itemType: itemType || "",
         taxType: itemToEdit.taxId?.toString() || "",
+        taxRate: taxRate,
         purchaseCostWithoutVAT: itemToEdit.purchaseCostWithoutVat?.toString() || "",
         purchaseCostWithVAT: itemToEdit.purchaseCostWithVat?.toString() || "",
         existingImages: itemToEdit.images || [],
@@ -162,7 +168,7 @@ export default function EditItemForm({ itemToEdit, onClose, onSuccess }: EditIte
         imageIdsToRemove: [],
       });
     }
-  }, [itemToEdit]);
+  }, [itemToEdit, taxes]);
 
   // Fetch dropdown data on mount
   useEffect(() => {
@@ -207,7 +213,24 @@ export default function EditItemForm({ itemToEdit, onClose, onSuccess }: EditIte
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
-    setFormData((prev: any) => ({ ...prev, [name]: value }));
+    setFormData((prev: any) => {
+      const newData = { ...prev, [name]: value };
+
+      // If changing tax type, update tax rate
+      if (name === 'taxType') {
+        const selectedTax = taxes.find(tax => tax.taxId.toString() === value);
+        newData.taxRate = selectedTax ? selectedTax.taxRate : '';
+      }
+
+      // If changing purchase cost without VAT or tax type, recalculate with VAT
+      if (name === 'purchaseCostWithoutVAT' || name === 'taxType') {
+        const costWithoutVAT = parseFloat(newData.purchaseCostWithoutVAT) || 0;
+        const taxRate = parseFloat(newData.taxRate) || 0;
+        newData.purchaseCostWithVAT = (costWithoutVAT * (1 + taxRate / 100)).toFixed(2);
+      }
+
+      return newData;
+    });
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -396,7 +419,7 @@ export default function EditItemForm({ itemToEdit, onClose, onSuccess }: EditIte
   };
 
   // Update the image base URL
-  const imageBaseUrl = process.env.NEXT_PUBLIC_IMAGE_URL || 'http://13.61.61.180:8080/api/v1/images/view';
+  const imageBaseUrl = process.env.NEXT_PUBLIC_IMAGE_URL || 'http://212.85.26.46:8082/api/v1/images/view';
 
   return (
     <div className="flex-1 flex flex-col">
@@ -588,6 +611,17 @@ export default function EditItemForm({ itemToEdit, onClose, onSuccess }: EditIte
                options={taxTypeOptions} 
                required
              />
+
+             <div className="relative">
+               <Input
+                 label="Tax Rate (%)"
+                 name="taxRate"
+                 value={formData.taxRate}
+                 disabled
+                 className="bg-gray-50"
+               />
+             </div>
+
              {/* Cost Inputs - same structure, values from formData */}
               <div className="relative">
                <Input
@@ -603,17 +637,15 @@ export default function EditItemForm({ itemToEdit, onClose, onSuccess }: EditIte
                />
                <span className="absolute bottom-2 left-3 text-gray-500">USD</span>
              </div>
+
              <div className="relative">
                <Input
                  label="Purchase Cost (With VAT)"
                  name="purchaseCostWithVAT"
                  type="number"
                  value={formData.purchaseCostWithVAT}
-                 onChange={handleInputChange}
-                 placeholder="Enter value"
-                 className="pl-12"
-                 step="any"
-                 min="0"
+                 disabled
+                 className="pl-12 bg-gray-50"
                />
                <span className="absolute bottom-2 left-3 text-gray-500">USD</span>
              </div>

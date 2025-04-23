@@ -17,6 +17,7 @@ import {
 import ConfirmationModal from '@/components/common/ConfirmationModal';
 import { useRouter } from 'next/navigation';
 import SearchInput from '@/components/common/SearchInput';
+import AssignModal from '@/components/recipes/AssignModal';
 
 interface SubRecipe {
   id: number;
@@ -76,6 +77,12 @@ export default function SubRecipesPage() {
   const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
+  // State for modals
+  const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
+  const [selectedSubRecipeForAssign, setSelectedSubRecipeForAssign] = useState<any>(null);
+  const [confirmationMessage, setConfirmationMessage] = useState('');
+  const [isSuccessMessage, setIsSuccessMessage] = useState(false);
+
   useEffect(() => {
     loadSubRecipes();
   }, [dispatch]);
@@ -113,6 +120,21 @@ export default function SubRecipesPage() {
       setIsDeleteModalOpen(false);
       setIsErrorModalOpen(true);
     }
+  };
+
+  const handleAssignClick = (subRecipe: any) => {
+    setSelectedSubRecipeForAssign(subRecipe);
+    setIsAssignModalOpen(true);
+  };
+
+  const handleAssignSuccess = (message: string) => {
+    setConfirmationMessage(message);
+    setIsSuccessMessage(true);
+  };
+
+  const handleAssignError = (message: string) => {
+    setConfirmationMessage(message);
+    setIsSuccessMessage(false);
   };
 
   const filteredSubRecipes = subRecipes.filter((recipe: SubRecipe) =>
@@ -201,6 +223,24 @@ export default function SubRecipesPage() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center space-x-2 action-buttons">
+                          <Button 
+                            variant="default" 
+                            size="sm" 
+                            className={`rounded-full text-white text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-1.5 ${
+                              recipe.tokenStatus === 'APPROVED' 
+                                ? 'bg-[#28addb] hover:bg-[#2299c2]' 
+                                : 'bg-gray-400 cursor-not-allowed'
+                            }`}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (recipe.tokenStatus === 'APPROVED') {
+                                handleAssignClick(recipe);
+                              }
+                            }}
+                            disabled={recipe.tokenStatus !== 'APPROVED'}
+                          >
+                            Assign to?
+                          </Button>
                           <Link href={`/recipes/sub-recipes/edit/${recipe.id}`}>
                             <Button 
                               variant="default" 
@@ -263,6 +303,30 @@ export default function SubRecipesPage() {
         onClose={() => setIsErrorModalOpen(false)}
         title="Error"
         message={errorMessage}
+        isAlert={true}
+        okText="OK"
+      />
+
+      {/* Assign Modal */}
+      <AssignModal
+        isOpen={isAssignModalOpen}
+        onClose={() => {
+          setIsAssignModalOpen(false);
+          setSelectedSubRecipeForAssign(null);
+        }}
+        onSuccess={handleAssignSuccess}
+        onError={handleAssignError}
+        recipeId={0}
+        isSubRecipe={true}
+        subRecipeId={selectedSubRecipeForAssign?.id || 0}
+      />
+
+      {/* Confirmation/Error Modal */}
+      <ConfirmationModal
+        isOpen={!!confirmationMessage}
+        onClose={() => setConfirmationMessage('')}
+        title={isSuccessMessage ? 'Success' : 'Error'}
+        message={confirmationMessage}
         isAlert={true}
         okText="OK"
       />

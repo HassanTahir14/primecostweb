@@ -5,27 +5,32 @@ import Button from '@/components/common/button';
 import Input from '@/components/common/input';
 import Select from '@/components/common/select';
 import { Plus, Trash2 } from 'lucide-react';
-import { useUnits } from '@/hooks/useUnits';
 
-// Assuming Item structure from a potential itemsSlice
+// Define interfaces for better type safety
+interface UnitOfMeasurement {
+  unitOfMeasurementId: number;
+  unitName: string;
+  unitDescription: string;
+}
+
 interface Item {
-    itemId: number;
-    name: string;
-    code: string;
-    primaryUnitId?: number;
-    secondaryUnitId?: number;
-    primaryUnitValue?: number;
-    secondaryUnitValue?: number;
-    purchaseCostWithVat?: number;
-    purchaseCostWithoutVat?: number;
-    cost?: number;
-    branchDetails: {
-        branchId: number;
-        branchName: string;
-        storageLocationId: number;
-        storageLocationName: string;
-        quantity: number;
-    }[];
+  itemId: number;
+  name: string;
+  code: string;
+  primaryUnitId?: number;
+  secondaryUnitId?: number;
+  primaryUnitValue?: number;
+  secondaryUnitValue?: number;
+  purchaseCostWithVat?: number;
+  purchaseCostWithoutVat?: number;
+  cost?: number;
+  branchDetails: {
+    branchId: number;
+    branchName: string;
+    storageLocationId: number;
+    storageLocationName: string;
+    quantity: number;
+  }[];
 }
 
 interface TransferInventoryItemsTableProps {
@@ -34,23 +39,24 @@ interface TransferInventoryItemsTableProps {
   onChange: (items: any[]) => void;
   selectedBranchId: string;
   sourceBranchId: string;
+  targetBranchId: string;
+  units: UnitOfMeasurement[];
 }
-
-// Mock data removed
 
 export default function TransferInventoryItemsTable({ 
   items, 
   allItems, 
   onChange, 
   selectedBranchId,
-  sourceBranchId 
+  sourceBranchId,
+  targetBranchId,
+  units
 }: TransferInventoryItemsTableProps) {
-  // Get units from the hook
-  const { units, loading: unitsLoading } = useUnits();
   
   // Prepare options for Select component
   const itemOptions = useMemo(() => {
-    if (selectedBranchId === sourceBranchId) {
+    // Check if source and target branches are the same
+    if (sourceBranchId === targetBranchId) {
       return [{ 
         value: '', 
         label: 'Cannot transfer to same branch', 
@@ -68,27 +74,36 @@ export default function TransferInventoryItemsTable({
         label: `${item.name.split('@')[0]} (${item.code})`,
         disabled: false
     }));
-    return [{ value: '', label: 'Select Item...', disabled: true }, ...options];
-  }, [allItems, selectedBranchId, sourceBranchId]);
+    return [ ...options];
+  }, [allItems, sourceBranchId, targetBranchId]);
 
   // Prepare unit options based on selected item
   const getUnitOptions = (selectedItemId: string) => {
     const selectedItem = allItems.find(item => String(item.itemId) === selectedItemId);
     if (!selectedItem) return [{ value: '', label: 'Select Unit...', disabled: true }];
 
-    // Filter units to only include primary and secondary units of the selected item
-    const itemUnits = units
-      .filter(unit => 
-        unit.unitOfMeasurementId === selectedItem.primaryUnitId || 
-        unit.unitOfMeasurementId === selectedItem.secondaryUnitId
-      )
-      .map(unit => ({
-        value: String(unit.unitOfMeasurementId),
-        label: unit.unitName,
-        disabled: false
-      }));
+    // Get all available units for this item
+    const availableUnits = units.filter(unit => {
+      // Include primary unit
+      if (selectedItem.primaryUnitId === unit.unitOfMeasurementId) return true;
+      // Include secondary unit if it exists
+      if (selectedItem.secondaryUnitId === unit.unitOfMeasurementId) return true;
+      return false;
+    });
 
-    return [ ...itemUnits];
+    // Map units to options format
+    const unitOptions = availableUnits.map(unit => ({
+      value: String(unit.unitOfMeasurementId),
+      label: unit.unitName,
+      disabled: false
+    }));
+
+    // If no units found, return default option
+    if (unitOptions.length === 0) {
+      return [{ value: '', label: 'No units available', disabled: true }];
+    }
+
+    return unitOptions;
   };
 
   const handleItemChange = (index: number, field: string, value: any) => {
@@ -104,23 +119,39 @@ export default function TransferInventoryItemsTable({
             // Set primary unit as default
             currentItem.uom = selectedItemData.primaryUnitId?.toString() || '';
             
-            // Store the base cost (cost per unit)
+            // Store the base cost and unit values
             currentItem.baseCost = selectedItemData.purchaseCostWithVat || 0;
+            currentItem.primaryUnitValue = selectedItemData.primaryUnitValue || 1;
+            currentItem.secondaryUnitValue = selectedItemData.secondaryUnitValue || 1;
+            currentItem.primaryUnitId = selectedItemData.primaryUnitId;
+            currentItem.secondaryUnitId = selectedItemData.secondaryUnitId;
+            
+            // Calculate initial cost based on primary unit
             currentItem.cost = currentItem.baseCost * (currentItem.quantity || 1);
         } else {
             currentItem.itemCode = '';
             currentItem.uom = '';
             currentItem.baseCost = 0;
             currentItem.cost = 0;
+            currentItem.primaryUnitValue = 1;
+            currentItem.secondaryUnitValue = 1;
         }
     }
     
-    // Update cost when quantity changes
-    if (field === 'quantity') {
-        const quantity = parseFloat(value) || 0;
-        currentItem.quantity = quantity;
-        // Calculate new cost based on base cost and quantity
-        currentItem.cost = (currentItem.baseCost || 0) * quantity;
+    // Update cost when quantity or unit changes
+    if (field === 'quantity' || field === 'uom') {
+        const quantity = parseFloat(currentItem.quantity) || 0;
+        const selectedUnitId = parseInt(currentItem.uom);
+        
+        // Calculate cost based on selected unit
+        if (selectedUnitId === currentItem.primaryUnitId) {
+            // If primary unit is selected, use base cost directly
+            currentItem.cost = currentItem.baseCost * quantity;
+        } else if (selectedUnitId === currentItem.secondaryUnitId) {
+            // If secondary unit is selected, adjust cost based on unit value ratio
+            const unitRatio = currentItem.secondaryUnitValue / currentItem.primaryUnitValue;
+            currentItem.cost = (currentItem.baseCost / unitRatio) * quantity;
+        }
     }
     
     newItems[index] = currentItem;
@@ -141,10 +172,6 @@ export default function TransferInventoryItemsTable({
     const newItems = items.filter((_, i) => i !== index); 
     onChange(newItems);
   };
-
-  if (unitsLoading) {
-    return <div>Loading units...</div>;
-  }
 
   return (
     <div className="bg-white rounded-lg shadow-sm p-0 overflow-hidden">

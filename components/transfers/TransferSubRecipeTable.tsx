@@ -13,10 +13,10 @@ interface SubRecipe {
     name: string;
     subRecipeCode: string;
     costPerPortion?: number;
-    ingredients: {
+    ingredientsItems: {
         unit: string;
     }[];
-    status: string;  // Add status field
+    tokenStatus: string;
 }
 
 interface TransferSubRecipeTableProps {
@@ -25,6 +25,8 @@ interface TransferSubRecipeTableProps {
   onChange: (items: any[]) => void;
   selectedBranchId: string;
   sourceBranchId: string;
+  targetBranchId: string;
+  units: UnitOfMeasurement[];
 }
 
 export default function TransferSubRecipeTable({ 
@@ -32,14 +34,16 @@ export default function TransferSubRecipeTable({
   allSubRecipes, 
   onChange,
   selectedBranchId,
-  sourceBranchId
+  sourceBranchId,
+  targetBranchId,
+  units
 }: TransferSubRecipeTableProps) {
   // Get units from the hook
-  const { units, loading: unitsLoading } = useUnits();
+  const { units: hookUnits, loading: unitsLoading } = useUnits();
 
   // Prepare options for Select component
   const subRecipeOptions = useMemo(() => {
-      if (selectedBranchId === sourceBranchId) {
+      if (sourceBranchId === targetBranchId) {
         return [{ 
           value: '', 
           label: 'Cannot transfer to same branch', 
@@ -48,22 +52,31 @@ export default function TransferSubRecipeTable({
       }
 
       const options = allSubRecipes
-        .filter(subRecipe => subRecipe.status === 'APPROVED')
+        .filter(subRecipe => subRecipe.tokenStatus === 'APPROVED')
         .map(subRecipe => ({
           value: String(subRecipe.id),
           label: `${subRecipe.name} (${subRecipe.subRecipeCode})`
         }));
-      return [{ value: '', label: 'Select Sub Recipe...', disabled: true }, ...options];
-  }, [allSubRecipes, selectedBranchId, sourceBranchId]);
+      return [{ value: '', label: 'Select Sub-Recipe...', disabled: true }, ...options];
+  }, [allSubRecipes, sourceBranchId, targetBranchId]);
 
   // Get unique units from sub-recipe ingredients
-  const getUnitOptions = (subRecipe: SubRecipe | undefined) => {
-    if (!subRecipe) return [];
-    const uniqueUnits = Array.from(new Set(subRecipe.ingredients.map(item => item.unit)));
-    return uniqueUnits.map(unit => ({
-      value: unit,
-      label: unit
-    }));
+  const getUnitOptions = (selectedSubRecipeId: string) => {
+    const selectedSubRecipe = allSubRecipes.find(subRecipe => String(subRecipe.id) === selectedSubRecipeId);
+    if (!selectedSubRecipe) return [];
+
+    // Get unique unit names from sub-recipe ingredients
+    const subRecipeUnitNames = Array.from(new Set(selectedSubRecipe.ingredientsItems.map(item => item.unit)));
+    
+    // Find matching units from the units list
+    const subRecipeUnits = units
+      .filter(unit => subRecipeUnitNames.includes(unit.unitName))
+      .map(unit => ({
+        value: unit.unitName,
+        label: unit.unitName
+      }));
+
+    return [...subRecipeUnits];
   };
 
   const handleItemChange = (index: number, field: string, value: any) => {
@@ -78,7 +91,7 @@ export default function TransferSubRecipeTable({
             currentItem.subRecipeCode = selectedSubRecipeData.subRecipeCode;
             
             // Get available units for this sub-recipe
-            const availableUnits = getUnitOptions(selectedSubRecipeData);
+            const availableUnits = getUnitOptions(String(selectedSubRecipeData.id));
             
             // Set first available unit as default if exists
             if (availableUnits.length > 0) {
@@ -177,9 +190,9 @@ export default function TransferSubRecipeTable({
                          <Select
                             value={item.uom}
                             onChange={(e) => handleItemChange(index, 'uom', e.target.value)}
-                            options={getUnitOptions(allSubRecipes.find(subRecipe => String(subRecipe.id) === String(item.subRecipeId)))}
+                            options={getUnitOptions(String(item.subRecipeId))}
                             className="w-full"
-                            disabled={!item.subRecipeId || getUnitOptions(allSubRecipes.find(subRecipe => String(subRecipe.id) === String(item.subRecipeId))).length === 0}
+                            disabled={!item.subRecipeId || getUnitOptions(String(item.subRecipeId)).length === 0}
                         />
                     </td>
                     <td className="p-2 align-top">
