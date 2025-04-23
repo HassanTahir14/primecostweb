@@ -11,17 +11,17 @@ export default function InventoryBySubRecipe() {
   useEffect(() => {
     const fetchSubRecipes = async () => {
       try {
-        const response = await api.post('/api/v1/inventory/view/prepared-sub-recipe', {});
-        const list = response?.data?.inventorylist || [];
+        const response = await api.post('/inventory/view/prepared-sub-recipe', {page: 0, size: 1000, sortBy: 'preparedDate', direction: 'desc'});
+        const list = response?.data?.preparedSubRecipeList || [];
 
-        const mapped = list.map((item: any, index: number) => ({
-          id: index,
+        const mapped = list.map((item: any) => ({
+          id: item.preparedSubRecipeId,
           date: moment(item.preparedDate).format('DD/MM/YYYY hh:mm A'),
-          name: item.recipeName, // or subRecipeName if that's what your API uses
-          preparedBy: item.preparedBy,
-          storage: `${item.storageLocation} ${item.branchLocation}`,
-          quantity: `${item.totalQuantity} ${item.primaryUnit}`,
-          batchNumber: item.batchNumber
+          name: item.subRecipeNameAndDescription,
+          preparedBy: item.preparedByUserId,
+          storage: item.storageLocationWithCode,
+          quantity: `${item.totalQuantity} ${item.uom}`,
+          batchNumber: item.subRecipeBatchNumber
         }));
 
         setSubRecipes(mapped);

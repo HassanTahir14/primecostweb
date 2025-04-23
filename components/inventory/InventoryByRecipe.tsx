@@ -11,17 +11,17 @@ export default function InventoryByRecipe() {
   useEffect(() => {
     const fetchRecipes = async () => {
       try {
-        const response = await api.post('/api/v1/inventory/view/prepared-main-recipe', {});
-        const list = response?.data?.inventorylist || [];
+        const response = await api.post('/inventory/view/prepared-main-recipe', {page: 0, size: 1000, sortBy: 'preparedDate', direction: 'desc'});
+        const list = response?.data?.preparedMainRecipeList || [];
 
-        const mapped = list.map((item: any, index: number) => ({
-          id: index,
+        const mapped = list.map((item: any) => ({
+          id: item.preparedMainRecipeId,
           date: moment(item.preparedDate).format('DD/MM/YYYY hh:mm A'),
-          name: item.recipeName,
-          preparedBy: item.preparedBy,
-          storage: `${item.storageLocation} ${item.branchLocation}`,
-          quantity: `${item.totalQuantity} ${item.primaryUnit}`,
-          batchNumber: item.batchNumber
+          name: item.mainRecipeNameAndDescription,
+          preparedBy: item.preparedByUserId,
+          storage: item.storageLocationWithCode,
+          quantity: `${item.totalQuantity} ${item.uom}`,
+          batchNumber: item.mainRecipeBatchNumber
         }));
 
         setRecipes(mapped);
