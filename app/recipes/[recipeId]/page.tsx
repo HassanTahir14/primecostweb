@@ -113,7 +113,7 @@ export default function RecipeDetailPage() {
         isLoading={loading}
         error={error}
         imageKey="images"
-        imageBaseUrl="http://13.61.61.180:8080/"
+        imageBaseUrl="http://212.85.26.46:8082/"
       />
     </PageLayout>
   );

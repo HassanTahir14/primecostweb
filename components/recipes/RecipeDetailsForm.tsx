@@ -50,7 +50,7 @@ export default function RecipeDetailsForm({ onNext, initialData, isEditMode = fa
   const router = useRouter();
 
   // Update the image base URL
-  const imageBaseUrl = process.env.NEXT_PUBLIC_IMAGE_URL || 'http://13.61.61.180:8080/api/v1/images/view';
+  const imageBaseUrl = process.env.NEXT_PUBLIC_IMAGE_URL || 'http://212.85.26.46:8082/api/v1/images/view';
 
   useEffect(() => {
     setIsMounted(true);

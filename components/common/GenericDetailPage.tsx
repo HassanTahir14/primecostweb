@@ -65,7 +65,7 @@ const GenericDetailPage: React.FC<GenericDetailPageProps> = ({
   const images = imageKey && data[imageKey] && Array.isArray(data[imageKey]) ? data[imageKey] : [];
 
   // Update the image base URL
-  const imageBaseUrlUpdated = process.env.NEXT_PUBLIC_IMAGE_URL || 'http://13.61.61.180:8080/api/v1/images/view';
+  const imageBaseUrlUpdated = process.env.NEXT_PUBLIC_IMAGE_URL || 'http://212.85.26.46:8082/api/v1/images/view';
 
   return (
     <div className="flex-1 flex flex-col p-4 md:p-6 lg:p-8 bg-gray-50">
