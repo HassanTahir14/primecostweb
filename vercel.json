@@ -7,21 +7,7 @@
     "rewrites": [
       {
         "source": "/api-proxy/:path*",
-        "destination": "http://212.85.26.46:8082/api/v1/:path*",
-        "headers": [
-          {
-            "key": "Access-Control-Allow-Origin",
-            "value": "*"
-          },
-          {
-            "key": "Access-Control-Allow-Methods",
-            "value": "GET, POST, PUT, DELETE, OPTIONS"
-          },
-          {
-            "key": "Access-Control-Allow-Headers",
-            "value": "X-Requested-With, Content-Type, Accept"
-          }
-        ]
+        "destination": "http://212.85.26.46:8082/api/v1/:path*"
       }
     ],
     "env": {
