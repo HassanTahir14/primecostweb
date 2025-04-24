@@ -29,7 +29,10 @@ export default function PageLayout({ children, title }: PageLayoutProps) {
   const userMenuRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
-  // Fetch pending tokens count
+  // Check if user is chef or head chef
+  const isChefRole = currentUser?.role === 'CHEF' || currentUser?.role === 'HEAD_CHEF';
+
+  // Fetch pending tokens count only for non-chef roles
   useEffect(() => {
     const fetchPendingTokensCount = async () => {
       try {
@@ -43,10 +46,10 @@ export default function PageLayout({ children, title }: PageLayoutProps) {
       }
     };
 
-    if (isAuthenticated) {
+    if (isAuthenticated && !isChefRole) {
       fetchPendingTokensCount();
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, isChefRole]);
 
   // Close user menu when clicking outside
   useEffect(() => {
@@ -90,15 +93,20 @@ export default function PageLayout({ children, title }: PageLayoutProps) {
 
           {/* Right side - User Info & Actions */}
           <div className="flex items-center gap-3 sm:gap-4">
-            <button className="relative text-gray-500 hover:text-gray-700"
-            onClick={() => router.push('/tokens')}>
-              <Bell size={20} />
-              {pendingTokensCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-semibold">
-                  {pendingTokensCount}
-                </span>
-              )}
-            </button>
+            {/* Only show notification bell for non-chef roles */}
+            {!isChefRole && (
+              <button 
+                className="relative text-gray-500 hover:text-gray-700"
+                onClick={() => router.push('/tokens')}
+              >
+                <Bell size={20} />
+                {pendingTokensCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-semibold">
+                    {pendingTokensCount}
+                  </span>
+                )}
+              </button>
+            )}
             
             {/* User Dropdown */}
             <div className="relative" ref={userMenuRef}>
