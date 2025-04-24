@@ -9,6 +9,7 @@ import { useAuth } from '@/hooks/useAuth';
 import Loader from '@/components/common/Loader';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout, selectCurrentUser } from '@/store/authSlice';
+import api from '@/store/api';
 
 interface PageLayoutProps {
   children: React.ReactNode;
@@ -24,8 +25,28 @@ export default function PageLayout({ children, title }: PageLayoutProps) {
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const [pendingTokensCount, setPendingTokensCount] = useState(0);
   const userMenuRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
+
+  // Fetch pending tokens count
+  useEffect(() => {
+    const fetchPendingTokensCount = async () => {
+      try {
+        const response = await api.get('/tokens');
+        if (response.data && response.data.tokens) {
+          const pendingCount = response.data.tokens.filter((token: any) => token.tokenStatus === 'PENDING').length;
+          setPendingTokensCount(pendingCount);
+        }
+      } catch (error) {
+        console.error('Error fetching pending tokens count:', error);
+      }
+    };
+
+    if (isAuthenticated) {
+      fetchPendingTokensCount();
+    }
+  }, [isAuthenticated]);
 
   // Close user menu when clicking outside
   useEffect(() => {
@@ -50,7 +71,7 @@ export default function PageLayout({ children, title }: PageLayoutProps) {
   if (!isAuthenticated) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-[#F4F7FA]">
-        <Loader size="large" />
+        <Loader size="medium" />
       </div>
     );
   }
@@ -72,7 +93,11 @@ export default function PageLayout({ children, title }: PageLayoutProps) {
             <button className="relative text-gray-500 hover:text-gray-700"
             onClick={() => router.push('/tokens')}>
               <Bell size={20} />
-              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-semibold">12</span>
+              {pendingTokensCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-semibold">
+                  {pendingTokensCount}
+                </span>
+              )}
             </button>
             
             {/* User Dropdown */}

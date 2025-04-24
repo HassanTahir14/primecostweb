@@ -54,20 +54,44 @@ export default function EditEmployeePage() {
   useEffect(() => {
     const loadEmployeeData = async () => {
       setIsLoading(true);
-      if (!selectedEmployee || selectedEmployee.employeeId !== employeeId) {
-        await dispatch(fetchAllEmployees());
-        const result = await dispatch(fetchAllEmployees());
-        if (result.payload) {
-          const foundEmployee = result.payload.find((emp: { employeeId: number }) => emp.employeeId === employeeId);
-          if (foundEmployee) {
-            dispatch(setSelectedEmployeeForEdit(foundEmployee));
+      try {
+        if (!selectedEmployee || selectedEmployee.employeeId !== employeeId) {
+          console.log("Employee not found in Redux store, fetching all employees");
+          const result = await dispatch(fetchAllEmployees());
+          if (result.payload) {
+            const foundEmployee = result.payload.find((emp: Employee) => emp.employeeId === employeeId);
+            if (foundEmployee) {
+              console.log("Found employee in API response:", foundEmployee);
+              await dispatch(setSelectedEmployeeForEdit(foundEmployee));
+              // Add a small delay to ensure Redux state is updated
+              await new Promise(resolve => setTimeout(resolve, 100));
+            } else {
+              console.error("Employee not found in API response");
+              setModalMessage(`Employee with ID ${employeeId} not found. Please verify the employee ID and try again.`);
+              setIsModalOpen(true);
+              router.push('/employees'); // Redirect back to employees list
+            }
+          } else {
+            console.error("No employees returned from API");
+            setModalMessage("Unable to fetch employee data. Please try again.");
+            setIsModalOpen(true);
+            router.push('/employees');
           }
+        } else {
+          console.log("Employee already in Redux store:", selectedEmployee);
         }
+      } catch (error) {
+        console.error("Error loading employee data:", error);
+        setModalMessage("An error occurred while loading employee data. Please try again.");
+        setIsModalOpen(true);
+        router.push('/employees');
+      } finally {
+        setIsLoading(false);
       }
     };
 
     loadEmployeeData();
-  }, [employeeId, dispatch]);
+  }, [employeeId, dispatch, selectedEmployee, router]);
 
   useEffect(() => {
     if (selectedEmployee && selectedEmployee.employeeId === employeeId) {

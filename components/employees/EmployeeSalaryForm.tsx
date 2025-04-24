@@ -4,6 +4,8 @@ import { useState, useEffect, useRef, ChangeEvent } from 'react';
 import Button from '@/components/common/button';
 import Input from '@/components/common/input'; // Assuming InputField component
 import { Upload, X } from 'lucide-react'; // Import icons
+import { getImageUrlWithAuth } from '@/utils/imageUtils';
+import AuthImage from '@/components/common/AuthImage';
 
 // Interface for existing image data passed as prop
 interface ExistingImage {
@@ -117,13 +119,8 @@ export default function EmployeeSalaryForm({
     onSubmit(finalData);
   };
 
-  // Construct full image URL (adjust based on your backend/hosting setup)
-  const getImageUrl = (path: string) => {
-      // Example: Assuming paths are relative and need a base URL
-      // Replace with your actual image base URL logic
-      const BASE_IMAGE_URL = process.env.NEXT_PUBLIC_IMAGE_BASE_URL || ''; 
-      return path ? `${BASE_IMAGE_URL}/${path}` : '/placeholder.png'; // Provide a placeholder
-  };
+  // Update the image base URL
+  const imageBaseUrl = process.env.NEXT_PUBLIC_IMAGE_URL || 'http://212.85.26.46:8082/api/v1/images/view';
 
   return (
     <div className="space-y-6">
@@ -158,12 +155,11 @@ export default function EmployeeSalaryForm({
                          {existingImages.map((image) => (
                              !isImageMarkedForRemoval(image.imageId) && (
                                  <div key={image.imageId} className="relative group">
-                                     <img 
-                                        src={getImageUrl(image.path)} 
+                                     <AuthImage 
+                                        src={getImageUrlWithAuth(image.path, imageBaseUrl)}
                                         alt={`existing image ${image.imageId}`} 
                                         className="w-full h-20 object-cover rounded-md border border-gray-200"
-                                        // Add onError handler for broken images
-                                        onError={(e) => (e.currentTarget.src = '/placeholder.png')} 
+                                        fallbackSrc="/placeholder-image.svg"
                                      />
                                      <button
                                          onClick={() => handleRemoveExistingImage(image.imageId)}

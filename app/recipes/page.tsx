@@ -14,6 +14,8 @@ import ConfirmationModal from '@/components/common/ConfirmationModal';
 import { useRouter } from 'next/navigation';
 import SearchInput from '@/components/common/SearchInput';
 import AssignModal from '@/components/recipes/AssignModal';
+import { getImageUrlWithAuth } from '@/utils/imageUtils';
+import AuthImage from '@/components/common/AuthImage';
 
 export default function RecipesPage() {
   const dispatch = useDispatch<AppDispatch>();
@@ -114,7 +116,7 @@ export default function RecipesPage() {
     return (
       <PageLayout title="All Recipes">
         <div className="flex justify-center items-center h-64">
-          <Loader size="large" />
+          <Loader size="medium" />
         </div>
       </PageLayout>
     );
@@ -184,11 +186,11 @@ export default function RecipesPage() {
                       <td className="px-6 py-4 whitespace-nowrap">
                         {recipe.images && recipe.images.length > 0 ? (
                           <div className="w-12 h-12 rounded-md overflow-hidden relative">
-                            <Image 
-                              src={`http://212.85.26.46:8082/api/v1/images/view/${recipe.images[0].path}`}
+                            <AuthImage 
+                              src={getImageUrlWithAuth(recipe.images[0].path)}
                               alt={recipe.name}
-                              fill
-                              className="object-cover"
+                              className="object-cover w-full h-full"
+                              fallbackSrc="/placeholder-image.svg"
                             />
                           </div>
                         ) : (

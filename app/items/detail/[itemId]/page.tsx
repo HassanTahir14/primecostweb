@@ -252,12 +252,11 @@ export default function ItemDetailPage() {
       }
     ] : []),
     { key: 'countryOrigin', label: 'Country of Origin' },
-    { key: 'createdAt', label: 'Created At', render: (value) => value ? formatDate(value) : 'N/A' }, 
-    { key: 'updatedAt', label: 'Last Updated', render: (value) => value ? formatDate(value) : 'N/A' },
+    
   ];
 
   // Define imageBaseUrl (same as before)
-  const imageBaseUrl = ''; // Replace with actual base URL
+  const imageBaseUrl = 'http://212.85.26.46:8082/api/v1/images/view'; // Replace with actual base URL
 
   // Show loading if item list or units are loading, or if item is being searched
   const combinedLoading = loading || itemsStatus === 'loading' || itemsStatus === 'idle' || unitsLoading;

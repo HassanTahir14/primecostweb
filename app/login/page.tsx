@@ -287,7 +287,7 @@ export default function LoginPage() {
     <div className="min-h-screen w-full relative bg-[#E8FFFE] flex items-center justify-center p-4 sm:p-6 md:p-8">
       {isLoading && (
         <div className="fixed inset-0 z-50 flex justify-center items-center bg-black bg-opacity-20">
-          <Loader size="large" />
+          <Loader size="medium" />
         </div>
       )}
 

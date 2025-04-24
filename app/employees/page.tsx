@@ -182,6 +182,7 @@ export default function EmployeesPage() {
                   <th className="py-4 px-6 font-medium text-sm text-gray-500">Iqama ID</th>
                   <th className="py-4 px-6 font-medium text-sm text-gray-500">Iqama Expiry</th>
                   <th className="py-4 px-6 font-medium text-sm text-gray-500">Basic Salary</th>
+                  <th className="py-4 px-6 font-medium text-sm text-gray-500">Status</th>
                   <th className="py-4 px-6 font-medium text-sm text-gray-500 text-center">Actions</th>
                 </tr>
               </thead>
@@ -206,6 +207,15 @@ export default function EmployeesPage() {
                       <td className="py-4 px-6 text-sm">
                         USD {employee.salaryDTO?.basicSalary?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || '0.00'}
                       </td>
+                      <td className="py-4 px-6 text-sm">
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          employee.employeeDetailsDTO?.active === true 
+                            ? 'bg-green-100 text-green-800' 
+                            : 'bg-red-100 text-red-800'
+                        }`}>
+                          {employee.employeeDetailsDTO?.active === true ? 'Current' : 'Ex Employee'}
+                        </span>
+                      </td>
                       <td className="py-4 px-6 text-center">
                         <div className="flex items-center justify-center space-x-2 action-buttons">
                           <Button 
@@ -215,21 +225,33 @@ export default function EmployeesPage() {
                             disabled={employeesLoading}
                             onClick={async (e) => {
                               e.stopPropagation();
-                              // First ensure we have fresh data
-                              await dispatch(fetchAllEmployees());
-                              const employeeToEdit = employees.find(emp => emp.employeeId === employee.employeeId);
-                              if (employeeToEdit) {
-                                console.log("Found employee to edit:", employeeToEdit);
-                                // Set the employee in Redux store
-                                await dispatch(setSelectedEmployeeForEdit(employeeToEdit));
-                                // Navigate after we're sure the data is in the store
-                                router.push(`/employees/edit/${employee.employeeId}`);
+                              try {
+                                // First ensure we have fresh data
+                                await dispatch(fetchAllEmployees());
+                                const employeeToEdit = employees.find(emp => emp.employeeId === employee.employeeId);
+                                if (employeeToEdit) {
+                                  console.log("Found employee to edit:", employeeToEdit);
+                                  // Set the employee in Redux store and wait for it to complete
+                                  await dispatch(setSelectedEmployeeForEdit(employeeToEdit));
+                                  // Add a small delay to ensure Redux state is updated
+                                  await new Promise(resolve => setTimeout(resolve, 100));
+                                  // Navigate after we're sure the data is in the store
+                                  router.push(`/employees/edit/${employee.employeeId}`);
+                                } else {
+                                  console.error("Employee not found after fetch");
+                                  setEmployeeModalMessage("Could not find employee details. Please try again.");
+                                  setIsEmployeeModalOpen(true);
+                                }
+                              } catch (error) {
+                                console.error("Error preparing to edit employee:", error);
+                                setEmployeeModalMessage("An error occurred while preparing to edit the employee. Please try again.");
+                                setIsEmployeeModalOpen(true);
                               }
                             }}
                           >
                             Edit
                           </Button>
-                          <Button 
+                          {/* <Button 
                             variant="destructive" 
                              size="sm" 
                             className="rounded-full bg-red-500 text-white text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-1.5"
@@ -240,7 +262,7 @@ export default function EmployeesPage() {
                             disabled={employeesLoading}
                           >
                             Delete
-                          </Button>
+                          </Button> */}
                         </div>
                       </td>
                     </tr>

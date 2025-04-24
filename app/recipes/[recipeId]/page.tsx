@@ -17,6 +17,8 @@ interface AuthUser {
   dashboardMenuList: Array<{ menuName: string }>;
 }
 
+const imageBaseUrl = 'http://212.85.26.46:8082/api/v1/images/view'; 
+
 export default function RecipeDetailPage() {
   const router = useRouter();
   const params = useParams();
@@ -109,7 +111,7 @@ export default function RecipeDetailPage() {
         render: (value: number | null) => value ? `$${(value / 100).toFixed(2)}` : 'N/A'
       }
     ] : []),
-    { key: 'description', label: 'Description' },
+   
     {
       key: 'ingredientsItems',
       label: 'Ingredients',
@@ -147,16 +149,7 @@ export default function RecipeDetailPage() {
         </div>
       )
     },
-    { 
-      key: 'createdAt', 
-      label: 'Created At',
-      render: (value: string) => new Date(value).toLocaleDateString()
-    },
-    { 
-      key: 'updatedAt', 
-      label: 'Last Updated',
-      render: (value: string | null) => value ? new Date(value).toLocaleDateString() : 'N/A'
-    }
+   
   ];
 
   return (
@@ -169,7 +162,7 @@ export default function RecipeDetailPage() {
         isLoading={loading}
         error={error}
         imageKey="images"
-        imageBaseUrl="http://212.85.26.46:8082/"
+        imageBaseUrl={imageBaseUrl}
       />
       {isPreparationMode && recipe && (
         <div className="mt-8">

@@ -17,6 +17,8 @@ interface AuthUser {
   dashboardMenuList: Array<{ menuName: string }>;
 }
 
+const imageBaseUrl = 'http://212.85.26.46:8082/api/v1/images/view'; 
+
 export default function SubRecipeDetailPage() {
   const router = useRouter();
   const params = useParams();
@@ -174,11 +176,11 @@ export default function SubRecipeDetailPage() {
         </div>
       )
     },
-    {
-      key: 'lastUpdatedByName',
-      label: 'Last Updated By',
-      render: (value: string | null, data: any) => value ? `${value} (${data.lastUpdatedByDesignation || 'N/A'})` : 'N/A'
-    }
+    // {
+    //   key: 'lastUpdatedByName',
+    //   label: 'Last Updated By',
+    //   render: (value: string | null, data: any) => value ? `${value} (${data.lastUpdatedByDesignation || 'N/A'})` : 'N/A'
+    // }
   ];
 
   return (
@@ -191,7 +193,7 @@ export default function SubRecipeDetailPage() {
         isLoading={loading}
         error={error}
         imageKey="images"
-        imageBaseUrl="http://212.85.26.46:8082/"
+        imageBaseUrl={imageBaseUrl}
       />
       {isPreparationMode && subRecipe && (
         <div className="mt-8">

@@ -8,6 +8,10 @@ import { FC } from 'react';
 import PageLayout from '@/components/PageLayout';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
+import { getImageUrlWithAuth } from '@/utils/imageUtils';
+import api from '@/store/api';
+import AuthImage from '@/components/common/AuthImage';
+import ConfirmationModal from '@/components/common/ConfirmationModal';
 
 interface TableRowProps {
   label: string;
@@ -23,19 +27,23 @@ interface DutySchedule {
 
 const TableRow: FC<TableRowProps> = ({ label, value }) => (
   <tr className="border-b border-gray-200">
-    <td className="py-3 px-4 text-sm font-medium text-gray-500">{label}</td>
+    <td className="py-3 px-4 text-sm font-medium text-gray-500 w-[200px]">{label}</td>
     <td className="py-3 px-4 text-sm text-gray-900">{value || 'N/A'}</td>
   </tr>
 );
 
 export default function EmployeeDetailPage() {
   const router = useRouter();
-  const { employeeId } = useParams();
-  const [error, setError] = useState<string | null>(null);
+  const params = useParams();
+  const employeeId = params.employeeId as string;
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isClosing, setIsClosing] = useState(false);
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [confirmModalMessage, setConfirmModalMessage] = useState('');
 
   const employee: any = useSelector((state: RootState) => 
-    state.employee.employees.find(emp => emp.employeeId === Number(employeeId))
+    state.employee.employees.find(emp => emp.employeeId.toString() === employeeId)
   );
 
   useEffect(() => {
@@ -48,6 +56,38 @@ export default function EmployeeDetailPage() {
 
   const handleBack = () => {
     router.push('/employees');
+  };
+
+  const handleCloseAccount = async () => {
+    setConfirmModalMessage('Are you sure you want to close this account? This action cannot be undone.');
+    setIsConfirmModalOpen(true);
+  };
+
+  const handleConfirmCloseAccount = async () => {
+    setIsClosing(true);
+    try {
+      await api.put('/kitchen/employees/employee/status', {
+        userId: Number(employeeId),
+        active: false
+      });
+      
+      // Show success message and redirect
+      setConfirmModalMessage('Account closed successfully');
+      setIsConfirmModalOpen(true);
+      setTimeout(() => {
+        router.push('/employees');
+      }, 1500);
+    } catch (error) {
+      console.error('Error closing account:', error);
+      setConfirmModalMessage('Failed to close account. Please try again.');
+      setIsConfirmModalOpen(true);
+    } finally {
+      setIsClosing(false);
+    }
+  };
+
+  const handleCloseModal = () => {
+    setIsConfirmModalOpen(false);
   };
 
   const formatCurrency = (amount: any) => {
@@ -68,12 +108,40 @@ export default function EmployeeDetailPage() {
 
     return (
       <div className="space-y-6">
-        {/* Back Button */}
-        <div className="flex items-center gap-2 mb-4">
+        {/* Header with Back Button and Close Account */}
+        <div className="flex items-center justify-between mb-4">
           <Link href="/employees" className="text-gray-500 hover:text-gray-700">
             <ArrowLeft size={20} />
           </Link>
+          <button
+            onClick={handleCloseAccount}
+            disabled={isClosing}
+            className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isClosing ? 'Closing...' : 'Close Account'}
+          </button>
         </div>
+
+        {/* Images Section */}
+        {employee?.images && employee.images.length > 0 && (
+          <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+            <div className="border-b border-gray-200 bg-gray-50 px-4 py-3">
+              <h3 className="text-lg font-medium text-gray-900">Images</h3>
+            </div>
+            <div className="p-4">
+              {employee.images.map((image: any) => (
+                <div key={image.imageId} className="w-48 h-48 rounded-lg overflow-hidden bg-gray-100">
+                  <AuthImage
+                    src={getImageUrlWithAuth(image.path)}
+                    alt="Employee"
+                    className="w-full h-full object-cover"
+                    fallbackSrc="/placeholder-image.jpg"
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Personal Information */}
         <div className="bg-white rounded-lg shadow-sm overflow-hidden">
@@ -82,26 +150,11 @@ export default function EmployeeDetailPage() {
           </div>
           <table className="w-full">
             <tbody>
-              <TableRow 
-                label="First Name" 
-                value={employee?.employeeDetailsDTO?.firstname} 
-              />
-              <TableRow 
-                label="Family Name" 
-                value={employee?.employeeDetailsDTO?.familyName} 
-              />
-              <TableRow 
-                label="Date of Birth" 
-                value={employee?.employeeDetailsDTO?.dateOfBirth} 
-              />
-              <TableRow 
-                label="Mobile Number" 
-                value={employee?.employeeDetailsDTO?.mobileNumber} 
-              />
-              <TableRow 
-                label="Position" 
-                value={employee?.employeeDetailsDTO?.position} 
-              />
+              <TableRow label="First Name" value={employee?.employeeDetailsDTO?.firstname} />
+              <TableRow label="Family Name" value={employee?.employeeDetailsDTO?.familyName} />
+              <TableRow label="Date of Birth" value={employee?.employeeDetailsDTO?.dateOfBirth} />
+              <TableRow label="Mobile Number" value={employee?.employeeDetailsDTO?.mobileNumber} />
+              <TableRow label="Position" value={employee?.employeeDetailsDTO?.position} />
             </tbody>
           </table>
         </div>
@@ -113,37 +166,22 @@ export default function EmployeeDetailPage() {
           </div>
           <table className="w-full">
             <tbody>
-              <TableRow 
-                label="Health Card Number" 
-                value={employee?.employeeDetailsDTO?.healthCardNumber} 
-              />
-              <TableRow 
-                label="Health Card Expiry" 
-                value={employee?.employeeDetailsDTO?.healthCardExpiry} 
-              />
-              <TableRow 
-                label="Iqama ID" 
-                value={employee?.employeeDetailsDTO?.iqamaId} 
-              />
-              <TableRow 
-                label="Iqama Expiry Date" 
-                value={employee?.employeeDetailsDTO?.iqamaExpiryDate} 
-              />
+              <TableRow label="Health Card Number" value={employee?.employeeDetailsDTO?.healthCardNumber} />
+              <TableRow label="Health Card Expiry" value={employee?.employeeDetailsDTO?.healthCardExpiry} />
+              <TableRow label="Iqama ID" value={employee?.employeeDetailsDTO?.iqamaId} />
+              <TableRow label="Iqama Expiry Date" value={employee?.employeeDetailsDTO?.iqamaExpiryDate} />
             </tbody>
           </table>
         </div>
 
-        {/* Login Details */}
+        {/* Rest of the sections */}
         <div className="bg-white rounded-lg shadow-sm overflow-hidden">
           <div className="border-b border-gray-200 bg-gray-50 px-4 py-3">
             <h3 className="text-lg font-medium text-gray-900">Login Details</h3>
           </div>
           <table className="w-full">
             <tbody>
-              <TableRow 
-                label="Login ID" 
-                value={employee?.employeeDetailsDTO?.loginId} 
-              />
+              <TableRow label="Login ID" value={employee?.employeeDetailsDTO?.loginId} />
             </tbody>
           </table>
         </div>
@@ -241,6 +279,18 @@ export default function EmployeeDetailPage() {
       <div className="space-y-6">
         {renderContent()}
       </div>
+      
+      <ConfirmationModal
+        isOpen={isConfirmModalOpen}
+        onClose={handleCloseModal}
+        onConfirm={handleConfirmCloseAccount}
+        title="Close Account"
+        message={confirmModalMessage}
+        confirmText="Close Account"
+        cancelText="Cancel"
+        isAlert={confirmModalMessage.includes('successfully')}
+        okText="OK"
+      />
     </PageLayout>
   );
 } 

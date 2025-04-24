@@ -222,7 +222,7 @@ export default function AssignOrder({ onClose }: AssignOrderProps) {
   if (isRoleLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <Loader size="large" />
+        <Loader size="medium" />
       </div>
     );
   }

@@ -10,6 +10,8 @@ import { AppDispatch } from '@/store/store';
 import { fetchAllServingSizes } from '@/store/servingSizeSlice';
 import ConfirmationModal from '@/components/common/ConfirmationModal';
 import { useRouter } from 'next/navigation';
+import { getImageUrlWithAuth } from '@/utils/imageUtils';
+import AuthImage from '@/components/common/AuthImage';
 
 interface RecipeImage {
   id?: number;
@@ -90,7 +92,7 @@ export default function RecipeDetailsForm({ onNext, initialData, isEditMode = fa
         urls.push(URL.createObjectURL(image));
       } else if (typeof image === 'object' && image.path) {
         // For images from API with path property
-        urls.push(`${imageBaseUrl}/${image.path}`);
+        urls.push(getImageUrlWithAuth(image.path, imageBaseUrl));
       }
     });
 
@@ -174,7 +176,7 @@ export default function RecipeDetailsForm({ onNext, initialData, isEditMode = fa
           {imagePreviewUrls.map((url, index) => (
             <div key={index} className="relative">
               <div className="aspect-square relative rounded-lg overflow-hidden">
-                <Image
+                <AuthImage
                   src={url}
                   alt={`Recipe image ${index + 1}`}
                   fill

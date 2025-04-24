@@ -18,6 +18,8 @@ import {
 import { fetchAllCategories as fetchItemCategories, selectAllCategories as selectItemCategories } from '@/store/itemCategorySlice';
 import { fetchAllTaxes, selectAllTaxes } from '@/store/taxSlice'; 
 import { fetchCountries, formatCountryOptions } from '@/utils/countryUtils';
+import { getImageUrlWithAuth } from '@/utils/imageUtils';
+import AuthImage from './common/AuthImage';
 
 // Define Item interface matching the structure in itemsSlice/ItemsMasterList
 interface ItemImage {
@@ -671,15 +673,11 @@ export default function EditItemForm({ itemToEdit, onClose, onSuccess }: EditIte
                          key={img.imageId}
                          className="relative aspect-square bg-gray-100 rounded-lg group"
                        >
-                         <img
-                           src={`${imageBaseUrl}/${img.path}`}
+                         <AuthImage
+                           src={getImageUrlWithAuth(img.path, imageBaseUrl)}
                            alt={`Image ${img.imageId}`}
                            className="w-full h-full object-cover rounded-lg"
-                           onError={(e) => {
-                             const target = e.target as HTMLImageElement;
-                             target.src = '/placeholder-image.jpg'; // Add a placeholder image
-                             target.onerror = null; // Prevent infinite loop
-                           }}
+                           fallbackSrc="/placeholder-image.jpg"
                          />
                          <button 
                             type="button" 
@@ -722,7 +720,7 @@ export default function EditItemForm({ itemToEdit, onClose, onSuccess }: EditIte
                          key={index}
                          className="relative aspect-square bg-gray-100 rounded-lg group"
                        >
-                         <img
+                         <AuthImage
                            src={URL.createObjectURL(file)}
                            alt={`New Preview ${index + 1}`}
                            className="w-full h-full object-cover rounded-lg"

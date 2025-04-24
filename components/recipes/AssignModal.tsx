@@ -40,6 +40,12 @@ export default function AssignModal({
     employee: ''
   });
 
+  // Filter active employees and exclude Admin position
+  const activeEmployees = employees.filter(employee => 
+    employee.employeeDetailsDTO?.active === true && 
+    employee.employeeDetailsDTO?.position !== 'Admin'
+  );
+
   useEffect(() => {
     if (isOpen) {
       // Reset form state when modal opens
@@ -154,7 +160,7 @@ export default function AssignModal({
             className="w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 focus:border-[#339A89] focus:outline-none focus:ring-1 focus:ring-[#339A89]"
           >
             <option value={0}>Select an employee</option>
-            {employees.map(employee => (
+            {activeEmployees.map(employee => (
               <option key={employee.employeeId} value={employee.employeeId}>
                 {employee.employeeDetailsDTO?.firstname} {employee.employeeDetailsDTO?.familyName} ({employee.employeeDetailsDTO?.position})
               </option>

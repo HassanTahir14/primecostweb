@@ -1,8 +1,11 @@
 'use client';
 
-import React from 'react';
-import { ArrowLeft, AlertCircle } from 'lucide-react';
+import React, { useState } from 'react';
+import { ArrowLeft, AlertCircle, Download, Loader } from 'lucide-react';
 import Button from './button'; // Assuming Button component exists
+import { generateDetailPDF } from '@/app/utils/pdfGenerator';
+import { getImageUrlWithAuth } from '@/utils/imageUtils';
+import AuthImage from './AuthImage';
 
 // Configuration for a single field to display
 export interface DetailFieldConfig {
@@ -21,6 +24,7 @@ interface GenericDetailPageProps {
   error: string | null;
   imageKey?: string; // Optional: Key for an array of image objects (like { path: '...' })
   imageBaseUrl?: string; // Optional: Base URL for relative image paths
+  logoPath?: string; // Optional: Path to logo for PDF generation
 }
 
 const GenericDetailPage: React.FC<GenericDetailPageProps> = ({
@@ -32,7 +36,33 @@ const GenericDetailPage: React.FC<GenericDetailPageProps> = ({
   error,
   imageKey,
   imageBaseUrl = '',
+  logoPath = '/assets/images/logo.png',
 }) => {
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+
+  const handleDownloadPDF = () => {
+    if (data) {
+      setIsGeneratingPDF(true);
+      
+      // Small delay to allow state update before the intensive PDF generation
+      setTimeout(() => {
+        try {
+          generateDetailPDF(
+            title, 
+            data, 
+            fieldConfig, 
+            logoPath,
+            imageKey,
+            imageBaseUrl
+          );
+        } catch (error) {
+          console.error('Error generating PDF:', error);
+        } finally {
+          setIsGeneratingPDF(false);
+        }
+      }, 100);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -70,15 +100,37 @@ const GenericDetailPage: React.FC<GenericDetailPageProps> = ({
   return (
     <div className="flex-1 flex flex-col p-4 md:p-6 lg:p-8 bg-gray-50">
       {/* Header */}
-      <div className="flex items-center gap-3 mb-6">
-        <button 
-          onClick={onBack}
-          className="p-1.5 rounded-md text-gray-600 hover:bg-gray-200 hover:text-gray-900 transition-colors"
-          aria-label="Go back"
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-3">
+          <button 
+            onClick={onBack}
+            className="p-1.5 rounded-md text-gray-600 hover:bg-gray-200 hover:text-gray-900 transition-colors"
+            aria-label="Go back"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </button>
+          <h1 className="text-2xl font-bold text-gray-800">{title}</h1>
+        </div>
+        
+        {/* Download PDF Button */}
+        <Button 
+          onClick={handleDownloadPDF}
+          variant="outline"
+          className="flex items-center gap-2 bg-white hover:bg-gray-100"
+          disabled={isGeneratingPDF}
         >
-          <ArrowLeft className="w-5 h-5" />
-        </button>
-        <h1 className="text-2xl font-bold text-gray-800">{title}</h1>
+          {isGeneratingPDF ? (
+            <>
+              <Loader className="w-4 h-4 animate-spin" />
+              <span>Generating...</span>
+            </>
+          ) : (
+            <>
+              <Download className="w-4 h-4" />
+              <span>Download PDF</span>
+            </>
+          )}
+        </Button>
       </div>
 
       {/* Main Content Area */} 
@@ -90,15 +142,11 @@ const GenericDetailPage: React.FC<GenericDetailPageProps> = ({
              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                 {images.map((img, index) => (
                   <div key={img.id || img.imageId || index} className="aspect-square bg-gray-100 rounded-lg overflow-hidden">
-                    <img
-                      src={`${imageBaseUrlUpdated}/${img.path}`}
+                    <AuthImage
+                      src={getImageUrlWithAuth(img.path, imageBaseUrl)}
                       alt={`${title} image ${index + 1}`}
                       className="w-full h-full object-cover"
-                      onError={(e) => { 
-                        const target = e.currentTarget;
-                        target.src = '/placeholder-image.svg';
-                        target.onerror = null; // Prevent infinite loop
-                      }}
+                      fallbackSrc="/placeholder-image.svg"
                     />
                   </div>
                 ))}

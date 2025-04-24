@@ -158,7 +158,7 @@ export default function TokensPage() {
                   checked={isLatestTokens}
                   onChange={() => setIsLatestTokens(!isLatestTokens)} 
                 />
-                <div className={`block w-14 h-8 rounded-full ${isLatestTokens ? 'bg-gray-400' : 'bg-gray-300'}`}></div>
+                <div className={`block w-14 h-8 rounded-full ${isLatestTokens ? 'bg-[#00997B]' : 'bg-gray-300'}`}></div>
                 <div className={`absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition-transform duration-300 ${isLatestTokens ? 'transform translate-x-6' : ''}`}></div>
               </div>
             </label>
