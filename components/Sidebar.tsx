@@ -46,6 +46,7 @@ const menuConfig: { [key: string]: { icon: string; href: string; label: string }
   'Taxes': { icon: '/assets/svgs/taxes.svg', href: '/taxes', label: 'Taxes' },
   'Inventory': { icon: '/assets/svgs/inventory.svg', href: '/inventory', label: 'Inventory' },
   'Tokens': { icon: '/assets/svgs/tokens.svg', href: '/tokens', label: 'Tokens' },
+  'Finished Orders': { icon: '/assets/svgs/orders.svg', href: '/finished-orders', label: 'Finished Orders' },
   // Add other potential menu items here if needed
 };
 
@@ -63,7 +64,13 @@ export default function Sidebar({ isOpen, onOpenChange }: SidebarProps) {
 
   // Filter the base config to get only the items the user should see
   const accessibleMenuItems = Object.entries(menuConfig)
-    .filter(([key, value]) => allowedMenuNames.includes(key))
+    .filter(([key, value]) => {
+      // Special handling for Finished Orders - only show for CHEF and HEAD_CHEF
+      if (key === 'Finished Orders') {
+        return currentUser?.role === 'CHEF' || currentUser?.role === 'HEAD_CHEF';
+      }
+      return allowedMenuNames.includes(key);
+    })
     .map(([key, value]) => ({
       ...value,
       href: value.href === 'dynamic' ? dashboardRoute : value.href
