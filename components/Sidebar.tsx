@@ -15,9 +15,24 @@ interface SidebarProps {
   onOpenChange: (open: boolean) => void;
 }
 
+// Function to get dashboard route based on user role
+const getDashboardRoute = (role?: string): string => {
+  console.log(role, "role");
+  switch (role) {
+    case 'CHEF':
+      return '/chef-dashboard';
+    case 'Admin':
+      return '/dashboard';
+    case 'HEAD_CHEF':
+      return '/chef-dashboard';
+    default:
+      return '/login';
+  }
+};
+
 // Base configuration mapping menu names to icons and paths
 const menuConfig: { [key: string]: { icon: string; href: string; label: string } } = {
-  'Home': { icon: '/assets/svgs/home.svg', href: '/dashboard', label: 'Home' },
+  'Home': { icon: '/assets/svgs/home.svg', href: 'dynamic', label: 'Home' }, // href will be set dynamically
   'Items Master List': { icon: '/assets/svgs/fishSimple.svg', href: '/items', label: 'Items Master List' },
   'Recipes': { icon: '/assets/svgs/recipes.svg', href: '/recipes', label: 'Recipes' },
   'Serving Size': { icon: '/assets/svgs/scales.svg', href: '/serving-size', label: 'Serving Size' },
@@ -40,13 +55,19 @@ export default function Sidebar({ isOpen, onOpenChange }: SidebarProps) {
   const dispatch = useDispatch();
   const router = useRouter();
 
+  // Get the dashboard route based on user role
+  const dashboardRoute = getDashboardRoute(currentUser?.role);
+
   // Get the list of allowed menu names for the current user
   const allowedMenuNames = currentUser?.dashboardMenuList?.map(item => item.menuName) || [];
 
   // Filter the base config to get only the items the user should see
   const accessibleMenuItems = Object.entries(menuConfig)
     .filter(([key, value]) => allowedMenuNames.includes(key))
-    .map(([key, value]) => value); // Get the value objects ({icon, href, label})
+    .map(([key, value]) => ({
+      ...value,
+      href: value.href === 'dynamic' ? dashboardRoute : value.href
+    })); // Get the value objects and replace dynamic hrefs
 
   const handleLogout = () => {
     dispatch(logout());

@@ -38,6 +38,13 @@ export default function LoginPage() {
     try {
       const result = await dispatch(login({ userName: email, password })).unwrap();
       console.log("Login successful:", result);
+
+      // Determine redirect path based on user role
+      let redirectPath = '/dashboard';
+      if (result.user.role === 'CHEF' || result.user.role === 'HEAD_CHEF') {
+        redirectPath = '/chef-dashboard';
+      }
+
       setModalState({
         isOpen: true,
         title: 'Login Successful',
@@ -45,7 +52,7 @@ export default function LoginPage() {
         isAlert: true,
         onConfirm: () => {
           setModalState({ isOpen: false, title: '', message: '', isAlert: false });
-          router.push('/dashboard');
+          router.push(redirectPath);
         }
       });
     } catch (err: any) {

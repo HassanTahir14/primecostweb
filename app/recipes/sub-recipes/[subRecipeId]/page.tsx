@@ -1,11 +1,13 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useSelector } from 'react-redux';
 import { selectAllSubRecipes } from '@/store/subRecipeSlice';
 import GenericDetailPage, { DetailFieldConfig } from '@/components/common/GenericDetailPage';
 import PageLayout from '@/components/PageLayout';
+import PreparationFields from '@/components/common/PreparationFields';
+import api from '@/store/api';
 
 // Add interface for auth user
 interface AuthUser {
@@ -18,8 +20,12 @@ interface AuthUser {
 export default function SubRecipeDetailPage() {
   const router = useRouter();
   const params = useParams();
+  const searchParams = useSearchParams();
   const subRecipeId = params.subRecipeId as string;
+  const isPreparationMode = searchParams.get('mode') === 'preparation';
+  const orderId = searchParams.get('orderId');
   const subRecipes = useSelector(selectAllSubRecipes);
+  const [branchId, setBranchId] = useState<number | undefined>();
   
   const [subRecipe, setSubRecipe] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -51,6 +57,26 @@ export default function SubRecipeDetailPage() {
       setLoading(false);
     }
   }, [subRecipes, subRecipeId]);
+
+  useEffect(() => {
+    // Fetch order details to get branchId if in preparation mode
+    if (isPreparationMode && orderId) {
+      const fetchOrderDetails = async () => {
+        try {
+          const response = await api.get('/orders/my');
+          const order = response.data?.assignedOrders?.find(
+            (o: any) => o.orderId.toString() === orderId
+          );
+          if (order) {
+            setBranchId(order.branchId);
+          }
+        } catch (error) {
+          console.error('Error fetching order details:', error);
+        }
+      };
+      fetchOrderDetails();
+    }
+  }, [isPreparationMode, orderId]);
 
   const fieldConfig: DetailFieldConfig[] = [
     { key: 'name', label: 'Sub-Recipe Name' },
@@ -167,6 +193,15 @@ export default function SubRecipeDetailPage() {
         imageKey="images"
         imageBaseUrl="http://212.85.26.46:8082/"
       />
+      {isPreparationMode && subRecipe && (
+        <div className="mt-8">
+          <PreparationFields 
+            type="sub-recipe" 
+            id={subRecipeId} 
+            branchId={branchId}
+          />
+        </div>
+      )}
     </PageLayout>
   );
 } 
