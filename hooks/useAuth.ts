@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { useRouter } from 'next/navigation';
 import { selectIsAuthenticated, selectCurrentUser } from '@/store/authSlice';
+import { isTokenExpired } from '@/utils/authUtils';
 
 interface UseAuthOptions {
   redirectTo?: string;
@@ -17,6 +18,13 @@ export function useAuth({ redirectTo = '/login', redirectIfFound = false, requir
   const router = useRouter();
 
   useEffect(() => {
+    // Check for token expiration
+    if (isTokenExpired()) {
+      localStorage.removeItem('authToken');
+      router.push('/login');
+      return;
+    }
+
     if (!redirectIfFound && !isAuthenticated) {
       // If protection needed and user is not authenticated, redirect to login
       router.push('/login');

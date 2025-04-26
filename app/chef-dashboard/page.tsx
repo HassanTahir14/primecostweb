@@ -7,6 +7,7 @@ import { useSelector } from 'react-redux';
 import { selectCurrentUser } from '@/store/authSlice';
 import api from '@/store/api';
 import AssignOrder from '@/components/AssignOrder';
+import Loader from '@/components/common/Loader';
 
 interface DashboardStats {
   totalPreparedMainRecipes: number;
@@ -90,11 +91,19 @@ export default function ChefDashboard() {
   };
 
   if (!currentUser) {
-    return <div>Loading user information...</div>;
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader size="medium" />
+      </div>
+    );
   }
 
   if (isLoading) {
-    return <div>Loading dashboard data...</div>;
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader size="medium" />
+      </div>
+    );
   }
 
   return (
