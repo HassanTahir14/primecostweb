@@ -30,10 +30,10 @@ export default function InventoryByRecipe() {
           const storageLocations = inventoryLocations.map((loc: InventoryLocation) => loc.storageLocationWithCode).join(', ');
           
           return {
-            id: item.preparedMainRecipeId,
-            date: moment(item.preparedDate).format('DD/MM/YYYY hh:mm A'),
-            name: item.mainRecipeNameAndDescription,
-            preparedBy: item.preparedByUserId,
+          id: item.preparedMainRecipeId,
+          date: moment(item.preparedDate).format('DD/MM/YYYY hh:mm A'),
+          name: item.mainRecipeNameAndDescription,
+          preparedBy: item.preparedByUserId,
             storageAndBranch: storageLocations || 'N/A',
             quantity: `${item.totalQuantityAcrossLocations} ${item.uom}`,
             batchNumber: item.mainRecipeBatchNumber,
