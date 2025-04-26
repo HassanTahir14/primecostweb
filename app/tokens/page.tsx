@@ -54,7 +54,7 @@ export default function TokensPage() {
   const fetchTokens = async () => {
     setIsLoading(true);
     try {
-      const response = await api.get('/tokens');
+      const response = await api.post('/tokens/get', {page: 1, size: 100, sortBy: 'createdAt', direction: 'asc'});
       if (response.data && response.data.tokens) {
         let fetchedTokens: Token[] = response.data.tokens;
 

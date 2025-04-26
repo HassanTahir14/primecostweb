@@ -99,7 +99,7 @@ export default function ItemsMasterList() {
   useEffect(() => {
     dispatch(fetchAllItems({ 
         page: currentPage, 
-        size: pageSize, 
+        size: 20, 
         searchQuery: searchQuery,
         sortBy: sortBy,
         direction: sortDirection

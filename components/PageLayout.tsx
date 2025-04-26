@@ -36,7 +36,7 @@ export default function PageLayout({ children, title }: PageLayoutProps) {
   useEffect(() => {
     const fetchPendingTokensCount = async () => {
       try {
-        const response = await api.get('/tokens');
+        const response = await api.post('/tokens/get', {page: 1, size: 100, sortBy: 'createdAt', direction: 'asc'});
         if (response.data && response.data.tokens) {
           const pendingCount = response.data.tokens.filter((token: any) => token.tokenStatus === 'PENDING').length;
           setPendingTokensCount(pendingCount);

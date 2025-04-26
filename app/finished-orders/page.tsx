@@ -10,17 +10,24 @@ import { useSelector } from 'react-redux';
 import { selectCurrentUser } from '@/store/authSlice';
 import { getUserIdFromToken } from '@/utils/authUtils';
 
+interface InventoryLocation {
+  inventoryId: number;
+  storageLocation: number;
+  branchLocation: number;
+  storageLocationWithCode: string;
+  quantity: number;
+  lastUpdated: string;
+}
+
 interface PreparedRecipe {
   preparedMainRecipeId: number;
   preparedByUserId: number;
-  storageLocationWithCode: string;
-  totalQuantity: number;
   uom: string;
   expirationDate: string;
   preparedDate: string;
-  preparedSubRecipeStatus: string;
-  storageLocation: number;
-  branchLocation: number;
+  preparedMainRecipeStatus: string;
+  inventoryLocations: InventoryLocation[];
+  totalQuantityAcrossLocations: number;
   recipeCode: string;
   mainRecipeBatchNumber: string;
   mainRecipeNameAndDescription: string;
@@ -87,7 +94,7 @@ export default function FinishedOrdersPage() {
         preparedBy: currentUser?.username || 'Unknown User',
         itemName: recipe.mainRecipeNameAndDescription,
         batchNumber: recipe.mainRecipeBatchNumber,
-        quantity: `${recipe.totalQuantity}`,
+        quantity: `${recipe.totalQuantityAcrossLocations}`,
         producedOn: new Date(recipe.preparedDate).toLocaleString(),
         bestBefore: new Date(recipe.expirationDate).toLocaleString(),
       };
@@ -135,7 +142,7 @@ export default function FinishedOrdersPage() {
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Recipe Name</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Batch Number</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Storage Location</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Storage Location, Branch</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Prepared Date</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                   </tr>
@@ -150,10 +157,10 @@ export default function FinishedOrdersPage() {
                         {recipe.mainRecipeBatchNumber}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {recipe.totalQuantity} {recipe.uom.split('@')[0]}
+                        {recipe.totalQuantityAcrossLocations} {recipe.uom.split('@')[0]}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {recipe.storageLocationWithCode}
+                        {recipe.inventoryLocations.map((loc: InventoryLocation) => loc.storageLocationWithCode).join(', ') || 'N/A'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {new Date(recipe.preparedDate).toLocaleString()}

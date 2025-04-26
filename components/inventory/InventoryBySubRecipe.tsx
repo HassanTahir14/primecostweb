@@ -4,6 +4,15 @@ import { useEffect, useState } from 'react';
 import api from '@/store/api';
 import moment from 'moment';
 
+interface InventoryLocation {
+  inventoryId: number;
+  storageLocation: number;
+  branchLocation: number;
+  storageLocationWithCode: string;
+  quantity: number;
+  lastUpdated: string;
+}
+
 export default function InventoryBySubRecipe() {
   const [searchQuery, setSearchQuery] = useState('');
   const [subRecipes, setSubRecipes] = useState([]);
@@ -14,15 +23,24 @@ export default function InventoryBySubRecipe() {
         const response = await api.post('/inventory/view/prepared-sub-recipe', {page: 0, size: 1000, sortBy: 'preparedDate', direction: 'desc'});
         const list = response?.data?.preparedSubRecipeList || [];
 
-        const mapped = list.map((item: any) => ({
-          id: item.preparedSubRecipeId,
-          date: moment(item.preparedDate).format('DD/MM/YYYY hh:mm A'),
-          name: item.subRecipeNameAndDescription,
-          preparedBy: item.preparedByUserId,
-          storage: item.storageLocationWithCode,
-          quantity: `${item.totalQuantity} ${item.uom}`,
-          batchNumber: item.subRecipeBatchNumber
-        }));
+        const mapped = list.map((item: any) => {
+          // Map all inventory locations
+          const inventoryLocations = item.inventoryLocations || [];
+          const storageLocations = inventoryLocations.map((loc: InventoryLocation) => loc.storageLocationWithCode).join(', ');
+          
+          return {
+            id: item.preparedSubRecipeId,
+            date: moment(item.preparedDate).format('DD/MM/YYYY hh:mm A'),
+            name: item.subRecipeNameAndDescription,
+            preparedBy: item.preparedByUserId,
+            storageAndBranch: storageLocations || 'N/A',
+            quantity: `${item.totalQuantityAcrossLocations} ${item.uom}`,
+            batchNumber: item.subRecipeBatchNumber,
+            expirationDate: moment(item.expirationDate).format('DD/MM/YYYY'),
+            status: item.preparedSubRecipeStatus,
+            inventoryLocations: inventoryLocations
+          };
+        });
 
         setSubRecipes(mapped);
       } catch (error) {
@@ -48,7 +66,9 @@ export default function InventoryBySubRecipe() {
               <th className="px-6 py-4 text-left">Prepared By</th>
               <th className="px-6 py-4 text-left">Storage Location, Branch</th>
               <th className="px-6 py-4 text-left">Total Quantity</th>
-              <th className="px-6 py-4 text-left">Prepared Batch Number</th>
+              <th className="px-6 py-4 text-left">Batch Number</th>
+              <th className="px-6 py-4 text-left">Expiration Date</th>
+              <th className="px-6 py-4 text-left">Status</th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
@@ -57,9 +77,11 @@ export default function InventoryBySubRecipe() {
                 <td className="px-6 py-4">{subRecipe.date}</td>
                 <td className="px-6 py-4">{subRecipe.name}</td>
                 <td className="px-6 py-4">{subRecipe.preparedBy}</td>
-                <td className="px-6 py-4">{subRecipe.storage}</td>
+                <td className="px-6 py-4">{subRecipe.storageAndBranch}</td>
                 <td className="px-6 py-4">{subRecipe.quantity}</td>
                 <td className="px-6 py-4">{subRecipe.batchNumber}</td>
+                <td className="px-6 py-4">{subRecipe.expirationDate}</td>
+                <td className="px-6 py-4">{subRecipe.status}</td>
               </tr>
             ))}
           </tbody>
