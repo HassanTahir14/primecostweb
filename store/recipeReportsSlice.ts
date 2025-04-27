@@ -28,6 +28,9 @@ const initialState: RecipeReportsState = {
 // --- Common Payload Type ---
 interface DateRangePayload {
     sortBy?: string;
+    direction?: string;
+    page?: number;
+    size?: number;
     startDate: string;
     endDate: string;
 }

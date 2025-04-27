@@ -105,7 +105,7 @@ export default function Dashboard() {
     // Fetch profit margin data when dates change
     if (startDate && endDate) {
       dispatch(clearRecipeReportError("profitMargin"));
-      dispatch(fetchProfitMargin({ startDate: "2020-04-23", endDate: "2025-04-24", sortBy: "preparedDate" })); // Or another relevant sortBy
+      dispatch(fetchProfitMargin({ startDate: "2025-02-27", endDate: "2025-04-27", sortBy: "preparedDate", direction: "asc", page: 0, size: 1000 })); // Or another relevant sortBy
     }
   }, [dispatch, startDate, endDate]);
 
