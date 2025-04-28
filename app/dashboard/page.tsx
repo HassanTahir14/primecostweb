@@ -28,6 +28,7 @@ import {
 } from "@/store/recipeReportsSlice";
 import { fetchAllEmployees } from "@/store/employeeSlice";
 import { fetchAllPurchaseOrders } from "@/store/purchaseOrderSlice";
+import { fetchAllSuppliers } from "@/store/supplierSlice";
 import api from "@/store/api";
 import PageLayout from '@/components/PageLayout';
 
@@ -90,6 +91,9 @@ export default function Dashboard() {
   const { orders: purchaseOrders, loading: ordersLoading, error: ordersError } = useSelector(
     (state: RootState) => state.purchaseOrder
   );
+  const { suppliers, loading: suppliersLoading, error: suppliersError } = useSelector(
+    (state: RootState) => state.supplier
+  );
 
   // --- Fetch Data ---
   useEffect(() => {
@@ -97,8 +101,10 @@ export default function Dashboard() {
     dispatch(fetchAllItems({ page: 0, size: 1000, sortBy: 'name', direction: 'asc', searchQuery: ''}));
     // Fetch employees on initial load
     dispatch(fetchAllEmployees());
-    // Fetch purchase orders on initial load (assuming defaults for page/size/sort)
+    // Fetch purchase orders on initial load
     dispatch(fetchAllPurchaseOrders({ page: 0, size: 1000, sortBy: 'id', direction: 'ASC' }));
+    // Fetch suppliers on initial load
+    dispatch(fetchAllSuppliers());
   }, [dispatch]);
 
   useEffect(() => {
@@ -111,23 +117,32 @@ export default function Dashboard() {
 
   // --- Process Data (useMemo for optimization) ---
 
-  // Top Suppliers Calculation (using itemsBrandName)
+  // Top Suppliers Calculation (using purchase orders)
   const topSuppliers = useMemo(() => {
-    if (!items || items.length === 0) return [];
+    if (!purchaseOrders || purchaseOrders.length === 0) return [];
+    
+    // Count occurrences of each supplier
     const supplierCounts: { [key: string]: number } = {};
-    items.forEach((item) => {
-      const brandName = item.itemsBrandName || 'Unknown Brand/Supplier';
-      supplierCounts[brandName] = (supplierCounts[brandName] || 0) + 1;
+    purchaseOrders.forEach((order) => {
+      const supplierId = order.supplierId;
+      supplierCounts[supplierId] = (supplierCounts[supplierId] || 0) + 1;
     });
-    const totalItems = items.length;
+
+    // Match with supplier details and calculate percentages
+    const totalOrders = purchaseOrders.length;
     const sortedSuppliers = Object.entries(supplierCounts)
       .sort(([, countA], [, countB]) => countB - countA)
-      .slice(0, 4);
-    return sortedSuppliers.map(([name, count]) => ({
-      name,
-      percentage: totalItems > 0 ? Math.round((count / totalItems) * 100) : 0,
-    }));
-  }, [items]);
+      .slice(0, 4)
+      .map(([supplierId, count]) => {
+        const supplier = suppliers.find(s => s.supplierId === parseInt(supplierId));
+        return {
+          name: supplier?.name || 'Unknown Supplier',
+          percentage: totalOrders > 0 ? Math.round((count / totalOrders) * 100) : 0,
+        };
+      });
+
+    return sortedSuppliers;
+  }, [purchaseOrders, suppliers]);
 
   // Country Origin Calculation
   const countryOrigins = useMemo(() => {
