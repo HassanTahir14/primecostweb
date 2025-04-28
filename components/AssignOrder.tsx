@@ -14,6 +14,7 @@ import { useRouter } from 'next/navigation';
 import { fetchRecipes, selectAllRecipes } from '@/store/recipeSlice';
 import { fetchSubRecipes, selectAllSubRecipes } from '@/store/subRecipeSlice';
 import { AppDispatch } from '@/store/store';
+import { formatPositionName } from '@/utils/formatters';
 
 interface AdminOrder {
   orderId: number;
@@ -285,7 +286,11 @@ export default function AssignOrder({ onClose }: AssignOrderProps) {
                 <span className="text-gray-800 text-sm sm:text-base">{order.orderId}</span>
                 <span className="text-gray-800 text-sm sm:text-base">{order.orderType}</span>
                 <span className={`text-sm sm:text-base font-medium ${getStatusColor(order.orderStatus)}`}>
-                  {order.orderStatus}
+                  {order.orderStatus === 'IN_PROGRESS' ? 'In Progress' : 
+                   order.orderStatus === 'PENDING' ? 'Pending' : 
+                   order.orderStatus === 'FINISHED' ? 'Finished' : 
+                   order.orderStatus === 'CANCELLED' ? 'Cancelled' : 
+                   order.orderStatus}
                 </span>
                 {isChef && (
                   <div>

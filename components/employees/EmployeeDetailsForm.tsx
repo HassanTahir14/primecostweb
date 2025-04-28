@@ -5,6 +5,7 @@ import Button from '@/components/common/button';
 import Input from '../common/input'; // Assuming SelectField component
 import Select from '../common/select';
 import { fetchCountries, formatCountryOptions } from '@/utils/countryUtils';
+import { formatPositionName } from '@/utils/formatters';
 
 interface EmployeeDetailsFormProps {
   onNext: (data: any) => void;
@@ -40,11 +41,10 @@ interface FormDataState {
 
 // Update position options to match backend roles
 const positionOptions = [
-  { value: '', label: 'Select Position', disabled: true },
-  { value: 'CHEF', label: 'Chef' },
-  { value: 'HEAD_CHEF', label: 'Head Chef' },
-  { value: 'MANAGER', label: 'Manager' },
-  { value: 'ASSISTANT', label: 'Assistant' },
+  { value: 'CHEF', label: formatPositionName('CHEF') },
+  { value: 'HEAD_CHEF', label: formatPositionName('HEAD_CHEF') },
+  { value: 'MANAGER', label: formatPositionName('MANAGER') },
+  { value: 'ASSISTANT', label: formatPositionName('ASSISTANT') },
   // Add other valid roles if needed, remove invalid ones like 'waiter', 'admin', 'sous_chef'
 ];
 

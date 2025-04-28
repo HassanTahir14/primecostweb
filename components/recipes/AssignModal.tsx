@@ -8,6 +8,7 @@ import { fetchAllBranches } from '@/store/branchSlice';
 import { fetchAllEmployees } from '@/store/employeeSlice';
 import type { RootState, AppDispatch } from '@/store/store';
 import api from '@/store/api';
+import { formatPositionName } from '@/utils/formatters';
 
 interface AssignModalProps {
   isOpen: boolean;
@@ -162,7 +163,7 @@ export default function AssignModal({
             <option value={0}>Select an employee</option>
             {activeEmployees.map(employee => (
               <option key={employee.employeeId} value={employee.employeeId}>
-                {employee.employeeDetailsDTO?.firstname} {employee.employeeDetailsDTO?.familyName} ({employee.employeeDetailsDTO?.position})
+                {employee.employeeDetailsDTO?.firstname} {employee.employeeDetailsDTO?.familyName} ({formatPositionName(employee.employeeDetailsDTO?.position)})
               </option>
             ))}
           </select>

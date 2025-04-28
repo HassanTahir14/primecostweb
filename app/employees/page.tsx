@@ -8,6 +8,7 @@ import Button from '@/components/common/button';
 import Link from 'next/link';
 import { Edit, Trash2 } from 'lucide-react'; // Import icons for actions and remove Plus icon
 import ConfirmationModal from '@/components/common/ConfirmationModal';
+import { formatPositionName } from '@/utils/formatters';
 
 // Import Redux stuff
 import { AppDispatch, RootState } from '@/store/store';
@@ -201,7 +202,7 @@ export default function EmployeesPage() {
                       }}
                     >
                       <td className="py-4 px-6 text-sm">{employee.employeeDetailsDTO?.firstname || 'N/A'}</td>
-                      <td className="py-4 px-6 text-sm">{employee.employeeDetailsDTO?.position || 'N/A'}</td>
+                      <td className="py-4 px-6 text-sm">{formatPositionName(employee.employeeDetailsDTO?.position) || 'N/A'}</td>
                       <td className="py-4 px-6 text-sm">{employee.employeeDetailsDTO?.iqamaId || 'N/A'}</td>
                       <td className="py-4 px-6 text-sm">{employee.employeeDetailsDTO?.iqamaExpiryDate || 'N/A'}</td>
                       <td className="py-4 px-6 text-sm">
