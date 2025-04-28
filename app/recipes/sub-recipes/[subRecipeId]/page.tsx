@@ -10,6 +10,8 @@ import api from '@/store/api';
 import Button from '@/components/common/button';
 import { ChevronLeft, ChevronRight, ArrowLeft } from 'lucide-react';
 import Image from 'next/image';
+import { getImageUrlWithAuth } from '@/utils/imageUtils';
+import AuthImage from '@/components/common/AuthImage';
 
 // Add interface for auth user
 interface AuthUser {
@@ -136,11 +138,11 @@ export default function SubRecipeDetailPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {subRecipe.images.map((image: any, index: number) => (
               <div key={image.imageId || index} className="relative h-64 w-full rounded-lg overflow-hidden">
-                <Image 
-                  src={`${imageBaseUrl}/${image.path}`} 
+                <AuthImage 
+                  src={getImageUrlWithAuth(image.path, imageBaseUrl)}
                   alt={`${subRecipe.name} - Image ${index + 1}`}
-                  fill
-                  className="object-cover"
+                  className="object-cover w-full h-full"
+                  fallbackSrc="/placeholder-image.svg"
                 />
               </div>
             ))}
