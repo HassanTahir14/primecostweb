@@ -36,7 +36,16 @@ export default function PageLayout({ children, title }: PageLayoutProps) {
   useEffect(() => {
     const fetchPendingTokensCount = async () => {
       try {
-        const response = await api.post('/tokens/get', {page: 1, size: 100, sortBy: 'createdAt', direction: 'asc'});
+        const response = await api.post('/tokens/get', {
+          page: 0, // not 1
+          size: 10000,
+          sortBy: 'createdAt',
+          direction: 'asc',
+          startDate: '2020-04-27', // 'YYYY-MM-DD'
+          endDate: new Date().toISOString().split('T')[0],   // 'YYYY-MM-DD'
+        });
+
+        console.log("newDate", new Date().toISOString().split('T')[0]);
         if (response.data && response.data.tokens) {
           const pendingCount = response.data.tokens.filter((token: any) => token.tokenStatus === 'PENDING').length;
           setPendingTokensCount(pendingCount);

@@ -45,16 +45,7 @@ export default function LoginPage() {
         redirectPath = '/chef-dashboard';
       }
 
-      setModalState({
-        isOpen: true,
-        title: 'Login Successful',
-        message: 'Welcome! You will be redirected to the dashboard.',
-        isAlert: true,
-        onConfirm: () => {
-          setModalState({ isOpen: false, title: '', message: '', isAlert: false });
-          router.push(redirectPath);
-        }
-      });
+      router.push(redirectPath);
     } catch (err: any) {
       console.error("Login failed:", err);
       setModalState({

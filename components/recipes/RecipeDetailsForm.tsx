@@ -193,6 +193,7 @@ export default function RecipeDetailsForm({ onNext, initialData, isEditMode = fa
           ))}
         </div>
       )}
+      {errors.images && <p className="text-red-500 text-sm mt-2">{errors.images}</p>}
 
       <div>
         <label className="block text-gray-700 font-medium mb-2">Name</label>

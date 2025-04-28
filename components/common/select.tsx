@@ -234,8 +234,10 @@ const SelectComponent = forwardRef<HTMLSelectElement, SelectProps>(
               w-full
             `}
             onClick={handleSelectClick}
+            defaultValue=""
             {...props}
           >
+            <option value="" disabled>Select</option>
             {options.map((option) => (
               <option key={option.value} value={option.value} disabled={option.disabled}>
                 {option.label}

@@ -25,6 +25,8 @@ interface GenericDetailPageProps {
   imageKey?: string; // Optional: Key for an array of image objects (like { path: '...' })
   imageBaseUrl?: string; // Optional: Base URL for relative image paths
   logoPath?: string; // Optional: Path to logo for PDF generation
+  branchDetails?: any[];
+  purchaseOrders?: any[];
 }
 
 const GenericDetailPage: React.FC<GenericDetailPageProps> = ({
@@ -37,11 +39,15 @@ const GenericDetailPage: React.FC<GenericDetailPageProps> = ({
   imageKey,
   imageBaseUrl = '',
   logoPath = '/assets/images/logo.png',
+  branchDetails = [],
+  purchaseOrders = [],
 }) => {
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
 
   const handleDownloadPDF = () => {
     if (data) {
+      console.log('branchDetailsInPDF', branchDetails);
+      console.log('purchaseOrdersInPDF', purchaseOrders);
       setIsGeneratingPDF(true);
       
       // Small delay to allow state update before the intensive PDF generation
@@ -53,7 +59,9 @@ const GenericDetailPage: React.FC<GenericDetailPageProps> = ({
             fieldConfig, 
             logoPath,
             imageKey,
-            imageBaseUrl
+            imageBaseUrl,
+            branchDetails,
+            purchaseOrders
           );
         } catch (error) {
           console.error('Error generating PDF:', error);

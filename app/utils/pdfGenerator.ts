@@ -42,8 +42,13 @@ export const generateDetailPDF = async (
   fieldConfig: DetailFieldConfig[],
   logoPath: string = '/assets/images/logo.png',
   imageKey?: string, 
-  imageBaseUrl?: string
+  imageBaseUrl?: string,
+  branchDetails?: any[],
+  purchaseOrders?: any[]
 ) => {
+
+  console.log('branchDetails', branchDetails);
+  console.log('purchaseOrders', purchaseOrders);
   // Check if we have authentication token for images
   let authToken = '';
   try {
@@ -309,75 +314,110 @@ export const generateDetailPDF = async (
     const detailsHeight = Math.ceil(totalFields / 2) * lineHeight;
     yPos += detailsHeight + 15;
     
-    // Add Branch Details section if available
-    if (hasBranchDetails) {
+    // Add Branch Details section if available (use branchDetails prop if provided)
+    const branchArr = branchDetails && branchDetails.length > 0 ? branchDetails : (data && data.branchDetails ? data.branchDetails : []);
+    if (branchArr.length > 0) {
       // Check if we need a new page for branch details
       if (yPos > pageHeight - 60) {
         doc.addPage();
         yPos = 20;
       }
-      
-      // Add branch details header
       doc.setFontSize(16);
       doc.setTextColor(33, 33, 33);
       doc.text('Branch Stock Details', 14, yPos);
       yPos += 8;
-      
-      // Draw a light gray line under the header
       doc.setDrawColor(220, 220, 220);
       doc.setLineWidth(0.5);
       doc.line(14, yPos, pageWidth - 14, yPos);
       yPos += 10;
-      
-      // Add each branch's details
-      data.branchDetails.forEach((branch: any, index: number) => {
-        // Check if we need a new page
+      branchArr.forEach((branch: any, index: number) => {
         if (yPos > pageHeight - 40) {
           doc.addPage();
           yPos = 20;
         }
-        
-        // Branch name
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(12);
         doc.setTextColor(33, 33, 33);
         doc.text(branch.branchName || 'Unknown Branch', 14, yPos);
         yPos += 6;
-        
-        // Location and quantity in a grid
         const gridStartY = yPos;
-        
-        // Location
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(10);
         doc.setTextColor(100, 100, 100);
         doc.text('Location', 14, yPos);
         yPos += 5;
-        
         doc.setFont('helvetica', 'normal');
         doc.setTextColor(33, 33, 33);
         doc.text(branch.storageLocationName || 'N/A', 14, yPos);
-        
-        // Quantity (on the right side)
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(10);
         doc.setTextColor(100, 100, 100);
         doc.text('Quantity', pageWidth / 2, gridStartY);
-        
         doc.setFont('helvetica', 'normal');
         doc.setTextColor(33, 33, 33);
-        doc.text(String(branch.quantity || '0'), pageWidth / 2, gridStartY + 5);
-        
+        // Use calculatedQuantity and unitName if available, else fallback
+        const qty = branch.calculatedQuantity !== undefined ? branch.calculatedQuantity : (branch.quantity || '0');
+        const unit = branch.unitName || '';
+        doc.text(`${qty} ${unit}`.trim(), pageWidth / 2, gridStartY + 5);
         yPos += 10;
-        
-        // Add separator between branches (except after the last one)
-        if (index < data.branchDetails.length - 1) {
+        if (index < branchArr.length - 1) {
           doc.setDrawColor(240, 240, 240);
           doc.setLineWidth(0.2);
           doc.line(14, yPos, pageWidth - 14, yPos);
           yPos += 8;
         }
       });
+    }
+
+    // Add Stock details from purchases section if available
+    if (purchaseOrders && purchaseOrders.length > 0) {
+      if (yPos > pageHeight - 60) {
+        doc.addPage();
+        yPos = 20;
+      }
+      doc.setFontSize(16);
+      doc.setTextColor(33, 33, 33);
+      doc.text('Stock details from purchases', 14, yPos);
+      yPos += 8;
+      doc.setDrawColor(220, 220, 220);
+      doc.setLineWidth(0.5);
+      doc.line(14, yPos, pageWidth - 14, yPos);
+      yPos += 10;
+      // Table header
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(10);
+      doc.setTextColor(100, 100, 100);
+      const headers = ['Purchase Order Id', 'Quantity', 'Unit', 'Supplier Name', 'Delivered Date', 'Expiry Date'];
+      let x = 14;
+      headers.forEach((header, i) => {
+        doc.text(header, x, yPos);
+        x += 32;
+      });
+      yPos += 6;
+      // Table rows
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(10);
+      doc.setTextColor(33, 33, 33);
+      purchaseOrders.forEach((po: any) => {
+        let x = 14;
+        doc.text(String(po.id), x, yPos);
+        x += 32;
+        doc.text(String(po.quantity), x, yPos);
+        x += 32;
+        doc.text(String(po.unitName), x, yPos);
+        x += 32;
+        doc.text(String(po.supplierName), x, yPos);
+        x += 32;
+        doc.text(po.dateOfDelivery ? new Date(po.dateOfDelivery).toLocaleDateString('en-GB') : 'N/A', x, yPos);
+        x += 32;
+        doc.text(po.expiryDate ? new Date(po.expiryDate).toLocaleDateString('en-GB') : 'N/A', x, yPos);
+        yPos += 6;
+        if (yPos > pageHeight - 20) {
+          doc.addPage();
+          yPos = 20;
+        }
+      });
+      yPos += 10;
     }
     
     // Add footer

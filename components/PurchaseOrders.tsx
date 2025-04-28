@@ -72,11 +72,10 @@ interface FormDataState {
   itemId: string;
   categoryId: string;
   supplierId: string;
-  unitType: 'primary' | 'secondary';
+  unitType: "primary" | "secondary";
   unitId: string;
   quantity: string;
   purchaseCost: string;
-  vatPercentage: string;
   vatAmount: string;
 }
 
@@ -88,7 +87,6 @@ const initialFormState: FormDataState = {
   unitId: '',
   quantity: '',
   purchaseCost: '',
-  vatPercentage: '15',
   vatAmount: '',
 };
 
@@ -143,6 +141,35 @@ export default function PurchaseOrders({ onClose }: PurchaseOrdersProps) {
 
   // Create memoized options for dropdowns
   const itemOptions = useMemo(() => {
+    // If we're editing an order, make sure the item is in the options
+    if (editingOrder) {
+      // Find the item by name and code
+      const editingItemExists = items.some(item => 
+        item.name === editingOrder.itemName && item.code === editingOrder.itemCode
+      );
+      
+      // If the item doesn't exist in the current items list, add it to the options
+      if (!editingItemExists) {
+        return [
+          {
+            label: `${editingOrder.itemName?.split('@')[0] || 'Unknown Item'} (${editingOrder.itemCode || 'No Code'})`,
+            value: String(editingOrder.id), // Use order ID as a temporary value
+            categoryId: String(editingOrder.categoryId || ''),
+            primaryUnitId: String(editingOrder.unitId || ''),
+            secondaryUnitId: String(editingOrder.unitId || '')
+          },
+          ...items.map((item: Item) => ({
+            label: `${item.name.split('@')[0]} (${item.code})`,
+            value: String(item.itemId),
+            categoryId: String(item.categoryId),
+            primaryUnitId: String(item.primaryUnitId),
+            secondaryUnitId: String(item.secondaryUnitId)
+          }))
+        ];
+      }
+    }
+    
+    // Default case: map all items to options
     return items.map((item: Item) => ({
       label: `${item.name.split('@')[0]} (${item.code})`,
       value: String(item.itemId),
@@ -150,7 +177,7 @@ export default function PurchaseOrders({ onClose }: PurchaseOrdersProps) {
       primaryUnitId: String(item.primaryUnitId),
       secondaryUnitId: String(item.secondaryUnitId)
     }));
-  }, [items]);
+  }, [items, editingOrder]);
 
   const supplierOptions = useMemo(() => {
     // Filter out any duplicate suppliers by ID
@@ -202,7 +229,9 @@ export default function PurchaseOrders({ onClose }: PurchaseOrdersProps) {
           categoryId: String(selectedItem.categoryId),
           unitId: formData.unitType === 'primary' 
             ? String(selectedItem.primaryUnitId)
-            : String(selectedItem.secondaryUnitId)
+            : String(selectedItem.secondaryUnitId),
+          purchaseCost: String(selectedItem.purchaseCostWithoutVat),
+          vatAmount: String(selectedItem.purchaseCostWithVat - selectedItem.purchaseCostWithoutVat)
         }));
       }
     }
@@ -230,20 +259,65 @@ export default function PurchaseOrders({ onClose }: PurchaseOrdersProps) {
     }
   }, [poError]);
 
-  useEffect(() => {
-    const cost = parseFloat(formData.purchaseCost) || 0;
-    const percentage = parseFloat(formData.vatPercentage) || 0;
-    if (cost > 0 && percentage > 0) {
-      const vat = (cost * percentage) / 100;
-      setFormData(prev => ({ ...prev, vatAmount: vat.toFixed(2) }));
-    } else {
-      setFormData(prev => ({ ...prev, vatAmount: '' }));
-    }
-  }, [formData.purchaseCost, formData.vatPercentage]);
-
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    
+    // Create a new form data object with the updated value
+    const updatedFormData = { ...formData };
+    
+    // Handle unit type changes
+    if (name === 'unitType') {
+      const unitType = value as "primary" | "secondary";
+      updatedFormData.unitType = unitType;
+      
+      if (formData.itemId) {
+        const selectedItem = items.find(item => String(item.itemId) === formData.itemId);
+        if (selectedItem) {
+          updatedFormData.unitId = unitType === 'primary' 
+            ? String(selectedItem.primaryUnitId) 
+            : String(selectedItem.secondaryUnitId);
+        }
+      }
+    } else {
+      // For all other fields, update normally
+      updatedFormData[name as keyof FormDataState] = value;
+    }
+    
+    // If the item is changing, update the category and unit options
+    if (name === 'itemId' && value) {
+      const selectedItem = items.find(item => String(item.itemId) === value);
+      if (selectedItem) {
+        updatedFormData.categoryId = String(selectedItem.categoryId);
+        
+        // Set the unit ID based on the current unit type
+        updatedFormData.unitId = formData.unitType === 'primary' 
+          ? String(selectedItem.primaryUnitId) 
+          : String(selectedItem.secondaryUnitId);
+      }
+    }
+    
+    // If the unit type or quantity is changing, recalculate the price
+    if ((name === 'unitType' || name === 'quantity') && updatedFormData.itemId) {
+      const selectedItem = items.find(item => String(item.itemId) === updatedFormData.itemId);
+      if (selectedItem) {
+        const quantity = parseFloat(updatedFormData.quantity) || 0;
+        
+        if (updatedFormData.unitType === 'primary') {
+          // For primary unit, use the original price
+          updatedFormData.purchaseCost = String(selectedItem.purchaseCostWithoutVat * quantity);
+          updatedFormData.vatAmount = String((selectedItem.purchaseCostWithVat - selectedItem.purchaseCostWithoutVat) * quantity);
+        } else {
+          // For secondary unit, adjust the price based on the conversion ratio
+          const conversionRatio = selectedItem.secondaryUnitValue;
+          updatedFormData.purchaseCost = String((selectedItem.purchaseCostWithoutVat / conversionRatio) * quantity);
+          updatedFormData.vatAmount = String(((selectedItem.purchaseCostWithVat - selectedItem.purchaseCostWithoutVat) / conversionRatio) * quantity);
+        }
+      }
+    }
+    
+    setFormData(updatedFormData);
+    
+    // Clear any errors for the changed field
     if (formErrors[name as keyof FormDataState]) {
       setFormErrors(prev => ({ ...prev, [name]: undefined }));
     }
@@ -257,7 +331,7 @@ export default function PurchaseOrders({ onClose }: PurchaseOrdersProps) {
     if (!formData.unitId) errors.unitId = 'Unit is required';
     if (!formData.quantity || parseFloat(formData.quantity) <= 0) errors.quantity = 'Valid quantity is required';
     if (!formData.purchaseCost || parseFloat(formData.purchaseCost) < 0) errors.purchaseCost = 'Valid purchase cost is required';
-    if (!formData.vatPercentage || parseFloat(formData.vatPercentage) < 0) errors.vatPercentage = 'Valid VAT percentage is required';
+    if (!formData.vatAmount || parseFloat(formData.vatAmount) < 0) errors.vatAmount = 'Valid VAT amount is required';
 
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
@@ -277,7 +351,49 @@ export default function PurchaseOrders({ onClose }: PurchaseOrdersProps) {
     dispatch(clearError());
     setIsSuccess(false);
 
+    // Find the selected item
     const selectedItem = items.find(item => String(item.itemId) === formData.itemId);
+    
+    // If we're editing and couldn't find the item by ID, it might be because we used the order ID
+    // In this case, we'll use the item from the editingOrder
+    if (!selectedItem && editingOrder) {
+      // We'll use the existing order data
+      const payload = {
+        ...formData,
+        id: editingOrder.id,
+        unit: formData.unitType === 'primary' 
+          ? String(editingOrder.unitId)
+          : String(editingOrder.unitId),
+        isPrimaryUnitSelected: formData.unitType === 'primary',
+        isSecondaryUnitSelected: formData.unitType === 'secondary'
+      };
+
+      try {
+        const resultAction = await dispatch(updatePurchaseOrder(payload));
+
+        if (resultAction.type === updatePurchaseOrder.fulfilled.type) {
+          const successMsg = (resultAction.payload as any)?.description || 'Order updated successfully!';
+          resetFormAndCloseModal();
+          dispatch(fetchAllPurchaseOrders({ page: 0, size: 10, sortBy: 'dateOfOrder', direction: 'asc' }));
+          
+          setFeedbackMessage(successMsg);
+          setIsSuccess(true);
+          setIsFeedbackAlert(true);
+          setFeedbackModalOpen(true);
+        } else if (resultAction.type === updatePurchaseOrder.rejected.type) {
+          console.error("Thunk rejected:", resultAction.payload);
+        }
+      } catch (error) {
+        console.error("Unexpected submission error:", error);
+        setFeedbackMessage('An unexpected error occurred during submission.');
+        setIsSuccess(false);
+        setIsFeedbackAlert(true);
+        setFeedbackModalOpen(true);
+      }
+      return;
+    }
+
+    // If we couldn't find the item, show an error
     if (!selectedItem) {
       setFeedbackMessage('Selected item not found.');
       setIsSuccess(false);
@@ -327,17 +443,57 @@ export default function PurchaseOrders({ onClose }: PurchaseOrdersProps) {
 
   const handleEditClick = (order: any) => {
     setEditingOrder(order);
+    
+    // Find the item by name and code
+    const selectedItem = items.find(item => 
+      item.name === order.itemName && item.code === order.itemCode
+    );
+    
+    // Determine if the order is using primary or secondary unit
+    let unitType: "primary" | "secondary" = 'primary';
+    if (selectedItem) {
+      // Check if the order's unitId matches the item's secondary unit
+      if (String(order.unitId) === String(selectedItem.secondaryUnitId)) {
+        unitType = 'secondary';
+      }
+    }
+    
+    // Calculate the price based on the unit type
+    let purchaseCost = order.purchaseCost;
+    let vatAmount = order.vatAmount;
+    
+    if (selectedItem) {
+      if (unitType === 'secondary') {
+        // If secondary unit is selected, adjust the price based on the conversion ratio
+        const conversionRatio = selectedItem.secondaryUnitValue;
+        purchaseCost = selectedItem.purchaseCostWithoutVat / conversionRatio;
+        vatAmount = (selectedItem.purchaseCostWithVat - selectedItem.purchaseCostWithoutVat) / conversionRatio;
+      } else {
+        // If primary unit is selected, use the original prices
+        purchaseCost = selectedItem.purchaseCostWithoutVat;
+        vatAmount = selectedItem.purchaseCostWithVat - selectedItem.purchaseCostWithoutVat;
+      }
+    }
+    
     setFormData({
-      itemId: String(order.itemId || ''),
+      itemId: selectedItem ? String(selectedItem.itemId) : String(order.id), // Use itemId if found, otherwise use order ID
       categoryId: String(order.categoryId || 1),
       supplierId: String(order.supplierId || ''),
-      unitType: order.unitType || 'primary',
+      unitType: unitType as "primary" | "secondary",
       unitId: String(order.unitId || ''),
       quantity: String(order.quantity || ''),
-      purchaseCost: String(order.purchaseCost || ''),
-      vatPercentage: String(order.vatPercentage || '15'),
-      vatAmount: String(order.vatAmount || '')
+      purchaseCost: String(purchaseCost || ''),
+      vatAmount: String(vatAmount || ''),
     });
+    
+    // If we found the item, update additional fields
+    if (selectedItem) {
+      setFormData(prev => ({
+        ...prev,
+        categoryId: String(selectedItem.categoryId),
+      }));
+    }
+    
     setFormErrors({});
     setIsModalOpen(true);
   };
@@ -470,10 +626,10 @@ export default function PurchaseOrders({ onClose }: PurchaseOrdersProps) {
                   <th className="py-4 px-6 font-medium text-sm text-gray-500">Item Name</th>
                   <th className="py-4 px-6 font-medium text-sm text-gray-500">Item Code</th>
                   <th className="py-4 px-6 font-medium text-sm text-gray-500">Quantity</th>
+                  <th className="py-4 px-6 font-medium text-sm text-gray-500">Purchase Cost</th>
                   <th className="py-4 px-6 font-medium text-sm text-gray-500">Unit</th>
                   <th className="py-4 px-6 font-medium text-sm text-gray-500">Category</th>
                   <th className="py-4 px-6 font-medium text-sm text-gray-500">Status</th>
-                  <th className="py-4 px-6 font-medium text-sm text-gray-500">Created At</th>
                   <th className="py-4 px-6 font-medium text-sm text-gray-500 text-center">Actions</th>
               </tr>
             </thead>
@@ -637,26 +793,11 @@ export default function PurchaseOrders({ onClose }: PurchaseOrdersProps) {
                             type="number"
                             name="purchaseCost"
                             value={formData.purchaseCost}
-                            onChange={handleInputChange}
-                            placeholder="0.00"
-                            className={`w-full bg-white pl-12 ${formErrors.purchaseCost ? 'border-red-500' : ''}`}
-                            disabled={poLoading}
+                            readOnly
+                            className="w-full bg-gray-100 pl-12"
+                            disabled={true}
                         />
                     </div>
-                     {formErrors.purchaseCost && <p className="mt-1 text-red-500 text-sm">{formErrors.purchaseCost}</p>}
-                </div>
-                <div>
-                    <label className="block text-gray-700 mb-2 font-medium">VAT %</label>
-                     <Input
-                        type="number"
-                        name="vatPercentage"
-                        value={formData.vatPercentage}
-                        onChange={handleInputChange}
-                        placeholder="e.g., 15"
-                        className={`w-full bg-white ${formErrors.vatPercentage ? 'border-red-500' : ''}`}
-                        disabled={poLoading}
-                    />
-                    {formErrors.vatPercentage && <p className="mt-1 text-red-500 text-sm">{formErrors.vatPercentage}</p>}
                 </div>
                 <div>
                     <label className="block text-gray-700 mb-2 font-medium">VAT Amount</label>
@@ -667,9 +808,8 @@ export default function PurchaseOrders({ onClose }: PurchaseOrdersProps) {
                             name="vatAmount"
                             value={formData.vatAmount}
                             readOnly
-                            placeholder="0.00"
                             className="w-full bg-gray-100 pl-12"
-                            disabled={poLoading}
+                            disabled={true}
                         />
                     </div>
                 </div>

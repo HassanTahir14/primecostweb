@@ -54,7 +54,16 @@ export default function TokensPage() {
   const fetchTokens = async () => {
     setIsLoading(true);
     try {
-      const response = await api.post('/tokens/get', {page: 1, size: 100, sortBy: 'createdAt', direction: 'asc'});
+      const response = await api.post('/tokens/get', {
+        page: 0, // not 1
+        size: 100000,
+        sortBy: 'createdAt',
+        direction: 'asc',
+        startDate: '2020-04-27', // 'YYYY-MM-DD'
+        endDate: new Date().toISOString().split('T')[0],   // 'YYYY-MM-DD'
+      });
+      
+      
       if (response.data && response.data.tokens) {
         let fetchedTokens: Token[] = response.data.tokens;
 
