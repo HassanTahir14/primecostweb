@@ -8,6 +8,7 @@ import { fetchAllBranches } from '@/store/branchSlice';
 import { selectAllRecipes, fetchRecipes } from '@/store/recipeSlice';
 import { selectAllSubRecipes, fetchSubRecipes } from '@/store/subRecipeSlice';
 import { AppDispatch } from '@/store/store';
+import ConfirmationModal from './ConfirmationModal';
 
 interface PreparationFieldsProps {
   type: 'recipe' | 'sub-recipe';
@@ -24,6 +25,9 @@ export default function PreparationFields({ type, id, branchId }: PreparationFie
   const [expiryDate, setExpiryDate] = useState<string>('');
   const [selectedStorageLocation, setSelectedStorageLocation] = useState<string>('');
   const [isLoading, setIsLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalMessage, setModalMessage] = useState('');
+  const [isSuccess, setIsSuccess] = useState(false);
 
   // Get data from Redux store
   const branches = useSelector((state: any) => state.branch.branches);
@@ -78,7 +82,9 @@ export default function PreparationFields({ type, id, branchId }: PreparationFie
         }
       } catch (error) {
         console.error('Error fetching data:', error);
-        toast.error('Failed to load data');
+        setModalMessage('Failed to load data');
+        setIsSuccess(false);
+        setIsModalOpen(true);
       } finally {
         setIsLoading(false);
       }
@@ -97,7 +103,9 @@ export default function PreparationFields({ type, id, branchId }: PreparationFie
 
   const handleFinish = async () => {
     if (!quantity || !expiryDate || !selectedStorageLocation) {
-      toast.error('Please fill in all fields');
+      setModalMessage('Please fill in all fields');
+      setIsSuccess(false);
+      setIsModalOpen(true);
       return;
     }
 
@@ -109,13 +117,24 @@ export default function PreparationFields({ type, id, branchId }: PreparationFie
         storageLocationId: parseInt(selectedStorageLocation),
         unitOfMeasurement: unit
       });
-      toast.success('Order finished successfully');
-      // Navigate back to the same page without preparation mode
-      router.push(`/${type === 'recipe' ? 'recipes' : 'sub-recipes'}`);
+      setModalMessage('Order finished successfully');
+      setIsSuccess(true);
+      setIsModalOpen(true);
+      // Navigate back to the same page without preparation mode after a short delay
+      setTimeout(() => {
+        router.push(`/${type === 'recipe' ? 'recipes' : 'sub-recipes'}`);
+      }, 1500);
     } catch (error: any) {
       console.error('Error finishing order:', error);
-      toast.error(error.response?.data?.description || 'Failed to finish order');
+      setModalMessage(error.response?.data?.description || 'Failed to finish order');
+      setIsSuccess(false);
+      setIsModalOpen(true);
     }
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setModalMessage('');
   };
 
   if (isLoading) {
@@ -206,6 +225,16 @@ export default function PreparationFields({ type, id, branchId }: PreparationFie
           </div>
         </div>
       </div>
+
+      {/* Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        title={isSuccess ? 'Success' : 'Error'}
+        message={modalMessage}
+        isAlert={true}
+        okText="OK"
+      />
     </div>
   );
 } 

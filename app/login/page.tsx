@@ -10,10 +10,13 @@ import { AppDispatch } from '@/store/store';
 import ConfirmationModal from '@/components/common/ConfirmationModal';
 import { toast } from 'react-hot-toast';
 import Loader from '@/components/common/Loader';
+import { useAuth } from '@/hooks/useAuth';
 
 type LoginView = 'login' | 'forgotPasswordEmail' | 'forgotPasswordReset';
 
 export default function LoginPage() {
+  useAuth({ redirectIfFound: true });
+
   const [view, setView] = useState<LoginView>('login');
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState('');
