@@ -220,6 +220,21 @@ export default function AssignOrder({ onClose }: AssignOrderProps) {
     }
   };
 
+  const formatStatus = (status: string) => {
+    switch (status) {
+      case 'IN_PROGRESS':
+        return 'In Progress';
+      case 'PENDING':
+        return 'Pending';
+      case 'FINISHED':
+        return 'Finished';
+      case 'CANCELLED':
+        return 'Cancelled';
+      default:
+        return status;
+    }
+  };
+
   if (isRoleLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -286,11 +301,7 @@ export default function AssignOrder({ onClose }: AssignOrderProps) {
                 <span className="text-gray-800 text-sm sm:text-base">{order.orderId}</span>
                 <span className="text-gray-800 text-sm sm:text-base">{order.orderType}</span>
                 <span className={`text-sm sm:text-base font-medium ${getStatusColor(order.orderStatus)}`}>
-                  {order.orderStatus === 'IN_PROGRESS' ? 'In Progress' : 
-                   order.orderStatus === 'PENDING' ? 'Pending' : 
-                   order.orderStatus === 'FINISHED' ? 'Finished' : 
-                   order.orderStatus === 'CANCELLED' ? 'Cancelled' : 
-                   order.orderStatus}
+                  {formatStatus(order.orderStatus)}
                 </span>
                 {isChef && (
                   <div>
