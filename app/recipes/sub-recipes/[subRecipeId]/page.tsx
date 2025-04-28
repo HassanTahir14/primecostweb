@@ -131,15 +131,19 @@ export default function SubRecipeDetailPage() {
           <h1 className="text-2xl font-bold">{subRecipe.name}</h1>
         </div>
 
-        {/* Sub-recipe image */}
+        {/* Sub-recipe images */}
         {subRecipe.images && subRecipe.images.length > 0 && (
-          <div className="relative h-64 w-full rounded-lg overflow-hidden">
-            <Image 
-              src={`${imageBaseUrl}/${subRecipe.images[0]}`} 
-              alt={subRecipe.name}
-              fill
-              className="object-cover"
-            />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {subRecipe.images.map((image: any, index: number) => (
+              <div key={image.imageId || index} className="relative h-64 w-full rounded-lg overflow-hidden">
+                <Image 
+                  src={`${imageBaseUrl}/${image.path}`} 
+                  alt={`${subRecipe.name} - Image ${index + 1}`}
+                  fill
+                  className="object-cover"
+                />
+              </div>
+            ))}
           </div>
         )}
 
