@@ -204,7 +204,7 @@ export default function TokensPage() {
                       }`}
                       onClick={() => token.tokenStatus === 'PENDING' && handleRowClick(token.tokenId)}
                     >
-                      <td className="py-4 px-6">{token.tokenType}</td>
+                      <td className="py-4 px-6">{token.tokenType.split('@')[0]}</td>
                       <td className="py-4 px-6 font-semibold">
                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                           token.tokenStatus === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :

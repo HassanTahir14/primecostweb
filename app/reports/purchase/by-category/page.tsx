@@ -21,7 +21,14 @@ import { ArrowLeft } from 'lucide-react';
 // Column Definitions for Purchase by Category
 const purchaseByCategoryColumns: ColumnDefinition<PurchaseByCategoryDetail>[] = [
     // Define based on assumed successful response structure
-    { header: 'Item Name', accessorKey: 'itemName' },
+    { 
+        header: 'Item Name', 
+        accessorKey: 'itemName',
+        cell: (value) => {
+            const itemName = value as string;
+            return itemName.split('@')[0];
+        }
+    },
     { header: 'Quantity', accessorKey: 'quantity', cellClassName: 'text-right' },
     { header: 'Unit', accessorKey: 'unit', cellClassName: 'text-center' },
     { header: 'Date', accessorKey: 'date', cellClassName: 'text-center' },

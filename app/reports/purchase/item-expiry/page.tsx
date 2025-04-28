@@ -18,7 +18,14 @@ import { ArrowLeft } from 'lucide-react';
 
 // Column Definitions for Item Expiry
 const itemExpiryColumns: ColumnDefinition<ItemExpiryDetail>[] = [
-    { header: 'Item Name', accessorKey: 'itemName' },
+    { 
+        header: 'Item Name', 
+        accessorKey: 'itemName',
+        cell: (value) => {
+            const itemName = value as string;
+            return itemName.split('@')[0];
+        }
+    },
     { header: 'Date Added', accessorKey: 'dateAdded', cellClassName: 'text-center' },
     { header: 'Expiry Date', accessorKey: 'expiryDate', cellClassName: 'text-center font-medium', 
       cell: (value, row) => <span className={row.status === 'Expired' ? 'text-red-600' : 'text-gray-700'}>{value ?? 'N/A'}</span> },

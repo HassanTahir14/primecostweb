@@ -75,6 +75,8 @@ export default function TransferCostTable({ costs, onChange, totalItemCost }: Tr
                       onChange={(e) => handleCostChange(type.key, parseFloat(e.target.value))}
                       placeholder="0.00"
                       className="pr-6"
+                      step="0.01"
+                      min="0"
                     />
                     <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 pointer-events-none">%</span>
                   </div>

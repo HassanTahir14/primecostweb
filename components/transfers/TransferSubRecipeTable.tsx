@@ -7,6 +7,13 @@ import Select from '@/components/common/select';
 import { Plus, Trash2 } from 'lucide-react';
 import { useUnits } from '@/hooks/useUnits';
 
+// Define UnitOfMeasurement interface
+interface UnitOfMeasurement {
+  unitOfMeasurementId: number;
+  unitName: string;
+  unitDescription: string;
+}
+
 // Assuming SubRecipe structure from a potential subRecipeSlice
 interface SubRecipe {
     id: number;
@@ -43,10 +50,10 @@ export default function TransferSubRecipeTable({
 
   // Prepare options for Select component
   const subRecipeOptions = useMemo(() => {
-      if (sourceBranchId === targetBranchId) {
+      if (sourceBranchId === targetBranchId && sourceBranchId !== '') {
         return [{ 
           value: '', 
-          label: 'Cannot transfer to same branch', 
+          label: 'Select a sub-recipe', 
           disabled: true 
         }];
       }
@@ -143,10 +150,15 @@ export default function TransferSubRecipeTable({
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-sm p-0 overflow-hidden">
+    <div className="bg-white rounded-lg shadow-sm">
        <h3 className="text-lg font-semibold p-4 border-b">Sub-Recipes</h3>
-       <div className="overflow-x-auto">
-        <table className="w-full min-w-[800px]">
+       {sourceBranchId === targetBranchId && sourceBranchId !== '' && (
+         <div className="px-4 py-2 text-red-600 text-sm font-medium">
+           Cannot transfer sub-recipes to the same branch
+         </div>
+       )}
+       <div className="w-full">
+        <table className="w-full">
             <thead className="bg-[#00997B] text-white">
                 <tr>
                     <th className="p-3 text-left text-sm font-semibold">Sub-Recipe</th>

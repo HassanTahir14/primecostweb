@@ -56,10 +56,10 @@ export default function TransferInventoryItemsTable({
   // Prepare options for Select component
   const itemOptions = useMemo(() => {
     // Check if source and target branches are the same
-    if (sourceBranchId === targetBranchId) {
+    if (sourceBranchId === targetBranchId && sourceBranchId !== '') {
       return [{ 
         value: '', 
-        label: 'Cannot transfer to same branch', 
+        label: 'Select an item', 
         disabled: true 
       }];
     }
@@ -174,10 +174,15 @@ export default function TransferInventoryItemsTable({
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-sm p-0 overflow-hidden">
+    <div className="bg-white rounded-lg shadow-sm">
       <h3 className="text-lg font-semibold p-4 border-b">Inventory Items</h3>
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[800px]"> 
+      {sourceBranchId === targetBranchId && sourceBranchId !== '' && (
+        <div className="px-4 py-2 text-red-600 text-sm font-medium">
+          Cannot transfer items to the same branch
+        </div>
+      )}
+      <div className="w-full">
+        <table className="w-full"> 
             <thead className="bg-[#00997B] text-white">
                 <tr>
                     <th className="p-3 text-left text-sm font-semibold">Item</th>
@@ -234,6 +239,8 @@ export default function TransferInventoryItemsTable({
                             placeholder="Cost" 
                             className="bg-gray-100"
                             readOnly
+                            step="0.01"
+                            min="0"
                         />
                     </td>
                     <td className="p-2 align-top text-center">

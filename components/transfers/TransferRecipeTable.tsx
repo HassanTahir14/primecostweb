@@ -43,10 +43,10 @@ export default function TransferRecipeTable({
 
   // Prepare options for Select component
   const recipeOptions = useMemo(() => {
-      if (sourceBranchId === targetBranchId) {
+      if (sourceBranchId === targetBranchId && sourceBranchId !== '') {
         return [{ 
           value: '', 
-          label: 'Cannot transfer to same branch', 
+          label: 'Select a recipe', 
           disabled: true 
         }];
       }
@@ -143,10 +143,15 @@ export default function TransferRecipeTable({
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-sm p-0 overflow-hidden">
+    <div className="bg-white rounded-lg shadow-sm">
       <h3 className="text-lg font-semibold p-4 border-b">Recipes</h3>
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[800px]">
+      {sourceBranchId === targetBranchId && sourceBranchId !== '' && (
+        <div className="px-4 py-2 text-red-600 text-sm font-medium">
+          Cannot transfer recipes to the same branch
+        </div>
+      )}
+      <div className="w-full">
+        <table className="w-full">
             <thead className="bg-[#00997B] text-white">
                 <tr>
                     <th className="p-3 text-left text-sm font-semibold">Recipe</th>

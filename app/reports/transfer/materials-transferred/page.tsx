@@ -16,7 +16,14 @@ import { format, subDays } from 'date-fns';
 
 // Column Definitions
 const materialColumns: ColumnDefinition<MaterialTransferRecord>[] = [
-    { header: 'Item Name', accessorKey: 'itemName' }, // Use itemName as per API response
+    { 
+        header: 'Item Name', 
+        accessorKey: 'itemName',
+        cell: (value) => {
+            const itemName = value as string;
+            return itemName.split('@')[0];
+        }
+    },
     { header: 'Branch', accessorKey: 'branch' },
     { header: 'Quantity', accessorKey: 'quantity', cellClassName: 'text-right' },
     { header: 'Unit', accessorKey: 'unit', cellClassName: 'text-center' },
