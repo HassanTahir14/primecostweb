@@ -8,10 +8,12 @@ import PageLayout from '@/components/PageLayout';
 import PreparationFields from '@/components/common/PreparationFields';
 import api from '@/store/api';
 import Button from '@/components/common/button';
-import { ChevronLeft, ChevronRight, ArrowLeft } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ArrowLeft, Download, Loader } from 'lucide-react';
 import Image from 'next/image';
 import { getImageUrlWithAuth } from '@/utils/imageUtils';
 import AuthImage from '@/components/common/AuthImage';
+import { generateDetailPDF } from '@/app/utils/pdfGenerator';
+import { DetailFieldConfig } from '@/components/common/GenericDetailPage';
 
 // Add interface for auth user
 interface AuthUser {
@@ -38,6 +40,7 @@ export default function SubRecipeDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
 
   // Get user role from localStorage
   useEffect(() => {
@@ -97,6 +100,86 @@ export default function SubRecipeDetailPage() {
     }
   };
 
+  const handleDownloadPDF = () => {
+    if (subRecipe) {
+      setIsGeneratingPDF(true);
+      
+      // Create field configuration for PDF
+      const fieldConfig: DetailFieldConfig[] = [
+        { key: 'name', label: 'Sub-Recipe Name' },
+        { key: 'subRecipeCode', label: 'Recipe Code' },
+        { key: 'categoryName', label: 'Category' },
+        { key: 'tokenStatus', label: 'Status' },
+        { key: 'numberOfPortions', label: 'Number of Portions' },
+        { key: 'servingSize', label: 'Serving Size' },
+      ];
+      
+      // Add cost information for admin
+      if (isAdmin) {
+        fieldConfig.push(
+          { 
+            key: 'costPerRecipe', 
+            label: 'Cost Per Recipe',
+            render: (value) => value ? `$${value.toFixed(2)}` : 'N/A'
+          },
+          { 
+            key: 'costPerPortion', 
+            label: 'Cost Per Portion',
+            render: (value) => value ? `$${value.toFixed(2)}` : 'N/A'
+          },
+          { 
+            key: 'menuPrice', 
+            label: 'Menu Price',
+            render: (value) => value ? `$${value.toFixed(2)}` : 'N/A'
+          },
+          { 
+            key: 'idealSellingPrice', 
+            label: 'Ideal Selling Price',
+            render: (value) => value ? `$${value.toFixed(2)}` : 'N/A'
+          },
+          { 
+            key: 'marginPerPortion', 
+            label: 'Margin Per Portion',
+            render: (value) => value ? `$${value.toFixed(2)}` : 'N/A'
+          },
+          { 
+            key: 'foodCostBudgetPercentage', 
+            label: 'Food Cost Budget %',
+            render: (value) => value ? `${value}%` : 'N/A'
+          },
+          { 
+            key: 'foodCostActualPercentage', 
+            label: 'Food Cost Actual %',
+            render: (value) => value ? `${value}%` : 'N/A'
+          }
+        );
+      }
+      
+      // Small delay to allow state update before the intensive PDF generation
+      setTimeout(() => {
+        try {
+          generateDetailPDF(
+            `Sub-Recipe: ${subRecipe.name}`,
+            subRecipe,
+            fieldConfig,
+            '/assets/images/logo.png',
+            'images',
+            imageBaseUrl,
+            undefined, // branchDetails
+            undefined, // purchaseOrders
+            subRecipe.ingredients ?? [],
+            subRecipe.procedures ?? [],
+            isAdmin
+          );
+        } catch (error) {
+          console.error('Error generating PDF:', error);
+        } finally {
+          setIsGeneratingPDF(false);
+        }
+      }, 100);
+    }
+  };
+
   if (loading) {
     return (
       <PageLayout title="Sub-Recipe Details">
@@ -121,16 +204,38 @@ export default function SubRecipeDetailPage() {
   return (
     <PageLayout title="Sub-Recipe Details">
       <div className="space-y-6">
-        {/* Header with back button */}
-        <div className="flex items-center">
+        {/* Header with back button and download PDF button */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center">
+            <Button 
+              variant="ghost" 
+              onClick={() => router.back()} 
+              className="mr-2 p-0"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <h1 className="text-2xl font-bold">{subRecipe.name}</h1>
+          </div>
+          
+          {/* Download PDF Button */}
           <Button 
-            variant="ghost" 
-            onClick={() => router.back()} 
-            className="mr-2 p-0"
+            onClick={handleDownloadPDF}
+            variant="outline"
+            className="flex items-center gap-2 bg-white hover:bg-gray-100"
+            disabled={isGeneratingPDF}
           >
-            <ArrowLeft className="h-5 w-5" />
+            {isGeneratingPDF ? (
+              <>
+                <Loader className="w-4 h-4 animate-spin" />
+                <span>Generating...</span>
+              </>
+            ) : (
+              <>
+                <Download className="w-4 h-4" />
+                <span>Download PDF</span>
+              </>
+            )}
           </Button>
-          <h1 className="text-2xl font-bold">{subRecipe.name}</h1>
         </div>
 
         {/* Sub-recipe images */}

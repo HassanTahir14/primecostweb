@@ -44,8 +44,15 @@ export const generateDetailPDF = async (
   imageKey?: string, 
   imageBaseUrl?: string,
   branchDetails?: any[],
-  purchaseOrders?: any[]
+  purchaseOrders?: any[],
+  ingredients?: any[],
+  procedures?: any[],
+  isAdmin?: boolean
 ) => {
+  ingredients = Array.isArray(ingredients) ? ingredients : [];
+  procedures = Array.isArray(procedures) ? procedures : [];
+  // console.log('ingredients', ingredients);
+  console.log('procedures', procedures);
 
   console.log('branchDetails', branchDetails);
   console.log('purchaseOrders', purchaseOrders);
@@ -416,6 +423,108 @@ export const generateDetailPDF = async (
           doc.addPage();
           yPos = 20;
         }
+      });
+      yPos += 10;
+    }
+    
+    // --- INGREDIENTS TABLE ---
+    if (ingredients && ingredients.length > 0) {
+      if (yPos > pageHeight - 60) {
+        doc.addPage();
+        yPos = 20;
+      }
+      doc.setFontSize(16);
+      doc.setTextColor(33, 33, 33);
+      doc.text('Ingredients', 14, yPos);
+      yPos += 8;
+      doc.setDrawColor(220, 220, 220);
+      doc.setLineWidth(0.5);
+      doc.line(14, yPos, pageWidth - 14, yPos);
+      yPos += 6;
+      // Prepare table columns
+      const columns = [
+        { header: 'Ingredient', dataKey: 'ingredient' },
+        { header: 'Quantity', dataKey: 'quantity' },
+        { header: 'Unit', dataKey: 'unit' },
+        { header: 'Yield %', dataKey: 'yield' },
+      ];
+      if (isAdmin) {
+        columns.push({ header: 'Cost', dataKey: 'cost' });
+      }
+      // Prepare table rows
+      const rows = ingredients.map((ing: any) => {
+        const cost = isAdmin
+          ? (typeof ing.recipeCost === 'number'
+              ? `$${(ing.recipeCost > 1000 ? ing.recipeCost / 100 : ing.recipeCost).toFixed(2)}`
+              : '0.00')
+          : undefined;
+        return {
+          ingredient: ing.itemName?.split('@')[0] || ing.itemName || 'N/A',
+          quantity: ing.quantity ?? 'N/A',
+          unit: ing.unit ?? 'N/A',
+          yield: (ing.yieldPercentage ?? 'N/A') + '%',
+          ...(isAdmin ? { cost } : {}),
+        };
+      });
+      // Use autoTable for better formatting
+      autoTable(doc, {
+        startY: yPos,
+        head: [columns.map(col => col.header)],
+        body: rows.map(row => columns.map(col => row[col.dataKey as keyof typeof row])),
+        styles: { fontSize: 10 },
+        headStyles: { fillColor: [240, 240, 240], textColor: 33, fontStyle: 'bold' },
+        margin: { left: 14, right: 14 },
+        theme: 'grid',
+        didDrawPage: (data) => {
+          if (data.cursor && typeof data.cursor.y === 'number') {
+            yPos = data.cursor.y + 10;
+          }
+        },
+      });
+      if ((doc as any).lastAutoTable && typeof (doc as any).lastAutoTable.finalY === 'number') {
+        yPos = (doc as any).lastAutoTable.finalY + 10;
+      } else {
+        yPos += 10;
+      }
+    }
+
+    // --- PROCEDURES/INSTRUCTIONS ---
+    if (procedures && procedures.length > 0) {
+      if (yPos > pageHeight - 60) {
+        doc.addPage();
+        yPos = 20;
+      }
+      doc.setFontSize(16);
+      doc.setTextColor(33, 33, 33);
+      doc.text('Instructions', 14, yPos);
+      yPos += 8;
+      doc.setDrawColor(220, 220, 220);
+      doc.setLineWidth(0.5);
+      doc.line(14, yPos, pageWidth - 14, yPos);
+      yPos += 6;
+      procedures.forEach((step: any, idx: number) => {
+        if (yPos > pageHeight - 40) {
+          doc.addPage();
+          yPos = 20;
+        }
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(12);
+        doc.setTextColor(33, 33, 33);
+        doc.text(`Step ${idx + 1} of ${procedures.length}`, 14, yPos);
+        yPos += 6;
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(10);
+        doc.setTextColor(33, 33, 33);
+        doc.text(step.description || 'No description', 14, yPos);
+        yPos += 6;
+        if (step.criticalPoint) {
+          doc.setFont('helvetica', 'italic');
+          doc.setFontSize(10);
+          doc.setTextColor(200, 0, 0);
+          doc.text(`Critical Point: ${step.criticalPoint}`, 14, yPos);
+          yPos += 6;
+        }
+        yPos += 4;
       });
       yPos += 10;
     }

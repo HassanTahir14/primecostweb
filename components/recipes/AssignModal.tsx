@@ -9,6 +9,7 @@ import { fetchAllEmployees } from '@/store/employeeSlice';
 import type { RootState, AppDispatch } from '@/store/store';
 import api from '@/store/api';
 import { formatPositionName } from '@/utils/formatters';
+import ConfirmationModal from '@/components/common/ConfirmationModal';
 
 interface AssignModalProps {
   isOpen: boolean;
@@ -36,10 +37,13 @@ export default function AssignModal({
   const [selectedBranchId, setSelectedBranchId] = useState<number>(0);
   const [selectedUserId, setSelectedUserId] = useState<number>(0);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [errors, setErrors] = useState({
     branch: '',
     employee: ''
   });
+  const [showErrorModal, setShowErrorModal] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   // Filter active employees and exclude Admin position
   const activeEmployees = employees.filter(employee => 
@@ -83,6 +87,7 @@ export default function AssignModal({
     if (!validateForm()) return;
 
     setIsLoading(true);
+    setError(null);
     try {
       const payload = {
         branchLocationId: selectedBranchId,
@@ -108,12 +113,27 @@ export default function AssignModal({
         onSuccess('Recipe assigned successfully');
         onClose();
       } else {
-        onError(response.data?.description || 'Failed to assign recipe');
+        const errorMessage = response.data?.description || 'Failed to assign recipe';
+        // Clean up the error message by removing both "@Solid Item" and "@Liquid Item"
+        const cleanedErrorMessage = errorMessage.replace(/@(Solid|Liquid) Item/g, '');
+        setError(cleanedErrorMessage);
       }
     } catch (error: any) {
-      onError(error.response?.data?.description || 'An unexpected error occurred');
+      console.log(error, 'errorrrr');
+      const errorMessage = error.response?.data?.description || 'An unexpected error occurred';
+      // Clean up the error message by removing both "@Solid Item" and "@Liquid Item"
+      const cleanedErrorMessage = errorMessage.replace(/@(Solid|Liquid) Item/g, '');
+      setError(cleanedErrorMessage);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleError = (response: any) => {
+    if (response.responseCode === "1501") {
+      setErrorMessage(response.description);
+      console.log(response, 'responseee');
+      setShowErrorModal(true);
     }
   };
 
@@ -124,6 +144,11 @@ export default function AssignModal({
       title="Assign Recipe"
     >
       <div className="space-y-6">
+        {error && (
+          <div className="w-full p-3 bg-red-50 border border-red-200 rounded-md">
+            <p className="text-red-600 text-sm">{error}</p>
+          </div>
+        )}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Select Branch
@@ -188,6 +213,14 @@ export default function AssignModal({
           </Button>
         </div>
       </div>
+      <ConfirmationModal
+        isOpen={showErrorModal}
+        onClose={() => setShowErrorModal(false)}
+        title="Inventory Error"
+        message={errorMessage}
+        isAlert={true}
+        okText="OK"
+      />
     </Modal>
   );
 } 

@@ -122,7 +122,7 @@ export default function PreparationFields({ type, id, branchId }: PreparationFie
       setIsModalOpen(true);
       // Navigate back to the same page without preparation mode after a short delay
       setTimeout(() => {
-        router.push(`/${type === 'recipe' ? 'recipes' : 'sub-recipes'}`);
+        router.push(`/finished-orders`);
       }, 1500);
     } catch (error: any) {
       console.error('Error finishing order:', error);
