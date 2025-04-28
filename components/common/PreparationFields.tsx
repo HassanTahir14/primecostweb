@@ -5,8 +5,9 @@ import api from '@/store/api';
 import { toast } from 'react-hot-toast';
 import { useSelector, useDispatch } from 'react-redux';
 import { fetchAllBranches } from '@/store/branchSlice';
-import { selectAllRecipes } from '@/store/recipeSlice';
-import { selectAllSubRecipes } from '@/store/subRecipeSlice';
+import { selectAllRecipes, fetchRecipes } from '@/store/recipeSlice';
+import { selectAllSubRecipes, fetchSubRecipes } from '@/store/subRecipeSlice';
+import { AppDispatch } from '@/store/store';
 
 interface PreparationFieldsProps {
   type: 'recipe' | 'sub-recipe';
@@ -16,12 +17,13 @@ interface PreparationFieldsProps {
 
 export default function PreparationFields({ type, id, branchId }: PreparationFieldsProps) {
   const router = useRouter();
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   const searchParams = useSearchParams();
   const orderId = searchParams.get('orderId');
   const [quantity, setQuantity] = useState<string>('');
   const [expiryDate, setExpiryDate] = useState<string>('');
   const [selectedStorageLocation, setSelectedStorageLocation] = useState<string>('');
+  const [isLoading, setIsLoading] = useState(true);
 
   // Get data from Redux store
   const branches = useSelector((state: any) => state.branch.branches);
@@ -35,15 +37,63 @@ export default function PreparationFields({ type, id, branchId }: PreparationFie
     ? recipes.find(r => r.id.toString() === id.toString())
     : subRecipes.find(sr => sr.id.toString() === id.toString());
 
-  // Get the unit from the first ingredient item (assuming all items use the same unit)
-  const unit = currentItem?.ingredientsItems?.[0]?.unit || currentItem?.ingredients?.[0]?.unit || '';
+  console.log('Current Item:', currentItem);
+  console.log('Type:', type);
+  console.log('ID:', id);
+
+  // Get the unit and quantity from the first ingredient item
+  const firstIngredient = currentItem?.ingredientsItems?.[0] || currentItem?.ingredients?.[0];
+  console.log('First Ingredient:', firstIngredient);
+  
+  const unit = firstIngredient?.unit || '';
+  const firstIngredientQuantity = firstIngredient?.quantity || '';
+
+  console.log('First Ingredient Quantity:', firstIngredientQuantity);
+  console.log('Unit:', unit);
 
   useEffect(() => {
-    // Fetch branches if not already loaded
-    if (branches.length === 0) {
-      dispatch(fetchAllBranches() as any);
+    const fetchData = async () => {
+      setIsLoading(true);
+      try {
+        // Fetch branches if not already loaded
+        if (branches.length === 0) {
+          await dispatch(fetchAllBranches() as any);
+        }
+
+        // Fetch recipe/sub-recipe data
+        if (type === 'recipe') {
+          await dispatch(fetchRecipes({
+            page: 0,
+            size: 10,
+            sortBy: "createdAt",
+            direction: "asc"
+          }));
+        } else {
+          await dispatch(fetchSubRecipes({
+            page: 0,
+            size: 10,
+            sortBy: "createdAt",
+            direction: "asc"
+          }));
+        }
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        toast.error('Failed to load data');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [dispatch, type, branches.length]);
+
+  useEffect(() => {
+    // Set the quantity from the first ingredient when we have the data
+    if (firstIngredientQuantity) {
+      console.log('Setting quantity to:', firstIngredientQuantity);
+      setQuantity(firstIngredientQuantity.toString());
     }
-  }, [dispatch, branches.length]);
+  }, [firstIngredientQuantity]);
 
   const handleFinish = async () => {
     if (!quantity || !expiryDate || !selectedStorageLocation) {
@@ -67,6 +117,16 @@ export default function PreparationFields({ type, id, branchId }: PreparationFie
       toast.error(error.response?.data?.description || 'Failed to finish order');
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex-1 flex flex-col p-4 md:p-6 lg:p-8 bg-gray-50">
+        <div className="flex justify-center items-center h-64">
+          <p className="text-gray-500">Loading preparation details...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex-1 flex flex-col p-4 md:p-6 lg:p-8 bg-gray-50">
@@ -92,9 +152,9 @@ export default function PreparationFields({ type, id, branchId }: PreparationFie
               <input
                 type="number"
                 value={quantity}
-                onChange={(e) => setQuantity(e.target.value)}
-                className="w-full px-3 py-2 border rounded-md text-sm text-gray-900"
-                placeholder={`Enter quantity in ${unit}`}
+                readOnly
+                className="w-full px-3 py-2 border rounded-md text-sm text-gray-900 bg-gray-100"
+                placeholder={`Quantity in ${unit}`}
                 required
               />
             </div>
