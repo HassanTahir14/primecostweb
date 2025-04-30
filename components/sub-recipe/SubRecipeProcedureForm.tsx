@@ -32,6 +32,7 @@ export default function RecipeProcedureForm({ onNext, onBack, initialData }: Rec
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [errorDetails, setErrorDetails] = useState<{[key: string]: string}>({});
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const handleAddStep = () => {
     setSteps([...steps, { stepDescription: '', criticalPoint: 'CP' }]);
@@ -150,7 +151,7 @@ export default function RecipeProcedureForm({ onNext, onBack, initialData }: Rec
       const result = await dispatch(updateSubRecipeThunk(formData)).unwrap();
       console.log(result, 'result');
       
-      router.push('/recipes/sub-recipes');
+      setShowSuccessModal(true);
     } catch (error: any) {
       setErrorMessage(error.message || 'Failed to create sub recipe');
       setShowErrorModal(true);
@@ -219,6 +220,19 @@ export default function RecipeProcedureForm({ onNext, onBack, initialData }: Rec
           .join('\n')}`}
         isAlert={true}
         okText="Close"
+      />
+
+      {/* Success Modal */}
+      <ConfirmationModal
+        isOpen={showSuccessModal}
+        onClose={() => {
+          setShowSuccessModal(false);
+          router.push('/recipes/sub-recipes');
+        }}
+        title="Success"
+        message="Sub Recipe updated successfully!"
+        isAlert={true}
+        okText="OK"
       />
 
       <div className="flex justify-between mt-8">

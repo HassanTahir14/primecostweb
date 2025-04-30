@@ -32,6 +32,7 @@ export default function RecipeProcedureForm({ onNext, onBack, initialData }: Rec
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [errorDetails, setErrorDetails] = useState<{[key: string]: string}>({});
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const handleAddStep = () => {
     setSteps([...steps, { stepDescription: '', criticalPoint: 'CP' }]);
@@ -161,7 +162,7 @@ export default function RecipeProcedureForm({ onNext, onBack, initialData }: Rec
       const result = await dispatch(updateRecipeThunk(formData)).unwrap();
       console.log(result, 'result')
       
-      router.push('/recipes');
+      setShowSuccessModal(true);
       
     } catch (error: any) {
       console.log(error, 'error')
@@ -230,6 +231,19 @@ export default function RecipeProcedureForm({ onNext, onBack, initialData }: Rec
           .join('\n')}`}
         isAlert={true}
         okText="Close"
+      />
+
+      {/* Success Modal */}
+      <ConfirmationModal
+        isOpen={showSuccessModal}
+        onClose={() => {
+          setShowSuccessModal(false);
+          router.push('/recipes');
+        }}
+        title="Success"
+        message="Recipe updated successfully!"
+        isAlert={true}
+        okText="OK"
       />
 
       <div className="flex justify-between mt-8">

@@ -88,12 +88,16 @@ export default function SubRecipeDetailsForm({ onNext, initialData, isEditMode =
           recipe.tokenStatus === 'APPROVED'
         );
         setRecipeList(approvedRecipes);
+        
         // Pre-select recipe in edit mode if recipeCode matches
         if (isEditMode && initialData.recipeCode) {
-          const matched = approvedRecipes.find(
-            (r: any) => r.recipeCode === initialData.recipeCode
+          const matchedRecipe = approvedRecipes.find(
+            (recipe: any) => recipe.recipeCode === initialData.recipeCode
           );
-          if (matched) setSelectedRecipe(matched.id);
+          if (matchedRecipe) {
+            setSelectedRecipe(matchedRecipe.id);
+            setRecipeCode(matchedRecipe.recipeCode);
+          }
         }
       })
       .catch((err: Error) => {
