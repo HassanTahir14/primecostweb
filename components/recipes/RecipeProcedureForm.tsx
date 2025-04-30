@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useDispatch } from 'react-redux';
-import { createRecipe } from '@/store/recipeSlice';
+import { createRecipe, updateRecipeThunk } from '@/store/recipeSlice';
 import Button from '@/components/common/button';
 import { Plus, Trash2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -96,6 +96,8 @@ export default function RecipeProcedureForm({ onNext, onBack, initialData }: Rec
 
       // Add recipe details
       const recipeDTO = {
+        id: initialData.id,
+        recipeId: initialData.id,
         recipeDetailsRequest: {
           name: initialData.name || '',
           recipeCode: initialData.recipeCode || '',
@@ -156,9 +158,10 @@ export default function RecipeProcedureForm({ onNext, onBack, initialData }: Rec
       });
 
      
-      const result = await dispatch(createRecipe(formData)).unwrap();
+      const result = await dispatch(updateRecipeThunk(formData)).unwrap();
       console.log(result, 'result')
       
+      router.push('/recipes');
       
     } catch (error: any) {
       console.log(error, 'error')
@@ -232,7 +235,7 @@ export default function RecipeProcedureForm({ onNext, onBack, initialData }: Rec
       <div className="flex justify-between mt-8">
         <Button variant="secondary" onClick={onBack} disabled={isSubmitting}>Back</Button>
         <Button onClick={handleFinalSubmit}>
-          {isSubmitting ? 'Creating Recipe...' : 'CREATE RECIPE'}
+          {isSubmitting ? 'Updating Recipe...' : 'UPDATE RECIPE'}
         </Button>
       </div>
     </div>

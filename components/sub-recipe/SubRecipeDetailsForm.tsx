@@ -8,6 +8,7 @@ import { fetchAllCategories } from '@/store/subRecipeCategorySlice';
 import { useDispatch } from 'react-redux';
 import { AppDispatch } from '@/store/store';
 import { fetchAllServingSizes } from '@/store/servingSizeSlice';
+import { fetchRecipes } from '@/store/recipeSlice';
 import ConfirmationModal from '@/components/common/ConfirmationModal';
 import { useRouter } from 'next/navigation';
 import { getImageUrlWithAuth } from '@/utils/imageUtils';
@@ -31,10 +32,14 @@ export default function SubRecipeDetailsForm({ onNext, initialData, isEditMode =
   const [category, setCategory] = useState(initialData.category || '');
   const [portions, setPortions] = useState(initialData.portions || '');
   const [servingSize, setServingSize] = useState(initialData.servingSize || '');
+  const [selectedRecipe, setSelectedRecipe] = useState<number | ''>(
+    initialData.selectedRecipe ? Number(initialData.selectedRecipe) : ''
+  );
   const [images, setImages] = useState<(File | RecipeImage)[]>([]);
   const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([]);
   const [categoryList, setCategoryList] = useState<any[]>([]);
   const [servingSizeList, setServingSizeList] = useState<any[]>([]);
+  const [recipeList, setRecipeList] = useState<any[]>([]);
   const [isMounted, setIsMounted] = useState(false);
   const [errors, setErrors] = useState<any>({});
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -61,7 +66,6 @@ export default function SubRecipeDetailsForm({ onNext, initialData, isEditMode =
       .unwrap()
       .then((res) => {
         setCategoryList(res.subRecipeCategoryList || []);
-        console.log(res, 'res')
       })
       .catch((err) => {
         console.error('Failed to fetch categories:', err);
@@ -71,10 +75,29 @@ export default function SubRecipeDetailsForm({ onNext, initialData, isEditMode =
       .unwrap()
       .then((res) => {
         setServingSizeList(res.servingSizeList || []);
-        
       })
       .catch((err) => {
         console.error('Failed to fetch serving sizes:', err);
+      });
+
+    dispatch(fetchRecipes({}))
+      .unwrap()
+      .then((res: { recipeList: any[] }) => {
+        // Filter recipes to only show approved ones
+        const approvedRecipes = res.recipeList.filter((recipe: any) => 
+          recipe.tokenStatus === 'APPROVED'
+        );
+        setRecipeList(approvedRecipes);
+        // Pre-select recipe in edit mode if recipeCode matches
+        if (isEditMode && initialData.recipeCode) {
+          const matched = approvedRecipes.find(
+            (r: any) => r.recipeCode === initialData.recipeCode
+          );
+          if (matched) setSelectedRecipe(matched.id);
+        }
+      })
+      .catch((err: Error) => {
+        console.error('Failed to fetch recipes:', err);
       });
   }, [dispatch, initialData, isEditMode]);
 
@@ -121,14 +144,16 @@ export default function SubRecipeDetailsForm({ onNext, initialData, isEditMode =
     const newErrors: any = {};
 
     if (!name) newErrors.name = 'Name is required';
-    if (!recipeCode) newErrors.recipeCode = 'Recipe code is required';
-    else if (recipeCode.length < 3 || recipeCode.length > 100) 
-      newErrors.recipeCode = 'Recipe code must be between 3 and 100 characters';
     if (!category) newErrors.category = 'Category is required';
     if (!portions || isNaN(Number(portions)) || Number(portions) <= 0)
       newErrors.portions = 'Portions must be a positive number';
     if (!servingSize) newErrors.servingSize = 'Serving size is required';
-    if (images.length === 0) newErrors.images = 'At least one image is required';
+    if (!selectedRecipe) newErrors.selectedRecipe = 'Recipe is required';
+    if (images.length === 0) {
+      newErrors.images = 'At least one image is required';
+      setErrorMessage('Please upload at least one image before proceeding.');
+      setIsErrorModalOpen(true);
+    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -136,21 +161,58 @@ export default function SubRecipeDetailsForm({ onNext, initialData, isEditMode =
 
   const handleNextClick = () => {
     if (validateForm()) {
-      onNext({
-        name,
-        recipeCode,
-        category,
-        portions,
-        servingSize,
-        images
-      });
+      const selectedRecipeData = recipeList.find(recipe => recipe.id === selectedRecipe);
+      if (!selectedRecipeData) {
+        setErrorMessage('Please select a valid recipe');
+        setIsErrorModalOpen(true);
+        return;
+      }
+
+      // Convert existing images to File objects before passing to onNext
+      const processImages = async () => {
+        const processedImages = await Promise.all(
+          images.map(async (image) => {
+            if (image instanceof File) {
+              return image;
+            } else if (image.path) {
+              try {
+                const ext = image.path.split('.').pop()?.toLowerCase();
+                let mimeType = 'image/jpeg';
+                if (ext === 'png') mimeType = 'image/png';
+                if (ext === 'webp') mimeType = 'image/webp';
+                
+                const url = getImageUrlWithAuth(image.path, imageBaseUrl);
+                const response = await fetch(url);
+                const blob = await response.blob();
+                return new File([blob], image.path.split('/').pop() || 'image.jpg', { type: mimeType });
+              } catch (error) {
+                console.error('Error converting image to File:', error);
+                return null;
+              }
+            }
+            return null;
+          })
+        );
+
+        onNext({
+          name,
+          category,
+          portions,
+          servingSize,
+          images: processedImages.filter(Boolean),
+          recipeCode: selectedRecipeData.recipeCode,
+          selectedRecipeId: selectedRecipeData.id
+        });
+      };
+
+      processImages();
     }
   };
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-semibold">Recipe details</h2>
+        <h2 className="text-2xl font-semibold">Sub Recipe details</h2>
         <div className="flex gap-2">
           <input
             type="file"
@@ -205,19 +267,7 @@ export default function SubRecipeDetailsForm({ onNext, initialData, isEditMode =
       </div>
 
       <div>
-        <label className="block text-gray-700 font-medium mb-2">Recipe Code</label>
-        <input
-          type="text"
-          placeholder="Enter recipe code"
-          className={`w-full p-3 border ${errors.recipeCode ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00997B]`}
-          value={recipeCode}
-          onChange={(e) => setRecipeCode(e.target.value)}
-        />
-        {errors.recipeCode && <p className="text-red-500 text-sm">{errors.recipeCode}</p>}
-      </div>
-
-      <div>
-        <label className="block text-gray-700 font-medium mb-2">Recipe Category</label>
+        <label className="block text-gray-700 font-medium mb-2">Sub Recipe Category</label>
         <select
           className={`w-full p-3 border ${errors.category ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00997B] appearance-none bg-white`}
           value={category}
@@ -229,6 +279,23 @@ export default function SubRecipeDetailsForm({ onNext, initialData, isEditMode =
           ))}
         </select>
         {errors.category && <p className="text-red-500 text-sm">{errors.category}</p>}
+      </div>
+
+       <div>
+        <label className="block text-gray-700 font-medium mb-2">Select Recipe</label>
+        <select
+          className={`w-full p-3 border ${errors.selectedRecipe ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00997B] appearance-none bg-white`}
+          value={selectedRecipe === '' ? '' : String(selectedRecipe)}
+          onChange={(e) => setSelectedRecipe(Number(e.target.value))}
+        >
+          <option value="" disabled>Select Recipe</option>
+          {recipeList.map((recipe: any) => (
+            <option key={recipe.id} value={recipe.id}>
+              {recipe.name} - {recipe.recipeCode}
+            </option>
+          ))}
+        </select>
+        {errors.selectedRecipe && <p className="text-red-500 text-sm">{errors.selectedRecipe}</p>}
       </div>
 
       <div>
@@ -257,6 +324,8 @@ export default function SubRecipeDetailsForm({ onNext, initialData, isEditMode =
         </select>
         {errors.servingSize && <p className="text-red-500 text-sm">{errors.servingSize}</p>}
       </div>
+
+     
 
       <div className="flex justify-end mt-8">
         <Button size="lg" onClick={handleNextClick}>Next</Button>

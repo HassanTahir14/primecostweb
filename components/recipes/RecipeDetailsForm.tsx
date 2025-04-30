@@ -137,14 +137,43 @@ export default function RecipeDetailsForm({ onNext, initialData, isEditMode = fa
 
   const handleNextClick = () => {
     if (validateForm()) {
-      onNext({
-        name,
-        recipeCode,
-        category,
-        portions,
-        servingSize,
-        images
-      });
+      // Convert existing images to File objects before passing to onNext
+      const processImages = async () => {
+        const processedImages = await Promise.all(
+          images.map(async (image) => {
+            if (image instanceof File) {
+              return image;
+            } else if (image.path) {
+              try {
+                const ext = image.path.split('.').pop()?.toLowerCase();
+                let mimeType = 'image/jpeg';
+                if (ext === 'png') mimeType = 'image/png';
+                if (ext === 'webp') mimeType = 'image/webp';
+                
+                const url = getImageUrlWithAuth(image.path, imageBaseUrl);
+                const response = await fetch(url);
+                const blob = await response.blob();
+                return new File([blob], image.path.split('/').pop() || 'image.jpg', { type: mimeType });
+              } catch (error) {
+                console.error('Error converting image to File:', error);
+                return null;
+              }
+            }
+            return null;
+          })
+        );
+
+        onNext({
+          name,
+          recipeCode,
+          category,
+          portions,
+          servingSize,
+          images: processedImages.filter(Boolean)
+        });
+      };
+
+      processImages();
     }
   };
 

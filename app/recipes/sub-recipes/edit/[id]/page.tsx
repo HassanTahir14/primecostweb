@@ -7,20 +7,30 @@ import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import PageLayout from '@/components/PageLayout';
 import Button from '@/components/common/button';
-import RecipeDetailsForm from '@/components/recipes/RecipeDetailsForm';
-import RecipeIngredientsForm from '@/components/recipes/RecipeIngredientsForm';
-import RecipeCostingForm from '@/components/recipes/RecipeCostingForm';
-import RecipeProcedureForm from '@/components/recipes/RecipeProcedureForm';
+import SubRecipeDetailsForm from '@/components/sub-recipe/SubRecipeDetailsForm';
+import SubRecipeIngredientsForm from '@/components/sub-recipe/SubRecipeIngredientsForm';
+import SubRecipeCostingForm from '@/components/sub-recipe/SubRecipeCostingForm';
+import SubRecipeProcedureForm from '@/components/sub-recipe/SubRecipeProcedureForm';
 import { updateRecipeThunk, fetchRecipeByIdThunk } from '@/store/recipeSlice';
 import { AppDispatch } from '@/store/store';
 import ConfirmationModal from '@/components/common/ConfirmationModal';
 import { getSubRecipeByIdThunk } from '@/store/subRecipeSlice';
+import { getImageUrlWithAuth } from '@/utils/imageUtils';
+import { updateSubRecipeThunk } from '@/store/subRecipeSlice';
+
 const steps = [
   { id: 'details', name: 'Details' },
   { id: 'ingredients', name: 'Ingredients' },
   { id: 'costing', name: 'Costing' },
   { id: 'procedure', name: 'Procedure' },
 ];
+
+// Helper to fetch an image URL and convert to File
+async function urlToFile(url: string, filename: string, mimeType: string) {
+  const res = await fetch(url);
+  const buf = await res.arrayBuffer();
+  return new File([buf], filename, { type: mimeType });
+}
 
 export default function EditRecipePage() {
   const { id } = useParams();
@@ -130,7 +140,7 @@ export default function EditRecipePage() {
       // Prepare recipe data
       const recipeDTO = {
         id: recipeData.id,
-        recipeId: Number(id),
+        subRecipeId: Number(id),
         recipeDetailsRequest: {
           name: recipeData.name || '',
           recipeCode: recipeData.recipeCode || '',
@@ -170,22 +180,25 @@ export default function EditRecipePage() {
       };
       
       formData.append(
-        'recipe',
+        'subRecipe',
         new Blob([JSON.stringify(recipeDTO)], { type: 'application/json' })
       );
       
-      // Append images if any
+      // Convert and append all images to form data
       if (recipeData.images && recipeData.images.length > 0) {
-        recipeData.images.forEach((image: any) => {
-          // Only append File objects, not string URLs
-          if (image instanceof File) {
-            formData.append('images', image);
+        // Images are already File objects from SubRecipeDetailsForm
+        recipeData.images.forEach((file: File) => {
+          if (file instanceof File) {
+            formData.append('images', file);
           }
         });
+      } else {
+        // If no images are present, append an empty array to satisfy the API requirement
+        formData.append('images', new Blob([], { type: 'application/json' }));
       }
       
       // Call the update recipe API
-      await dispatch(updateRecipeThunk(formData)).unwrap();
+      await dispatch(updateSubRecipeThunk(formData)).unwrap();
       setIsSuccessModalOpen(true);
       
       // Redirect to recipes list after successful update
@@ -203,13 +216,13 @@ export default function EditRecipePage() {
   const renderStepContent = () => {
     switch (activeStep) {
       case 'details':
-        return <RecipeDetailsForm onNext={handleNext} initialData={recipeData} isEditMode={true} />;
+        return <SubRecipeDetailsForm onNext={handleNext} initialData={recipeData} isEditMode={true} />;
       case 'ingredients':
-        return <RecipeIngredientsForm onNext={handleNext} onBack={handleBack} initialData={recipeData} />;
+        return <SubRecipeIngredientsForm onNext={handleNext} onBack={handleBack} initialData={recipeData} />;
       case 'costing':
-        return <RecipeCostingForm onNext={handleNext} onBack={handleBack} initialData={recipeData} />;
+        return <SubRecipeCostingForm onNext={handleNext} onBack={handleBack} initialData={recipeData} />;
       case 'procedure':
-        return <RecipeProcedureForm onNext={handleNext} onBack={handleBack} initialData={recipeData} />;
+        return <SubRecipeProcedureForm onNext={handleNext} onBack={handleBack} initialData={recipeData} />;
       default:
         return null;
     }

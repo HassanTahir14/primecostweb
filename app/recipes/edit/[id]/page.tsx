@@ -176,12 +176,15 @@ export default function EditRecipePage() {
       
       // Append images if any
       if (recipeData.images && recipeData.images.length > 0) {
-        recipeData.images.forEach((image: any) => {
-          // Only append File objects, not string URLs
-          if (image instanceof File) {
-            formData.append('images', image);
+        // Images are already File objects from RecipeDetailsForm
+        recipeData.images.forEach((file: File) => {
+          if (file instanceof File) {
+            formData.append('images', file);
           }
         });
+      } else {
+        // If no images are present, append an empty array to satisfy the API requirement
+        formData.append('images', new Blob([], { type: 'application/json' }));
       }
       
       // Call the update recipe API

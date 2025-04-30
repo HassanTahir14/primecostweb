@@ -28,7 +28,7 @@ export const getAllSubRecipes = async (params: any) => {
 // Update subRecipe
 export const updateSubRecipe = async (formData: any) => {
   try {
-    const response = await api.put('/sub-r@ecipe/update', formData, {
+    const response = await api.put('/sub-recipe/update', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },

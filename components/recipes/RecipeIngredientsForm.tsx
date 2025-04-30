@@ -355,10 +355,11 @@ export default function RecipeIngredientsForm({ onNext, onBack, initialData }: R
               <label className="block text-gray-700 font-medium mb-2">EP USD / Unit</label>
               <input
                 type="number"
-                className={`w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00997B] ${errors.epUsdUnit ? 'border-red-500' : 'border-gray-300'}`}
+                className={`w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00997B] ${errors.epUsdUnit ? 'border-red-500' : 'border-gray-300'} bg-gray-100`}
                 value={epUsdUnit}
                 onChange={(e) => setEpUsdUnit(e.target.value)}
                 readOnly
+                disabled
               />
               {errors.epUsdUnit && <p className="text-red-500 text-sm mt-1">{errors.epUsdUnit}</p>}
             </div>
