@@ -49,6 +49,17 @@ export default function SubRecipeCostingForm({ onNext, onBack, initialData }: Re
     if (menuPrice && costPerPortion) {
       const margin = parseFloat(menuPrice) - parseFloat(costPerPortion);
       setMarginPerPortion(margin.toFixed(2));
+      
+      // Check for negative margin and set error
+      if (margin < 0) {
+        setErrors(prev => ({ ...prev, marginPerPortion: 'Margin cannot be negative. Please adjust menu price.' }));
+      } else {
+        setErrors(prev => {
+          const newErrors = { ...prev };
+          delete newErrors.marginPerPortion;
+          return newErrors;
+        });
+      }
     }
 
     // Ideal selling price
@@ -78,6 +89,16 @@ export default function SubRecipeCostingForm({ onNext, onBack, initialData }: Re
       newErrors.foodCostBudgetPercent = 'Food Cost % Budget is required.';
     } else if (parseFloat(foodCostBudgetPercent) <= 0) {
       newErrors.foodCostBudgetPercent = 'Must be greater than 0.';
+    } else if (parseFloat(foodCostBudgetPercent) > 100) {
+      newErrors.foodCostBudgetPercent = 'Must be between 0 and 100.';
+    }
+
+    if (marginPerPortion && parseFloat(marginPerPortion) < 0) {
+      newErrors.marginPerPortion = 'Margin cannot be negative.';
+    }
+
+    if (foodCostActualPercent && (parseFloat(foodCostActualPercent) < 0 || parseFloat(foodCostActualPercent) > 100)) {
+      newErrors.foodCostActualPercent = 'Must be between 0 and 100.';
     }
 
     setErrors(newErrors);
