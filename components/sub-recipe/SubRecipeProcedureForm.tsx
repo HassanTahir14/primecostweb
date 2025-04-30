@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { createSubRecipe, updateSubRecipeThunk } from '@/store/subRecipeSlice';
 import Button from '@/components/common/button';
@@ -8,6 +8,11 @@ import { Plus, Trash2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { AppDispatch } from '@/store/store';
 import ConfirmationModal from '@/components/common/ConfirmationModal';
+
+interface RecipeImage {
+  id: number;
+  path: string;
+}
 
 interface RecipeProcedureFormProps {
   onNext: (data: any) => void;
@@ -79,11 +84,24 @@ export default function RecipeProcedureForm({ onNext, onBack, initialData, isEdi
 
   const handleFinalSubmit = async () => {
     try {
+      if (!validateSteps()) {
+        alert('Please fix the validation errors before submitting');
+        return;
+      }
+
       setIsSubmitting(true);
-      
+
+      // Ensure all steps have valid descriptions
+      const hasEmptySteps = steps.some(step => !step.stepDescription.trim());
+      if (hasEmptySteps) {
+        alert('All steps must have a description');
+        return;
+      }
+
       // Create FormData for multipart/form-data
       const formData = new FormData();
-      
+
+      // Add recipe details
       const recipeDTO = {
         id: initialData.id,
         subRecipeId: initialData.id,
@@ -120,7 +138,8 @@ export default function RecipeProcedureForm({ onNext, onBack, initialData, isEdi
           stepDescription: step.stepDescription.trim()
         })),
         isSubRecipeAsIngredient: initialData.isSubRecipeAsIngredient || false,
-        subRecipeIngredients: initialData.subRecipeIngredients || []
+        subRecipeIngredients: initialData.subRecipeIngredients || [],
+        imageIdsToRemove: initialData.imageIdsToRemove || []
       };
 
       console.log('Validated recipe data:', recipeDTO);
@@ -130,10 +149,36 @@ export default function RecipeProcedureForm({ onNext, onBack, initialData, isEdi
         new Blob([JSON.stringify(recipeDTO)], { type: 'application/json' })
       );
       
-      if (initialData.images && initialData.images.length > 0) {
-        initialData.images.forEach((image: File, index: number) => {
-          formData.append('images', image);
+      // Add images to FormData
+      if (initialData.newImages && initialData.newImages.length > 0) {
+        // Append new images
+        initialData.newImages.forEach((file: File) => {
+          if (file instanceof File) {
+            formData.append('images', file);
+          }
         });
+      } else if (initialData.existingImages && initialData.existingImages.length > 0) {
+        // Append existing images that haven't been removed
+        initialData.existingImages.forEach((image: RecipeImage) => {
+          if (image.path) {
+            // For existing images, we need to fetch them and add them to FormData
+            fetch(image.path)
+              .then(res => res.blob())
+              .then(blob => {
+                const file = new File([blob], `image${image.id}.jpg`, { type: 'image/jpeg' });
+                formData.append('images', file);
+              })
+              .catch(err => {
+                console.error('Error fetching image:', err);
+                setErrorMessage('Failed to process some images');
+                setShowErrorModal(true);
+              });
+          }
+        });
+      } else {
+        setErrorMessage('At least one image is required');
+        setShowErrorModal(true);
+        return;
       }
 
       let result;

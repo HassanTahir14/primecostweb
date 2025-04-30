@@ -211,7 +211,7 @@ export default function RecipesPage() {
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">{recipe.numberOfPortions}</td>
-                      <td className="px-6 py-4 whitespace-nowrap">${(recipe.costPerRecipe / 100).toFixed(2)}</td>
+                      <td className="px-6 py-4 whitespace-nowrap">${(recipe.costPerRecipe)}</td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center space-x-2 action-buttons">
                           <Button 

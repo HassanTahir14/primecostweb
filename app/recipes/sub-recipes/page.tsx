@@ -219,7 +219,7 @@ export default function SubRecipesPage() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">{recipe.numberOfPortions}</td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        ${recipe.costPerRecipe.toFixed(2)}
+                        ${recipe.costPerRecipe}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center space-x-2 action-buttons">
@@ -241,7 +241,7 @@ export default function SubRecipesPage() {
                           >
                             Assign to?
                           </Button>
-                          {/* <Link href={`/recipes/sub-recipes/edit/${recipe.id}`}>
+                          <Link href={`/recipes/sub-recipes/edit/${recipe.id}`}>
                             <Button 
                               variant="default" 
                               size="sm" 
@@ -249,7 +249,7 @@ export default function SubRecipesPage() {
                             >
                               Edit
                             </Button>
-                          </Link> */}
+                          </Link>
                           {/* <Button 
                             variant="destructive" 
                             size="sm" 

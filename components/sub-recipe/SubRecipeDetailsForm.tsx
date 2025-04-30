@@ -16,7 +16,6 @@ import AuthImage from '@/components/common/AuthImage';
 
 interface RecipeImage {
   id?: number;
-  imageId?: number;
   path?: string;
 }
 
@@ -27,20 +26,21 @@ interface RecipeDetailsFormProps {
 }
 
 export default function SubRecipeDetailsForm({ onNext, initialData, isEditMode = false }: RecipeDetailsFormProps) {
-  const [name, setName] = useState(initialData.name || '');
-  const [recipeCode, setRecipeCode] = useState(initialData.recipeCode || '');
-  const [category, setCategory] = useState(initialData.category || '');
-  const [portions, setPortions] = useState(initialData.portions || '');
-  const [servingSize, setServingSize] = useState(initialData.servingSize || '');
-  const [selectedRecipe, setSelectedRecipe] = useState<number | ''>(
-    initialData.selectedRecipe ? Number(initialData.selectedRecipe) : ''
-  );
-  const [images, setImages] = useState<(File | RecipeImage)[]>([]);
-  const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([]);
+  const [formData, setFormData] = useState({
+    name: initialData.name || '',
+    recipeCode: initialData.recipeCode || '',
+    category: initialData.category || '',
+    portions: initialData.portions || '',
+    servingSize: initialData.servingSize || '',
+    selectedRecipe: initialData.selectedRecipe ? Number(initialData.selectedRecipe) : ''
+  });
+
+  const [existingImages, setExistingImages] = useState<RecipeImage[]>(initialData.images || []);
+  const [newImages, setNewImages] = useState<File[]>([]);
+  const [imageIdsToRemove, setImageIdsToRemove] = useState<number[]>([]);
   const [categoryList, setCategoryList] = useState<any[]>([]);
   const [servingSizeList, setServingSizeList] = useState<any[]>([]);
   const [recipeList, setRecipeList] = useState<any[]>([]);
-  const [isMounted, setIsMounted] = useState(false);
   const [errors, setErrors] = useState<any>({});
   const fileInputRef = useRef<HTMLInputElement>(null);
   
@@ -52,16 +52,9 @@ export default function SubRecipeDetailsForm({ onNext, initialData, isEditMode =
   const router = useRouter();
 
   // Get the image base URL for API images
-  const imageBaseUrl = process.env.NEXT_PUBLIC_API_URL || '';
+  const imageBaseUrl = process.env.NEXT_PUBLIC_IMAGE_URL || 'http://212.85.26.46:8082/api/v1/images/view';
 
   useEffect(() => {
-    setIsMounted(true);
-    
-    // Load initial images from the initialData if in edit mode
-    if (isEditMode && initialData.images && initialData.images.length > 0) {
-      setImages(initialData.images);
-    }
-    
     dispatch(fetchAllCategories())
       .unwrap()
       .then((res) => {
@@ -95,8 +88,7 @@ export default function SubRecipeDetailsForm({ onNext, initialData, isEditMode =
             (recipe: any) => recipe.recipeCode === initialData.recipeCode
           );
           if (matchedRecipe) {
-            setSelectedRecipe(matchedRecipe.id);
-            setRecipeCode(matchedRecipe.recipeCode);
+            setFormData(prev => ({ ...prev, selectedRecipe: matchedRecipe.id }));
           }
         }
       })
@@ -105,55 +97,32 @@ export default function SubRecipeDetailsForm({ onNext, initialData, isEditMode =
       });
   }, [dispatch, initialData, isEditMode]);
 
-  useEffect(() => {
-    if (!isMounted) return;
-
-    // Create preview URLs based on image type (File or path string)
-    const urls: string[] = [];
-    
-    images.forEach(image => {
-      if (image instanceof File) {
-        urls.push(URL.createObjectURL(image));
-      } else if (typeof image === 'object' && image.path) {
-        // For images from API with path property
-        urls.push(getImageUrlWithAuth(image.path, imageBaseUrl));
-      }
-    });
-
-    setImagePreviewUrls(urls);
-
-    return () => {
-      // Only revoke URLs that were created with createObjectURL
-      urls.forEach(url => {
-        if (url.startsWith('blob:')) {
-          URL.revokeObjectURL(url);
-        }
-      });
-    };
-  }, [images, isMounted, imageBaseUrl]);
-
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = event.target.files;
-    if (files && files.length > 0) {
-      const newImages = Array.from(files);
-      setImages(prevImages => [...prevImages, ...newImages]);
+    const files = Array.from(event.target.files || []);
+    setNewImages(prev => [...prev, ...files]);
+  };
+
+  const handleRemoveExistingImage = (imageId: number | undefined) => {
+    if (imageId) {
+      setImageIdsToRemove(prev => [...prev, imageId]);
+      setExistingImages(prev => prev.filter(img => img.id !== imageId));
     }
   };
 
-  const handleRemoveImage = (index: number) => {
-    setImages(prevImages => prevImages.filter((_, i) => i !== index));
+  const handleRemoveNewImage = (index: number) => {
+    setNewImages(prev => prev.filter((_, i) => i !== index));
   };
 
   const validateForm = () => {
     const newErrors: any = {};
 
-    if (!name) newErrors.name = 'Name is required';
-    if (!category) newErrors.category = 'Category is required';
-    if (!portions || isNaN(Number(portions)) || Number(portions) <= 0)
+    if (!formData.name) newErrors.name = 'Name is required';
+    if (!formData.category) newErrors.category = 'Category is required';
+    if (!formData.portions || isNaN(Number(formData.portions)) || Number(formData.portions) <= 0)
       newErrors.portions = 'Portions must be a positive number';
-    if (!servingSize) newErrors.servingSize = 'Serving size is required';
-    if (!selectedRecipe) newErrors.selectedRecipe = 'Recipe is required';
-    if (images.length === 0) {
+    if (!formData.servingSize) newErrors.servingSize = 'Serving size is required';
+    if (!formData.selectedRecipe) newErrors.selectedRecipe = 'Recipe is required';
+    if (existingImages.length + newImages.length === 0) {
       newErrors.images = 'At least one image is required';
       setErrorMessage('Please upload at least one image before proceeding.');
       setIsErrorModalOpen(true);
@@ -163,53 +132,22 @@ export default function SubRecipeDetailsForm({ onNext, initialData, isEditMode =
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleNextClick = () => {
+  const handleSubmit = () => {
     if (validateForm()) {
-      const selectedRecipeData = recipeList.find(recipe => recipe.id === selectedRecipe);
+      const selectedRecipeData = recipeList.find(recipe => recipe.id === formData.selectedRecipe);
       if (!selectedRecipeData) {
         setErrorMessage('Please select a valid recipe');
         setIsErrorModalOpen(true);
         return;
       }
 
-      // Convert existing images to File objects before passing to onNext
-      const processImages = async () => {
-        const processedImages = await Promise.all(
-          images.map(async (image) => {
-            if (image instanceof File) {
-              return image;
-            } else if (image.path) {
-              try {
-                const ext = image.path.split('.').pop()?.toLowerCase();
-                let mimeType = 'image/jpeg';
-                if (ext === 'png') mimeType = 'image/png';
-                if (ext === 'webp') mimeType = 'image/webp';
-                
-                const url = getImageUrlWithAuth(image.path, imageBaseUrl);
-                const response = await fetch(url);
-                const blob = await response.blob();
-                return new File([blob], image.path.split('/').pop() || 'image.jpg', { type: mimeType });
-              } catch (error) {
-                console.error('Error converting image to File:', error);
-                return null;
-              }
-            }
-            return null;
-          })
-        );
-
-        onNext({
-          name,
-          category,
-          portions,
-          servingSize,
-          images: processedImages.filter(Boolean),
-          recipeCode: selectedRecipeData.recipeCode,
-          selectedRecipeId: selectedRecipeData.id
-        });
-      };
-
-      processImages();
+      onNext({
+        ...formData,
+        existingImages,
+        newImages,
+        imageIdsToRemove,
+        recipeCode: selectedRecipeData.recipeCode
+      });
     }
   };
 
@@ -236,27 +174,67 @@ export default function SubRecipeDetailsForm({ onNext, initialData, isEditMode =
         </div>
       </div>
 
-      {isMounted && imagePreviewUrls.length > 0 && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {imagePreviewUrls.map((url, index) => (
-            <div key={index} className="relative">
-              <div className="aspect-square relative rounded-lg overflow-hidden">
-                <AuthImage
-                  src={url}
-                  alt={`Recipe image ${index + 1}`}
-                  className="object-cover"
-                />
-              </div>
-              <button
-                onClick={() => handleRemoveImage(index)}
-                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
-              >
-                <X className="w-4 h-4" />
-              </button>
+      {/* Image Display Section */}
+      <div className="space-y-4">
+        {/* Existing Images */}
+        {existingImages.length > 0 && (
+          <div className="mb-4">
+            <h4 className="text-sm font-medium mb-2 text-gray-600">Current Images:</h4>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+              {existingImages.map((img) => (
+                <div
+                  key={img.id}
+                  className="relative aspect-square bg-gray-100 rounded-lg group"
+                >
+                  <AuthImage
+                    src={getImageUrlWithAuth(img.path || '', imageBaseUrl)}
+                    alt={`Recipe image ${img.id}`}
+                    className="w-full h-full object-cover rounded-lg"
+                    fallbackSrc="/placeholder-image.jpg"
+                  />
+                  <button 
+                    type="button" 
+                    onClick={() => handleRemoveExistingImage(img.id)} 
+                    className="absolute top-1 right-1 bg-red-600 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-700"
+                    aria-label="Remove image"
+                  >
+                    <X size={14} /> 
+                  </button>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-      )}
+          </div>
+        )}
+
+        {/* New Images */}
+        {newImages.length > 0 && (
+          <div className="mt-4">
+            <h4 className="text-sm font-medium mb-2 text-gray-600">New Images to Upload:</h4>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+              {newImages.map((file, index) => (
+                <div
+                  key={index}
+                  className="relative aspect-square bg-gray-100 rounded-lg group"
+                >
+                  <img
+                    src={URL.createObjectURL(file)}
+                    alt={`New Preview ${index + 1}`}
+                    className="w-full h-full object-cover rounded-lg"
+                  />
+                  <button 
+                    type="button" 
+                    onClick={() => handleRemoveNewImage(index)} 
+                    className="absolute top-1 right-1 bg-red-600 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-700"
+                    aria-label="Remove new image"
+                  >
+                    <X size={14} /> 
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
 
       <div>
         <label className="block text-gray-700 font-medium mb-2">Name</label>
@@ -264,8 +242,8 @@ export default function SubRecipeDetailsForm({ onNext, initialData, isEditMode =
           type="text"
           placeholder="Enter value"
           className={`w-full p-3 border ${errors.name ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00997B]`}
-          value={name}
-          onChange={(e) => setName(e.target.value)}
+          value={formData.name}
+          onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
         />
         {errors.name && <p className="text-red-500 text-sm">{errors.name}</p>}
       </div>
@@ -274,8 +252,8 @@ export default function SubRecipeDetailsForm({ onNext, initialData, isEditMode =
         <label className="block text-gray-700 font-medium mb-2">Sub Recipe Category</label>
         <select
           className={`w-full p-3 border ${errors.category ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00997B] appearance-none bg-white`}
-          value={category}
-          onChange={(e) => setCategory(e.target.value)}
+          value={formData.category}
+          onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
         >
           <option value="" disabled>Select Option</option>
           {categoryList.map((cat: any) => (
@@ -285,12 +263,12 @@ export default function SubRecipeDetailsForm({ onNext, initialData, isEditMode =
         {errors.category && <p className="text-red-500 text-sm">{errors.category}</p>}
       </div>
 
-       <div>
+      <div>
         <label className="block text-gray-700 font-medium mb-2">Select Recipe</label>
         <select
           className={`w-full p-3 border ${errors.selectedRecipe ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00997B] appearance-none bg-white`}
-          value={selectedRecipe === '' ? '' : String(selectedRecipe)}
-          onChange={(e) => setSelectedRecipe(Number(e.target.value))}
+          value={formData.selectedRecipe === '' ? '' : String(formData.selectedRecipe)}
+          onChange={(e) => setFormData(prev => ({ ...prev, selectedRecipe: Number(e.target.value) }))}
         >
           <option value="" disabled>Select Recipe</option>
           {recipeList.map((recipe: any) => (
@@ -308,8 +286,8 @@ export default function SubRecipeDetailsForm({ onNext, initialData, isEditMode =
           type="number"
           placeholder="Enter value"
           className={`w-full p-3 border ${errors.portions ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00997B]`}
-          value={portions}
-          onChange={(e) => setPortions(e.target.value)}
+          value={formData.portions}
+          onChange={(e) => setFormData(prev => ({ ...prev, portions: e.target.value }))}
         />
         {errors.portions && <p className="text-red-500 text-sm">{errors.portions}</p>}
       </div>
@@ -318,8 +296,8 @@ export default function SubRecipeDetailsForm({ onNext, initialData, isEditMode =
         <label className="block text-gray-700 font-medium mb-2">Serving Size</label>
         <select
           className={`w-full p-3 border ${errors.servingSize ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00997B] appearance-none bg-white`}
-          value={servingSize}
-          onChange={(e) => setServingSize(e.target.value)}
+          value={formData.servingSize}
+          onChange={(e) => setFormData(prev => ({ ...prev, servingSize: e.target.value }))}
         >
           <option value="" disabled>Select Serving Size</option>
           {servingSizeList.map((size: any) => (
@@ -329,10 +307,8 @@ export default function SubRecipeDetailsForm({ onNext, initialData, isEditMode =
         {errors.servingSize && <p className="text-red-500 text-sm">{errors.servingSize}</p>}
       </div>
 
-     
-
       <div className="flex justify-end mt-8">
-        <Button size="lg" onClick={handleNextClick}>Next</Button>
+        <Button size="lg" onClick={handleSubmit}>Next</Button>
       </div>
 
       {/* Error Modal */}
