@@ -144,6 +144,7 @@ export default function RecipeDetailsForm({ onNext, initialData, isEditMode = fa
     if (validateForm()) {
       onNext({
         ...formData,
+        images: images, // Pass the actual images array
         recipeCode: formData.recipeCode // Pass the generated recipe code
       });
     }

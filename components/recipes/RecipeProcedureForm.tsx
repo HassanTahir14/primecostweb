@@ -16,6 +16,12 @@ interface RecipeProcedureFormProps {
   isEditMode?: boolean;
 }
 
+interface RecipeImage {
+  id?: number;
+  imageId?: number;
+  path?: string;
+}
+
 interface ProcedureStep {
   stepDescription: string;
   criticalPoint: string;
@@ -143,10 +149,30 @@ export default function RecipeProcedureForm({ onNext, onBack, initialData, isEdi
         new Blob([JSON.stringify(recipeDTO)], { type: 'application/json' })
       );
       
+      // Add images to FormData
       if (initialData.images && initialData.images.length > 0) {
-        initialData.images.forEach((image: File, index: number) => {
-          formData.append('images', image);
+        initialData.images.forEach((image: File | RecipeImage, index: number) => {
+          if (image instanceof File) {
+            formData.append('images', image);
+          } else if (image.path) {
+            // For existing images, we need to fetch them and add them to FormData
+            fetch(image.path)
+              .then(res => res.blob())
+              .then(blob => {
+                const file = new File([blob], `image${index}.jpg`, { type: 'image/jpeg' });
+                formData.append('images', file);
+              })
+              .catch(err => {
+                console.error('Error fetching image:', err);
+                setErrorMessage('Failed to process some images');
+                setShowErrorModal(true);
+              });
+          }
         });
+      } else {
+        setErrorMessage('At least one image is required');
+        setShowErrorModal(true);
+        return;
       }
 
       let result;
