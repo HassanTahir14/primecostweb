@@ -87,7 +87,8 @@ export default function EditRecipePage() {
             criticalPoint: proc.criticalPoint
           })) || [],
           isSubRecipeAsIngredient: recipe.ingredientsSubRecipe && recipe.ingredientsSubRecipe.length > 0,
-          subRecipeIngredients: recipe.ingredientsSubRecipe || []
+          subRecipeIngredients: recipe.ingredientsSubRecipe || [],
+          imageIdsToRemove: recipe.imageIdsToRemove || []
         };
         
         setRecipeData(mappedRecipeData);
@@ -104,7 +105,21 @@ export default function EditRecipePage() {
   }, [dispatch, id]);
 
   const handleNext = (data: any) => {
-    setRecipeData((prev: any) => ({ ...prev, ...data }));
+    // Deep merge the new data with existing recipeData
+    setRecipeData((prev: any) => {
+      const mergedData = { ...prev };
+      Object.keys(data).forEach(key => {
+        if (Array.isArray(data[key])) {
+          mergedData[key] = [...data[key]];
+        } else if (typeof data[key] === 'object' && data[key] !== null) {
+          mergedData[key] = { ...prev[key], ...data[key] };
+        } else {
+          mergedData[key] = data[key];
+        }
+      });
+      return mergedData;
+    });
+
     const currentIndex = steps.findIndex(step => step.id === activeStep);
     if (currentIndex < steps.length - 1) {
       setActiveStep(steps[currentIndex + 1].id);
@@ -166,7 +181,8 @@ export default function EditRecipePage() {
           criticalPoint: step.criticalPoint
         })),
         isSubRecipeAsIngredient: recipeData.isSubRecipeAsIngredient || false,
-        subRecipeIngredients: recipeData.subRecipeIngredients || []
+        subRecipeIngredients: recipeData.subRecipeIngredients || [],
+        imageIdsToRemove: recipeData.imageIdsToRemove || []
       };
       
       formData.append(
@@ -175,11 +191,18 @@ export default function EditRecipePage() {
       );
       
       // Append images if any
-      if (recipeData.images && recipeData.images.length > 0) {
-        // Images are already File objects from RecipeDetailsForm
-        recipeData.images.forEach((file: File) => {
+      if (recipeData.newImages && recipeData.newImages.length > 0) {
+        // Append new images
+        recipeData.newImages.forEach((file: File) => {
           if (file instanceof File) {
             formData.append('images', file);
+          }
+        });
+      } else if (recipeData.images && recipeData.images.length > 0) {
+        // Append existing images that haven't been removed
+        recipeData.images.forEach((image: any) => {
+          if (image instanceof File) {
+            formData.append('images', image);
           }
         });
       } else {

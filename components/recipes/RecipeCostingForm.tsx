@@ -88,6 +88,7 @@ export default function RecipeCostingForm({ onNext, onBack, initialData }: Recip
     if (!validate()) return;
 
     const costingData = {
+      ...initialData, // Preserve all previous data
       menuPrice,
       foodCostBudget: foodCostBudgetPercent,
       foodCostActual: foodCostActualPercent,

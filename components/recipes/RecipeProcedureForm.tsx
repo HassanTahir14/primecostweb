@@ -139,7 +139,8 @@ export default function RecipeProcedureForm({ onNext, onBack, initialData, isEdi
           stepDescription: step.stepDescription.trim()
         })),
         isSubRecipeAsIngredient: initialData.isSubRecipeAsIngredient || false,
-        subRecipeIngredients: initialData.subRecipeIngredients || []
+        subRecipeIngredients: initialData.subRecipeIngredients || [],
+        imageIdsToRemove: initialData.imageIdsToRemove || []
       };
 
       console.log('Validated recipe data:', recipeDTO);
@@ -150,16 +151,22 @@ export default function RecipeProcedureForm({ onNext, onBack, initialData, isEdi
       );
       
       // Add images to FormData
-      if (initialData.images && initialData.images.length > 0) {
-        initialData.images.forEach((image: File | RecipeImage, index: number) => {
-          if (image instanceof File) {
-            formData.append('images', image);
-          } else if (image.path) {
+      if (initialData.newImages && initialData.newImages.length > 0) {
+        // Append new images
+        initialData.newImages.forEach((file: File) => {
+          if (file instanceof File) {
+            formData.append('images', file);
+          }
+        });
+      } else if (initialData.existingImages && initialData.existingImages.length > 0) {
+        // Append existing images that haven't been removed
+        initialData.existingImages.forEach((image: RecipeImage) => {
+          if (image.path) {
             // For existing images, we need to fetch them and add them to FormData
             fetch(image.path)
               .then(res => res.blob())
               .then(blob => {
-                const file = new File([blob], `image${index}.jpg`, { type: 'image/jpeg' });
+                const file = new File([blob], `image${image.id}.jpg`, { type: 'image/jpeg' });
                 formData.append('images', file);
               })
               .catch(err => {
@@ -174,6 +181,9 @@ export default function RecipeProcedureForm({ onNext, onBack, initialData, isEdi
         setShowErrorModal(true);
         return;
       }
+
+      // Add imageIdsToRemove to the recipeDTO
+      recipeDTO.imageIdsToRemove = initialData.imageIdsToRemove || [];
 
       let result;
       if (isEditMode) {

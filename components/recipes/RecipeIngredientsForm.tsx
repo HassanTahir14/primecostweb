@@ -202,7 +202,10 @@ export default function RecipeIngredientsForm({ onNext, onBack, initialData }: R
   };
 
   const handleNextClick = () => {
-    onNext({ ingredients });
+    onNext({ 
+      ...initialData, // Preserve all previous data
+      ingredients 
+    });
   };
 
   return (

@@ -3,19 +3,16 @@
 import { useState, useEffect, useRef } from 'react';
 import Button from '@/components/common/button';
 import { Upload, X } from 'lucide-react';
-import Image from 'next/image';
 import { fetchAllCategories } from '@/store/recipeCategorySlice';
 import { useDispatch } from 'react-redux';
 import { AppDispatch } from '@/store/store';
 import { fetchAllServingSizes } from '@/store/servingSizeSlice';
 import ConfirmationModal from '@/components/common/ConfirmationModal';
-import { useRouter } from 'next/navigation';
 import { getImageUrlWithAuth } from '@/utils/imageUtils';
 import AuthImage from '@/components/common/AuthImage';
 
 interface RecipeImage {
   id?: number;
-  imageId?: number;
   path?: string;
 }
 
@@ -38,34 +35,28 @@ export default function RecipeDetailsForm({ onNext, initialData, isEditMode = fa
     category: initialData.category || '',
     portions: initialData.portions || '',
     servingSize: initialData.servingSize || '',
-    images: initialData.images || []
   });
-  const [images, setImages] = useState<(File | RecipeImage)[]>([]);
-  const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([]);
+  
+  const [existingImages, setExistingImages] = useState<RecipeImage[]>(initialData.images || []);
+  const [newImages, setNewImages] = useState<File[]>([]);
+  const [imageIdsToRemove, setImageIdsToRemove] = useState<number[]>([]);
   const [categoryList, setCategoryList] = useState<any[]>([]);
   const [servingSizeList, setServingSizeList] = useState<any[]>([]);
-  const [isMounted, setIsMounted] = useState(false);
   const [errors, setErrors] = useState<any>({});
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  console.log('existingImages', existingImages);
   
   // Modal states
   const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
   const dispatch = useDispatch<AppDispatch>();
-  const router = useRouter();
 
   // Update the image base URL
   const imageBaseUrl = process.env.NEXT_PUBLIC_IMAGE_URL || 'http://212.85.26.46:8082/api/v1/images/view';
 
   useEffect(() => {
-    setIsMounted(true);
-    
-    // Load initial images from the initialData if in edit mode
-    if (isEditMode && initialData.images && initialData.images.length > 0) {
-      setImages(initialData.images);
-    }
-    
     dispatch(fetchAllCategories())
       .unwrap()
       .then((res) => {
@@ -83,57 +74,39 @@ export default function RecipeDetailsForm({ onNext, initialData, isEditMode = fa
       .catch((err) => {
         console.error('Failed to fetch serving sizes:', err);
       });
-  }, [dispatch, initialData, isEditMode]);
-
-  useEffect(() => {
-    if (!isMounted) return;
-
-    // Create preview URLs based on image type (File or path string)
-    const urls: string[] = [];
-    
-    images.forEach(image => {
-      if (image instanceof File) {
-        urls.push(URL.createObjectURL(image));
-      } else if (typeof image === 'object' && image.path) {
-        // For images from API with path property
-        urls.push(getImageUrlWithAuth(image.path, imageBaseUrl));
-      }
-    });
-
-    setImagePreviewUrls(urls);
-
-    return () => {
-      // Only revoke URLs that were created with createObjectURL
-      urls.forEach(url => {
-        if (url.startsWith('blob:')) {
-          URL.revokeObjectURL(url);
-        }
-      });
-    };
-  }, [images, isMounted, imageBaseUrl]);
+  }, [dispatch]);
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = event.target.files;
-    if (files && files.length > 0) {
-      const newImages = Array.from(files);
-      setImages(prevImages => [...prevImages, ...newImages]);
+    const files = Array.from(event.target.files || []);
+    setNewImages(prev => [...prev, ...files]);
+  };
+
+  const handleRemoveExistingImage = (imageId: number | undefined) => {
+    console.log('imageId', imageId);
+    if (imageId) {
+      console.log('imageId', imageId);
+      setImageIdsToRemove(prev => [...prev, imageId]);
+      setExistingImages(prev => prev.filter(img => img.id !== imageId));
     }
   };
 
-  const handleRemoveImage = (index: number) => {
-    setImages(prevImages => prevImages.filter((_, i) => i !== index));
+  const handleRemoveNewImage = (index: number) => {
+    setNewImages(prev => prev.filter((_, i) => i !== index));
   };
 
   const validateForm = () => {
     const newErrors: any = {};
 
     if (!formData.name) newErrors.name = 'Name is required';
-   
     if (!formData.category) newErrors.category = 'Category is required';
     if (!formData.portions || isNaN(Number(formData.portions)) || Number(formData.portions) <= 0)
       newErrors.portions = 'Portions must be a positive number';
     if (!formData.servingSize) newErrors.servingSize = 'Serving size is required';
-    if (images.length === 0) newErrors.images = 'At least one image is required';
+    if (existingImages.length + newImages.length === 0) {
+      newErrors.images = 'At least one image is required';
+      setErrorMessage('Please upload at least one image before proceeding.');
+      setIsErrorModalOpen(true);
+    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -144,8 +117,10 @@ export default function RecipeDetailsForm({ onNext, initialData, isEditMode = fa
     if (validateForm()) {
       onNext({
         ...formData,
-        images: images, // Pass the actual images array
-        recipeCode: formData.recipeCode // Pass the generated recipe code
+        existingImages,
+        newImages,
+        imageIdsToRemove,
+        recipeCode: formData.recipeCode
       });
     }
   };
@@ -173,29 +148,67 @@ export default function RecipeDetailsForm({ onNext, initialData, isEditMode = fa
         </div>
       </div>
 
-      {isMounted && imagePreviewUrls.length > 0 && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {imagePreviewUrls.map((url, index) => (
-            <div key={index} className="relative">
-              <div className="aspect-square relative rounded-lg overflow-hidden">
-                <AuthImage
-                  src={url}
-                  alt={`Recipe image ${index + 1}`}
-                  fill
-                  className="object-cover"
-                />
-              </div>
-              <button
-                onClick={() => handleRemoveImage(index)}
-                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
-              >
-                <X className="w-4 h-4" />
-              </button>
+      {/* Image Display Section */}
+      <div className="space-y-4">
+        {/* Existing Images */}
+        {existingImages.length > 0 && (
+          <div className="mb-4">
+            <h4 className="text-sm font-medium mb-2 text-gray-600">Current Images:</h4>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+              {existingImages.map((img) => (
+                <div
+                  key={img.id}
+                  className="relative aspect-square bg-gray-100 rounded-lg group"
+                >
+                  <AuthImage
+                    src={getImageUrlWithAuth(img.path || '', imageBaseUrl)}
+                    alt={`Recipe image ${img.id}`}
+                    className="w-full h-full object-cover rounded-lg"
+                    fallbackSrc="/placeholder-image.jpg"
+                  />
+                  <button 
+                    type="button" 
+                    onClick={() => handleRemoveExistingImage(img.id)} 
+                    className="absolute top-1 right-1 bg-red-600 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-700"
+                    aria-label="Remove image"
+                  >
+                    <X size={14} /> 
+                  </button>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-      )}
-      {errors.images && <p className="text-red-500 text-sm mt-2">{errors.images}</p>}
+          </div>
+        )}
+
+        {/* New Images */}
+        {newImages.length > 0 && (
+          <div className="mt-4">
+            <h4 className="text-sm font-medium mb-2 text-gray-600">New Images to Upload:</h4>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+              {newImages.map((file, index) => (
+                <div
+                  key={index}
+                  className="relative aspect-square bg-gray-100 rounded-lg group"
+                >
+                  <img
+                    src={URL.createObjectURL(file)}
+                    alt={`New Preview ${index + 1}`}
+                    className="w-full h-full object-cover rounded-lg"
+                  />
+                  <button 
+                    type="button" 
+                    onClick={() => handleRemoveNewImage(index)} 
+                    className="absolute top-1 right-1 bg-red-600 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-700"
+                    aria-label="Remove new image"
+                  >
+                    <X size={14} /> 
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
 
       <div>
         <label className="block text-gray-700 font-medium mb-2">Name</label>
@@ -208,18 +221,6 @@ export default function RecipeDetailsForm({ onNext, initialData, isEditMode = fa
         />
         {errors.name && <p className="text-red-500 text-sm">{errors.name}</p>}
       </div>
-
-      {/* <div>
-        <label className="block text-gray-700 font-medium mb-2">Recipe Code</label>
-        <input
-          type="text"
-          placeholder="Enter recipe code"
-          className={`w-full p-3 border ${errors.recipeCode ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00997B]`}
-          value={formData.recipeCode}
-          onChange={(e) => setFormData(prev => ({ ...prev, recipeCode: e.target.value }))}
-        />
-        {errors.recipeCode && <p className="text-red-500 text-sm">{errors.recipeCode}</p>}
-      </div> */}
 
       <div>
         <label className="block text-gray-700 font-medium mb-2">Recipe Category</label>
