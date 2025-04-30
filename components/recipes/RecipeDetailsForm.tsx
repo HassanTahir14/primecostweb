@@ -25,17 +25,21 @@ interface RecipeDetailsFormProps {
   isEditMode?: boolean;
 }
 
+const generateRecipeCode = () => {
+  const prefix = 'RCP';
+  const randomNum = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+  return `${prefix}${randomNum}`;
+};
+
 export default function RecipeDetailsForm({ onNext, initialData, isEditMode = false }: RecipeDetailsFormProps) {
-  const [name, setName] = useState(initialData.name || '');
-  const [recipeCode, setRecipeCode] = useState(initialData.recipeCode || '');
-  const [category, setCategory] = useState(
-    initialData.category !== undefined && initialData.category !== null
-      ? initialData.category
-      : ''
-  );
-  
-  const [portions, setPortions] = useState(initialData.portions || '');
-  const [servingSize, setServingSize] = useState(initialData.servingSize || '');
+  const [formData, setFormData] = useState({
+    name: initialData.name || '',
+    recipeCode: initialData.recipeCode || generateRecipeCode(),
+    category: initialData.category || '',
+    portions: initialData.portions || '',
+    servingSize: initialData.servingSize || '',
+    images: initialData.images || []
+  });
   const [images, setImages] = useState<(File | RecipeImage)[]>([]);
   const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([]);
   const [categoryList, setCategoryList] = useState<any[]>([]);
@@ -123,57 +127,25 @@ export default function RecipeDetailsForm({ onNext, initialData, isEditMode = fa
   const validateForm = () => {
     const newErrors: any = {};
 
-    if (!name) newErrors.name = 'Name is required';
+    if (!formData.name) newErrors.name = 'Name is required';
    
-    if (!category) newErrors.category = 'Category is required';
-    if (!portions || isNaN(Number(portions)) || Number(portions) <= 0)
+    if (!formData.category) newErrors.category = 'Category is required';
+    if (!formData.portions || isNaN(Number(formData.portions)) || Number(formData.portions) <= 0)
       newErrors.portions = 'Portions must be a positive number';
-    if (!servingSize) newErrors.servingSize = 'Serving size is required';
+    if (!formData.servingSize) newErrors.servingSize = 'Serving size is required';
     if (images.length === 0) newErrors.images = 'At least one image is required';
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleNextClick = () => {
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
     if (validateForm()) {
-      // Convert existing images to File objects before passing to onNext
-      const processImages = async () => {
-        const processedImages = await Promise.all(
-          images.map(async (image) => {
-            if (image instanceof File) {
-              return image;
-            } else if (image.path) {
-              try {
-                const ext = image.path.split('.').pop()?.toLowerCase();
-                let mimeType = 'image/jpeg';
-                if (ext === 'png') mimeType = 'image/png';
-                if (ext === 'webp') mimeType = 'image/webp';
-                
-                const url = getImageUrlWithAuth(image.path, imageBaseUrl);
-                const response = await fetch(url);
-                const blob = await response.blob();
-                return new File([blob], image.path.split('/').pop() || 'image.jpg', { type: mimeType });
-              } catch (error) {
-                console.error('Error converting image to File:', error);
-                return null;
-              }
-            }
-            return null;
-          })
-        );
-
-        onNext({
-          name,
-          recipeCode,
-          category,
-          portions,
-          servingSize,
-          images: processedImages.filter(Boolean)
-        });
-      };
-
-      processImages();
+      onNext({
+        ...formData,
+        recipeCode: formData.recipeCode // Pass the generated recipe code
+      });
     }
   };
 
@@ -230,8 +202,8 @@ export default function RecipeDetailsForm({ onNext, initialData, isEditMode = fa
           type="text"
           placeholder="Enter value"
           className={`w-full p-3 border ${errors.name ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00997B]`}
-          value={name}
-          onChange={(e) => setName(e.target.value)}
+          value={formData.name}
+          onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
         />
         {errors.name && <p className="text-red-500 text-sm">{errors.name}</p>}
       </div>
@@ -242,8 +214,8 @@ export default function RecipeDetailsForm({ onNext, initialData, isEditMode = fa
           type="text"
           placeholder="Enter recipe code"
           className={`w-full p-3 border ${errors.recipeCode ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00997B]`}
-          value={recipeCode}
-          onChange={(e) => setRecipeCode(e.target.value)}
+          value={formData.recipeCode}
+          onChange={(e) => setFormData(prev => ({ ...prev, recipeCode: e.target.value }))}
         />
         {errors.recipeCode && <p className="text-red-500 text-sm">{errors.recipeCode}</p>}
       </div> */}
@@ -252,8 +224,8 @@ export default function RecipeDetailsForm({ onNext, initialData, isEditMode = fa
         <label className="block text-gray-700 font-medium mb-2">Recipe Category</label>
         <select
           className={`w-full p-3 border ${errors.category ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00997B] appearance-none bg-white`}
-          value={category}
-          onChange={(e) => setCategory(e.target.value)}
+          value={formData.category}
+          onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
         >
           <option value="" disabled>Select Option</option>
           {categoryList.map((cat: any) => (
@@ -269,8 +241,8 @@ export default function RecipeDetailsForm({ onNext, initialData, isEditMode = fa
           type="number"
           placeholder="Enter value"
           className={`w-full p-3 border ${errors.portions ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00997B]`}
-          value={portions}
-          onChange={(e) => setPortions(e.target.value)}
+          value={formData.portions}
+          onChange={(e) => setFormData(prev => ({ ...prev, portions: e.target.value }))}
         />
         {errors.portions && <p className="text-red-500 text-sm">{errors.portions}</p>}
       </div>
@@ -279,8 +251,8 @@ export default function RecipeDetailsForm({ onNext, initialData, isEditMode = fa
         <label className="block text-gray-700 font-medium mb-2">Serving Size</label>
         <select
           className={`w-full p-3 border ${errors.servingSize ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00997B] appearance-none bg-white`}
-          value={servingSize}
-          onChange={(e) => setServingSize(e.target.value)}
+          value={formData.servingSize}
+          onChange={(e) => setFormData(prev => ({ ...prev, servingSize: e.target.value }))}
         >
           <option value="" disabled>Select Serving Size</option>
           {servingSizeList.map((size: any) => (
@@ -291,7 +263,7 @@ export default function RecipeDetailsForm({ onNext, initialData, isEditMode = fa
       </div>
 
       <div className="flex justify-end mt-8">
-        <Button size="lg" onClick={handleNextClick}>Next</Button>
+        <Button size="lg" onClick={handleSubmit}>Next</Button>
       </div>
 
       {/* Error Modal */}

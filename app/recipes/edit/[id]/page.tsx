@@ -212,7 +212,7 @@ export default function EditRecipePage() {
       case 'costing':
         return <RecipeCostingForm onNext={handleNext} onBack={handleBack} initialData={recipeData} />;
       case 'procedure':
-        return <RecipeProcedureForm onNext={handleNext} onBack={handleBack} initialData={recipeData} />;
+        return <RecipeProcedureForm onNext={handleNext} onBack={handleBack} initialData={recipeData} isEditMode={true} />;
       default:
         return null;
     }

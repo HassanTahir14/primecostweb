@@ -13,6 +13,7 @@ interface RecipeProcedureFormProps {
   onNext: (data: any) => void;
   onBack: () => void;
   initialData: any;
+  isEditMode?: boolean;
 }
 
 interface ProcedureStep {
@@ -20,7 +21,7 @@ interface ProcedureStep {
   criticalPoint: string;
 }
 
-export default function RecipeProcedureForm({ onNext, onBack, initialData }: RecipeProcedureFormProps) {
+export default function RecipeProcedureForm({ onNext, onBack, initialData, isEditMode = false }: RecipeProcedureFormProps) {
   const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
   const [steps, setSteps] = useState<ProcedureStep[]>(
@@ -78,24 +79,11 @@ export default function RecipeProcedureForm({ onNext, onBack, initialData }: Rec
 
   const handleFinalSubmit = async () => {
     try {
-      if (!validateSteps()) {
-        alert('Please fix the validation errors before submitting');
-        return;
-      }
-
       setIsSubmitting(true);
-
-      // Ensure all steps have valid descriptions
-      const hasEmptySteps = steps.some(step => !step.stepDescription.trim());
-      if (hasEmptySteps) {
-        alert('All steps must have a description');
-        return;
-      }
-
+      
       // Create FormData for multipart/form-data
       const formData = new FormData();
-
-      // Add recipe details
+      
       const recipeDTO = {
         id: initialData.id,
         subRecipeId: initialData.id,
@@ -108,8 +96,8 @@ export default function RecipeProcedureForm({ onNext, onBack, initialData }: Rec
         },
         recipeCost: {
           menuPrice: Number(initialData.menuPrice) || 0,
-          foodCostBudgetPercentage: Number(initialData.foodCostBudget) || 100,
-          foodCostActualPercentage: Number(initialData.foodCostActual) || 100,
+          foodCostBudgetPercentage: Number(initialData.foodCostBudget) || 0,
+          foodCostActualPercentage: Number(initialData.foodCostActual) || 0,
           idealSellingPrice: Number(initialData.idealSellingPrice) || 0,
           costPerPortion: Number(initialData.costPerPortion) || 0,
           costPerRecipe: Number(initialData.costPerRecipe) || 0,
@@ -148,7 +136,12 @@ export default function RecipeProcedureForm({ onNext, onBack, initialData }: Rec
         });
       }
 
-      const result = await dispatch(updateSubRecipeThunk(formData)).unwrap();
+      let result;
+      if (isEditMode) {
+        result = await dispatch(updateSubRecipeThunk(formData)).unwrap();
+      } else {
+        result = await dispatch(createSubRecipe(formData)).unwrap();
+      }
       console.log(result, 'result');
       
       setShowSuccessModal(true);
@@ -238,7 +231,7 @@ export default function RecipeProcedureForm({ onNext, onBack, initialData }: Rec
       <div className="flex justify-between mt-8">
         <Button variant="secondary" onClick={onBack} disabled={isSubmitting}>Back</Button>
         <Button onClick={handleFinalSubmit}>
-          {isSubmitting ? 'Updating Sub Recipe...' : 'UPDATE SUB RECIPE'}
+          {isSubmitting ? (isEditMode ? 'Updating Sub Recipe...' : 'Creating Sub Recipe...') : (isEditMode ? 'UPDATE SUB RECIPE' : 'CREATE SUB RECIPE')}
         </Button>
       </div>
     </div>

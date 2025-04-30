@@ -50,7 +50,7 @@ export default function CreateRecipePage() {
       case 'costing':
         return <SubRecipeCostingForm onNext={handleNext} onBack={handleBack} initialData={recipeData} />;
       case 'procedure':
-        return <SubRecipeProcedureForm onNext={handleNext} onBack={handleBack} initialData={recipeData} />;
+        return <SubRecipeProcedureForm onNext={handleNext} onBack={handleBack} initialData={recipeData} isEditMode={false} />;
       default:
         return null;
     }

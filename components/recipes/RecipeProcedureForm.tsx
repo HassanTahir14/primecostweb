@@ -13,6 +13,7 @@ interface RecipeProcedureFormProps {
   onNext: (data: any) => void;
   onBack: () => void;
   initialData: any;
+  isEditMode?: boolean;
 }
 
 interface ProcedureStep {
@@ -20,7 +21,7 @@ interface ProcedureStep {
   criticalPoint: string;
 }
 
-export default function RecipeProcedureForm({ onNext, onBack, initialData }: RecipeProcedureFormProps) {
+export default function RecipeProcedureForm({ onNext, onBack, initialData, isEditMode = false }: RecipeProcedureFormProps) {
   const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
   const [steps, setSteps] = useState<ProcedureStep[]>(
@@ -108,8 +109,8 @@ export default function RecipeProcedureForm({ onNext, onBack, initialData }: Rec
         },
         recipeCost: {
           menuPrice: Number(initialData.menuPrice) || 0,
-          foodCostBudgetPercentage: Number(initialData.foodCostBudget) || 100,
-          foodCostActualPercentage: Number(initialData.foodCostActual) || 100,
+          foodCostBudgetPercentage: Number(initialData.foodCostBudget) || 0,
+          foodCostActualPercentage: Number(initialData.foodCostActual) || 0,
           idealSellingPrice: Number(initialData.idealSellingPrice) || 0,
           costPerPortion: Number(initialData.costPerPortion) || 0,
           costPerRecipe: Number(initialData.costPerRecipe) || 0,
@@ -142,30 +143,24 @@ export default function RecipeProcedureForm({ onNext, onBack, initialData }: Rec
         new Blob([JSON.stringify(recipeDTO)], { type: 'application/json' })
       );
       
-
-     
       if (initialData.images && initialData.images.length > 0) {
         initialData.images.forEach((image: File, index: number) => {
           formData.append('images', image);
         });
       }
 
-      console.log(recipeDTO, 'recipeDTO')
-
-     
-      console.log('Form data being sent:', {
-        recipe: JSON.stringify(recipeDTO).substring(0, 100) + '...',
-        images: initialData.images?.length || 0
-      });
-
-     
-      const result = await dispatch(updateRecipeThunk(formData)).unwrap();
-      console.log(result, 'result')
+      let result;
+      if (isEditMode) {
+        result = await dispatch(updateRecipeThunk(formData)).unwrap();
+      } else {
+        result = await dispatch(createRecipe(formData)).unwrap();
+      }
+      console.log(result, 'result');
       
       setShowSuccessModal(true);
-      
     } catch (error: any) {
-      console.log(error, 'error')
+      setErrorMessage(error.message || 'Failed to create recipe');
+      setShowErrorModal(true);
     } finally {
       setIsSubmitting(false);
     }
@@ -224,7 +219,11 @@ export default function RecipeProcedureForm({ onNext, onBack, initialData }: Rec
       {/* Error Modal */}
       <ConfirmationModal
         isOpen={showErrorModal}
-        onClose={() => setShowErrorModal(false)}
+        onClose={() => {
+          setShowErrorModal(false);
+          setErrorMessage('');
+          setErrorDetails({});
+        }}
         title="Validation Error"
         message={`${errorMessage}\n\n${Object.entries(errorDetails)
           .map(([key, value]) => `• ${value}`)
@@ -241,7 +240,7 @@ export default function RecipeProcedureForm({ onNext, onBack, initialData }: Rec
           router.push('/recipes');
         }}
         title="Success"
-        message="Recipe updated successfully!"
+        message={isEditMode ? "Recipe updated successfully!" : "Recipe created successfully!"}
         isAlert={true}
         okText="OK"
       />
@@ -249,7 +248,7 @@ export default function RecipeProcedureForm({ onNext, onBack, initialData }: Rec
       <div className="flex justify-between mt-8">
         <Button variant="secondary" onClick={onBack} disabled={isSubmitting}>Back</Button>
         <Button onClick={handleFinalSubmit}>
-          {isSubmitting ? 'Updating Recipe...' : 'UPDATE RECIPE'}
+          {isSubmitting ? (isEditMode ? 'Updating Recipe...' : 'Creating Recipe...') : (isEditMode ? 'UPDATE RECIPE' : 'CREATE RECIPE')}
         </Button>
       </div>
     </div>
