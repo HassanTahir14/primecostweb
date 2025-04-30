@@ -232,7 +232,7 @@ export default function RecipesPage() {
                           >
                             Assign to?
                           </Button>
-                          <Link href={`/recipes/edit/${recipe.id}`}>
+                          {/* <Link href={`/recipes/edit/${recipe.id}`}>
                             <Button 
                               variant="default" 
                               size="sm" 
@@ -240,7 +240,7 @@ export default function RecipesPage() {
                             >
                               Edit
                             </Button>
-                          </Link>
+                          </Link> */}
                           <Button 
                             variant="destructive" 
                             size="sm" 
