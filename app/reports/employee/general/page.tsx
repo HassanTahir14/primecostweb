@@ -11,7 +11,7 @@ import ReportTypeTable, { ColumnDefinition } from '@/components/reports/ReportTy
 import ConfirmationModal from '@/components/common/ConfirmationModal';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
-import { format, subDays } from 'date-fns';
+import { getDefaultDateRange } from '@/utils/dateUtils';
 
 // Updated data structure based on API response
 interface GeneralEmployeeRecord {
@@ -45,28 +45,28 @@ const generalColumns: ColumnDefinition<GeneralEmployeeRecord>[] = [
 
 const GeneralEmployeeReportPage: React.FC = () => {
   const dispatch: AppDispatch = useDispatch();
-  // Select the specific report state object
   const { data: generalReportData, loading, error } = useSelector((state: RootState) => state.employeeReports.general);
 
-  // Adjust default dates if needed for this report (e.g., maybe wider range?)
-  const defaultEndDate = format(new Date(), 'yyyy-MM-dd');
-  const defaultStartDate = format(subDays(new Date(), 30), 'yyyy-MM-dd');
-
-  // Use string state for date inputs
+  const { startDate: defaultStartDate, endDate: defaultEndDate } = getDefaultDateRange();
   const [startDate, setStartDate] = useState<string>(defaultStartDate);
   const [endDate, setEndDate] = useState<string>(defaultEndDate);
   const [validationError, setValidationError] = useState<string | null>(null);
 
+  // Fetch data on first load
+  useEffect(() => {
+    dispatch(clearEmployeeReportError('general'));
+    const payload = { startDate, endDate, sortBy: "createdAt", page: 0, size: 1000, direction: "asc"};
+    dispatch(fetchGeneralEmployeeReport(payload));
+  }, []); // Empty dependency array means this runs once on mount
+
   const handleFetchReport = () => {
-    // Adjust validation if dates are optional for this report
     if (!startDate || !endDate) {
-        setValidationError('Please select both a Start Date and End Date (e.g., for Hire Date range).' );
+        setValidationError('Please select both a Start Date and End Date.');
         return;
     }
     setValidationError(null);
-    // Clear previous errors before fetching
     dispatch(clearEmployeeReportError('general'));
-    const payload = { startDate, endDate, sortBy: "preparedDate", page: 0, size: 100, direction: "asc"};
+    const payload = { startDate, endDate, sortBy: "createdAt", page: 0, size: 1000, direction: "asc"};
     dispatch(fetchGeneralEmployeeReport(payload));
   };
 

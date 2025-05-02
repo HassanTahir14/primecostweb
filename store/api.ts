@@ -1,8 +1,8 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "/api-proxy",
-  // baseURL: "http://212.85.26.46:8082/api/v1/",
+  // baseURL: "/api-proxy",
+  baseURL: "http://212.85.26.46:8082/api/v1/",
 });
 
 api.interceptors.request.use(

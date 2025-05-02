@@ -11,7 +11,7 @@ import ReportTypeTable, { ColumnDefinition } from '@/components/reports/ReportTy
 import ConfirmationModal from '@/components/common/ConfirmationModal';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
-import { format, subDays } from 'date-fns';
+import { getDefaultDateRange } from '@/utils/dateUtils';
 
 // Updated data structure based on API response
 interface SalaryBreakdownRecord {
@@ -40,12 +40,18 @@ const SalaryBreakdownReportPage: React.FC = () => {
   const dispatch: AppDispatch = useDispatch();
   const { data: salaryBreakdownData, loading, error } = useSelector((state: RootState) => state.employeeReports.salaryBreakdown);
 
-  const defaultEndDate = format(new Date(), 'yyyy-MM-dd');
-  const defaultStartDate = format(subDays(new Date(), 30), 'yyyy-MM-dd');
+  const { startDate: defaultStartDate, endDate: defaultEndDate } = getDefaultDateRange();
 
   const [startDate, setStartDate] = useState<string>(defaultStartDate);
   const [endDate, setEndDate] = useState<string>(defaultEndDate);
   const [validationError, setValidationError] = useState<string | null>(null);
+
+  // Fetch data on first load
+  useEffect(() => {
+    dispatch(clearEmployeeReportError('salaryBreakdown'));
+    const payload = { startDate, endDate, sortBy: "createdAt", page: 0, size: 1000, direction: "asc" };
+    dispatch(fetchSalaryBreakdown(payload));
+  }, []); // Empty dependency array means this runs once on mount
 
   const handleFetchReport = () => {
     if (!startDate || !endDate) {
@@ -54,7 +60,7 @@ const SalaryBreakdownReportPage: React.FC = () => {
     }
     setValidationError(null);
     dispatch(clearEmployeeReportError('salaryBreakdown'));
-    const payload = { startDate, endDate, sortBy: "preparedDate", page: 0, size: 100, direction: "asc" };
+    const payload = { startDate, endDate, sortBy: "createdAt", page: 0, size: 1000, direction: "asc" };
     dispatch(fetchSalaryBreakdown(payload));
   };
 

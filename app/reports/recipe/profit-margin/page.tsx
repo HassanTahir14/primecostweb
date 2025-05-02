@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import PageLayout from '@/components/PageLayout';
 import Button from '@/components/common/button';
@@ -16,6 +16,7 @@ import ReportTypeTable, { ColumnDefinition } from '@/components/reports/ReportTy
 import ConfirmationModal from '@/components/common/ConfirmationModal';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
+import { getDefaultDateRange } from '@/utils/dateUtils';
 
 // --- !!! PLACEHOLDER COLUMN DEFINITION !!! ---
 // --- Update this based on the actual API response for Profit Margin ---
@@ -45,10 +46,17 @@ const profitMarginColumns: ColumnDefinition<any>[] = [
 
 export default function ProfitMarginReportPage() {
     const dispatch = useDispatch<AppDispatch>();
-    const [startDate, setStartDate] = useState('');
-    const [endDate, setEndDate] = useState('');
+    const { startDate: defaultStartDate, endDate: defaultEndDate } = getDefaultDateRange();
+    const [startDate, setStartDate] = useState(defaultStartDate);
+    const [endDate, setEndDate] = useState(defaultEndDate);
     const [validationError, setValidationError] = useState<string | null>(null);
     const { data, loading, error } = useSelector((state: RootState) => state.recipeReports.profitMargin);
+
+    // Fetch data on first load
+    useEffect(() => {
+        dispatch(clearRecipeReportError('profitMargin'));
+        dispatch(fetchProfitMargin({ startDate, endDate, sortBy: "preparedDate" }));
+    }, []); // Empty dependency array means this runs once on mount
 
     const handleFetchReport = () => {
         if (!startDate || !endDate) {
@@ -56,7 +64,7 @@ export default function ProfitMarginReportPage() {
             return;
         }
         setValidationError(null);
-        dispatch(clearRecipeReportError('profitMargin')); 
+        dispatch(clearRecipeReportError('profitMargin'));
         dispatch(fetchProfitMargin({ startDate, endDate, sortBy: "preparedDate" }));
     };
 

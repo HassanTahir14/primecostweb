@@ -36,7 +36,7 @@ const NonConformanceReportTable: React.FC<NonConformanceReportTableProps> = ({
           <tr className="border-b bg-gray-50">
             {/* Update Headers to match API response fields */}
             <th className="text-left py-3 px-3 text-gray-600 font-semibold text-sm">Order #</th>
-            <th className="text-left py-3 px-3 text-gray-600 font-semibold text-sm">NCR #</th>
+            <th className="text-left py-3 px-3 text-gray-600 font-semibold text-sm">Item Name</th>
             <th className="text-left py-3 px-3 text-gray-600 font-semibold text-sm">Date</th>
             <th className="text-left py-3 px-3 text-gray-600 font-semibold text-sm">Supplier</th>
             <th className="text-left py-3 px-3 text-gray-600 font-semibold text-sm">Branch</th>
@@ -66,7 +66,9 @@ const NonConformanceReportTable: React.FC<NonConformanceReportTableProps> = ({
               <tr key={report.ncrNo ? `ncr-${report.ncrNo}` : `ncr-index-${index}`} className="hover:bg-gray-50"> 
                 {/* Render actual data fields */}
                 <td className="py-3 px-3 text-sm text-gray-700">{report.orderNo ?? 'N/A'}</td>
-                <td className="py-3 px-3 text-sm text-gray-700">{report.ncrNo ?? 'N/A'}</td>
+                <td className="py-3 px-3 text-sm text-gray-700">
+                  {report.itemName ? report.itemName.split('@')[0].trim() : 'N/A'}
+                </td>
                 <td className="py-3 px-3 text-sm text-gray-700">{report.date ?? 'N/A'}</td>
                 <td className="py-3 px-3 text-sm text-gray-700">{report.supplierName ?? 'N/A'}</td>
                 <td className="py-3 px-3 text-sm text-gray-700">{report.branchName ?? 'N/A'}</td>

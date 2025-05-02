@@ -11,7 +11,7 @@ import ReportTypeTable, { ColumnDefinition } from '@/components/reports/ReportTy
 import ConfirmationModal from '@/components/common/ConfirmationModal';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
-import { format, addDays } from 'date-fns';
+import { getDefaultDateRange } from '@/utils/dateUtils';
 
 // Updated data structure based on API response
 interface IqamaExpiryRecord {
@@ -32,27 +32,28 @@ const iqamaExpiryColumns: ColumnDefinition<IqamaExpiryRecord>[] = [
 
 const IqamaExpiryReportPage: React.FC = () => {
   const dispatch: AppDispatch = useDispatch();
-  // Select the specific report state object
   const { data: iqamaExpiryData, loading, error } = useSelector((state: RootState) => state.employeeReports.iqamaExpiry);
 
-  // Default range: today to 90 days from now
-  const defaultStartDate = format(new Date(), 'yyyy-MM-dd');
-  const defaultEndDate = format(addDays(new Date(), 90), 'yyyy-MM-dd');
-
-  // Use string state for date inputs
+  const { startDate: defaultStartDate, endDate: defaultEndDate } = getDefaultDateRange();
   const [startDate, setStartDate] = useState<string>(defaultStartDate);
   const [endDate, setEndDate] = useState<string>(defaultEndDate);
   const [validationError, setValidationError] = useState<string | null>(null);
 
+  // Fetch data on first load
+  useEffect(() => {
+    dispatch(clearEmployeeReportError('iqamaExpiry'));
+    const payload = { startDate, endDate, sortBy: "createdAt", page: 0, size: 1000, direction: "asc" };
+    dispatch(fetchIqamaExpiry(payload));
+  }, []); // Empty dependency array means this runs once on mount
+
   const handleFetchReport = () => {
     if (!startDate || !endDate) {
-        setValidationError('Please select both an Expiry Start Date and End Date.');
+        setValidationError('Please select both a Start Date and End Date.');
         return;
     }
     setValidationError(null);
-    // Clear previous errors before fetching
     dispatch(clearEmployeeReportError('iqamaExpiry'));
-    const payload = { startDate, endDate, sortBy: "preparedDate", page: 0, size: 100, direction: "asc" };
+    const payload = { startDate, endDate, sortBy: "createdAt", page: 0, size: 1000, direction: "asc" };
     dispatch(fetchIqamaExpiry(payload));
   };
 

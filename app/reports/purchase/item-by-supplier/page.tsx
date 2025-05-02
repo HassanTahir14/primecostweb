@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import PageLayout from '@/components/PageLayout';
 import Button from '@/components/common/button';
@@ -15,6 +15,7 @@ import ReportTypeTable, { ColumnDefinition } from '@/components/reports/ReportTy
 import ConfirmationModal from '@/components/common/ConfirmationModal';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
+import { getDefaultDateRange } from '@/utils/dateUtils';
 
 // Column Definitions for Items by Supplier
 const itemsBySupplierColumns: ColumnDefinition<ItemsBySupplierDetail>[] = [
@@ -37,12 +38,19 @@ export default function ItemsBySupplierReportPage() {
     const dispatch = useDispatch<AppDispatch>();
 
     // State for filters
-    const [startDate, setStartDate] = useState('');
-    const [endDate, setEndDate] = useState('');
+    const { startDate: defaultStartDate, endDate: defaultEndDate } = getDefaultDateRange();
+    const [startDate, setStartDate] = useState(defaultStartDate);
+    const [endDate, setEndDate] = useState(defaultEndDate);
     const [validationError, setValidationError] = useState<string | null>(null);
 
     // Get report state from Redux
     const { data, loading, error, totalItems, totalCost } = useSelector((state: RootState) => state.purchaseReports.itemsBySupplier);
+
+    // Fetch data on first load
+    useEffect(() => {
+        dispatch(clearReportError('itemsBySupplier'));
+        dispatch(fetchItemsBySupplier({ startDate, endDate }));
+    }, []); // Empty dependency array means this runs once on mount
 
     const handleFetchReport = () => {
         if (!startDate || !endDate) {

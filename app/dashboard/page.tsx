@@ -12,6 +12,7 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
+  LabelList,
 } from "recharts";
 import {
   ComposableMap,
@@ -51,6 +52,12 @@ type GeographiesChildrenProps = {
 const getTodaysDate = () => {
   return new Date().toISOString().split("T")[0];
 };
+
+interface ProfitMarginEntry {
+  recipeName: string;
+  profitMarginPerPortion: string;
+  costPerRecipe: string;
+}
 
 export default function Dashboard() {
   const dispatch = useDispatch<AppDispatch>();
@@ -94,6 +101,12 @@ export default function Dashboard() {
   const { suppliers, loading: suppliersLoading, error: suppliersError } = useSelector(
     (state: RootState) => state.supplier
   );
+
+  // Count only active employees
+  const activeEmployeesCount = useMemo(() => {
+    if (!employees) return 0;
+    return employees.filter(employee => employee.employeeDetailsDTO?.active === true).length;
+  }, [employees]);
 
   // --- Fetch Data ---
   useEffect(() => {
@@ -172,11 +185,27 @@ export default function Dashboard() {
     const details = (profitMarginDataRaw as any)?.details;
     if (!Array.isArray(details) || details.length === 0) return [];
 
-    return details.map((item) => ({
-      name: item.recipeName,
-      cost: parseFloat(item.costPerPortion) || 0,
-      profit: parseFloat(item.profitMarginPerPortion) || 0,
-    }));
+    // Group by recipeName like the Dart code does
+    const grouped: { [key: string]: ProfitMarginEntry[] } = details.reduce((acc: { [key: string]: ProfitMarginEntry[] }, item: ProfitMarginEntry) => {
+      const name = item.recipeName || 'Unknown';
+      if (!acc[name]) {
+        acc[name] = [];
+      }
+      acc[name].push(item);
+      return acc;
+    }, {});
+
+    // Calculate totals for each group
+    return Object.entries(grouped).map(([recipeName, entries]) => {
+      const totalCostPerRecipe = entries.reduce((sum: number, e: ProfitMarginEntry) => {
+        return sum + (parseFloat(e.costPerRecipe) || 0);
+      }, 0);
+
+      return {
+        category: recipeName,
+        costPerRecipe: totalCostPerRecipe,
+      };
+    });
   }, [profitMarginDataRaw]);
 
   // --- Handlers ---
@@ -267,7 +296,7 @@ export default function Dashboard() {
               <Users className="w-5 h-5 md:w-6 md:h-6 text-white" />
             </div>
             <h2 className="text-lg md:text-xl lg:text-2xl font-bold mb-1">
-              {employeesLoading ? '...' : employees?.length ?? '-'}
+              {employeesLoading ? '...' : activeEmployeesCount ?? '-'}
             </h2>
             <p className="text-gray-600 text-xs md:text-sm mb-1">
               Total Employee
@@ -276,51 +305,73 @@ export default function Dashboard() {
         </div>
 
         <div className="bg-white p-4 sm:p-6 md:p-8 rounded-2xl shadow-sm mb-6">
-          <h2 className="text-base md:text-lg font-bold mb-4 md:mb-6">
-            Recipe Profitability
-          </h2>
-          <div className="w-full h-[300px] md:h-[400px]">
-            {profitMarginLoading ? (
-              <div className="flex items-center justify-center h-full text-gray-500">
-                Fetching data...
-              </div>
-            ) : profitChartData.length === 0 ? (
-              <div className="flex items-center justify-center h-full text-gray-500">
-                No recipe data available
-              </div>
-            ) : (
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={profitChartData}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                  <XAxis
-                    dataKey="name"
-                    fontSize={10}
-                    interval={0}
-                    angle={-30}
-                    textAnchor="end"
-                    height={60}
-                  />
-                  <YAxis fontSize={10} />
-                  <Tooltip 
-                    formatter={(value: number) => `$${value.toFixed(2)}`}
-                    labelFormatter={(label) => `Recipe: ${label}`}
-                  />
-                  <Legend wrapperStyle={{ fontSize: "10px" }} />
-                  <Bar
-                    dataKey="profit"
-                    name="Profit Margin / Portion"
-                    fill="#2196F3"
-                  />
-                  <Bar 
-                    dataKey="cost" 
-                    name="Cost / Portion" 
-                    fill="#f44336" 
-                  />
-                </BarChart>
-              </ResponsiveContainer>
-            )}
-          </div>
-        </div>
+  <h2 className="text-base md:text-lg font-bold mb-4 md:mb-6">
+    Recipe Profitability
+  </h2>
+  <div className="w-full h-[300px] md:h-[400px]">
+    {profitMarginLoading ? (
+      <div className="flex items-center justify-center h-full text-gray-500">
+        Fetching data...
+      </div>
+    ) : profitChartData.length === 0 ? (
+      <div className="flex items-center justify-center h-full text-gray-500">
+        No recipe data available
+      </div>
+    ) : (
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart
+          data={profitChartData}
+          margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
+        >
+          <CartesianGrid strokeDasharray="3 3" vertical={false} />
+          <XAxis
+            dataKey="category"
+            fontSize={10}
+            interval={0}
+            angle={-45}
+            textAnchor="end"
+            height={60}
+            tick={{ fontWeight: 'bold' }}
+          />
+          <YAxis
+            fontSize={10}
+            tick={{ fontWeight: 'bold' }}
+            domain={[0, (dataMax: number) => Math.ceil(dataMax * 1.2)]} // Add 20% padding
+          />
+          <Tooltip 
+            formatter={(value: number) => `$${value.toFixed(2)}`}
+            labelFormatter={(label) => `Recipe: ${label}`}
+          />
+          <Legend 
+            wrapperStyle={{ fontSize: "10px" }} 
+            verticalAlign="bottom"
+          />
+          <Bar
+            dataKey="profitMargin"
+            name="Profit Margin %"
+            fill="#4CAF50" // Green color
+            barSize={35}
+            radius={[4, 4, 0, 0]}
+          />
+          <Bar 
+            dataKey="costPerRecipe" 
+            name="Cost Per Recipe" 
+            fill="#FF9800" // Orange color
+            barSize={35}
+            radius={[4, 4, 0, 0]}
+          >
+            <LabelList 
+              dataKey="costPerRecipe" 
+              position="top" 
+              formatter={(value: number) => `$${value.toFixed(2)}`}
+              style={{ fontSize: '10px', fontWeight: 'bold' }}
+            />
+          </Bar>
+        </BarChart>
+      </ResponsiveContainer>
+    )}
+  </div>
+</div>
 
         <div className="bg-white p-4 sm:p-6 md:p-8 rounded-2xl shadow-sm mb-6">
           <h2 className="text-base md:text-lg font-bold mb-4 md:mb-6">

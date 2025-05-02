@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/store/store';
 import { fetchItemsTransferred, clearTransferReportError } from '@/store/transferReportsSlice';
@@ -12,7 +12,7 @@ import ReportTypeTable, { ColumnDefinition } from '@/components/reports/ReportTy
 import ConfirmationModal from '@/components/common/ConfirmationModal';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
-import { format, subDays } from 'date-fns';
+import { getDefaultDateRange } from '@/utils/dateUtils';
 
 // Column Definitions
 const itemColumns: ColumnDefinition<ItemTransferRecord>[] = [
@@ -31,12 +31,16 @@ const ItemsTransferredReportPage: React.FC = () => {
   const dispatch: AppDispatch = useDispatch();
   const { data: reportData, loading, error } = useSelector((state: RootState) => state.transferReports.itemsTransferred);
 
-  const defaultEndDate = format(new Date(), 'yyyy-MM-dd');
-  const defaultStartDate = format(subDays(new Date(), 30), 'yyyy-MM-dd');
+  const { startDate: defaultStartDate, endDate: defaultEndDate } = getDefaultDateRange();
 
   const [startDate, setStartDate] = useState<string>(defaultStartDate);
   const [endDate, setEndDate] = useState<string>(defaultEndDate);
   const [validationError, setValidationError] = useState<string | null>(null);
+
+  useEffect(() => {
+    dispatch(clearTransferReportError('itemsTransferred'));
+    dispatch(fetchItemsTransferred({ startDate, endDate, sortBy: "createdAt", page: 0, size: 1000, direction: "asc" }));
+  }, []);   
 
   const handleFetchReport = () => {
     if (!startDate || !endDate) {
@@ -45,7 +49,7 @@ const ItemsTransferredReportPage: React.FC = () => {
     }
     setValidationError(null);
     dispatch(clearTransferReportError('itemsTransferred'));
-    dispatch(fetchItemsTransferred({ startDate, endDate }));
+    dispatch(fetchItemsTransferred({ startDate, endDate, sortBy: "createdAt", page: 0, size: 1000, direction: "asc" }));
   };
 
   const handleCloseErrorModal = () => {

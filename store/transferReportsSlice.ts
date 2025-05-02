@@ -40,6 +40,9 @@ const initialState: TransferReportsState = {
 // --- Common Payload Type ---
 interface DateRangePayload {
     sortBy?: string;
+    page?: number;
+    size?: number;
+    direction?: string;
     startDate: string;
     endDate: string;
 }

@@ -17,6 +17,7 @@ import ReportTypeTable, { ColumnDefinition } from '@/components/reports/ReportTy
 import ConfirmationModal from '@/components/common/ConfirmationModal';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
+import { getDefaultDateRange } from '@/utils/dateUtils';
 
 // Column Definitions for Purchase by Category
 const purchaseByCategoryColumns: ColumnDefinition<PurchaseByCategoryDetail>[] = [
@@ -40,8 +41,9 @@ export default function PurchaseByCategoryReportPage() {
     const dispatch = useDispatch<AppDispatch>();
 
     // State for filters
-    const [startDate, setStartDate] = useState('');
-    const [endDate, setEndDate] = useState('');
+    const { startDate: defaultStartDate, endDate: defaultEndDate } = getDefaultDateRange();
+    const [startDate, setStartDate] = useState(defaultStartDate);
+    const [endDate, setEndDate] = useState(defaultEndDate);
     const [selectedCategory, setSelectedCategory] = useState<string>('');
     const [validationError, setValidationError] = useState<string | null>(null);
 
@@ -55,6 +57,18 @@ export default function PurchaseByCategoryReportPage() {
             dispatch(fetchAllCategories());
         }
     }, [dispatch, categories]);
+
+    // Fetch data on first load when a category is selected
+    useEffect(() => {
+        if (selectedCategory) {
+            dispatch(clearReportError('purchaseByCategory'));
+            dispatch(fetchPurchaseByCategory({ 
+                startDate, 
+                endDate, 
+                category: selectedCategory
+            }));
+        }
+    }, [selectedCategory]); // Only run when category changes
 
     // Update options to use category name as value
     const categoryOptions = [
@@ -81,7 +95,7 @@ export default function PurchaseByCategoryReportPage() {
         dispatch(fetchPurchaseByCategory({ 
             startDate, 
             endDate, 
-            category: selectedCategory // Pass name
+            category: selectedCategory
         }));
     };
 
