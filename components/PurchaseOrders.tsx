@@ -379,7 +379,8 @@ export default function PurchaseOrders({ onClose }: PurchaseOrdersProps) {
           ? String(editingOrder.unitId)
           : String(editingOrder.unitId),
         isPrimaryUnitSelected: formData.unitType === 'primary',
-        isSecondaryUnitSelected: formData.unitType === 'secondary'
+        isSecondaryUnitSelected: formData.unitType === 'secondary',
+        vatPercentage: Math.round((Number(formData.vatAmount) / Number(formData.purchaseCost)) * 100)
       };
 
       try {
@@ -427,7 +428,8 @@ export default function PurchaseOrders({ onClose }: PurchaseOrdersProps) {
         ? String(selectedItem.primaryUnitId)
         : String(selectedItem.secondaryUnitId),
       isPrimaryUnitSelected: formData.unitType === 'primary',
-      isSecondaryUnitSelected: formData.unitType === 'secondary'
+      isSecondaryUnitSelected: formData.unitType === 'secondary',
+      vatPercentage: Math.round((Number(formData.vatAmount) / Number(formData.purchaseCost)) * 100)
     };
 
     try {
