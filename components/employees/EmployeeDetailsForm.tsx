@@ -110,8 +110,45 @@ export default function EmployeeDetailsForm({ onNext, initialData }: EmployeeDet
       if (!formData.position) newErrors.position = 'Position is required';
       if (!formData.mobileNumber.trim()) newErrors.mobileNumber = 'Mobile number is required'; // Add mobile validation if needed
       if (!formData.iqamaId.trim()) newErrors.iqamaId = 'Iqama ID is required';
-      // Add more specific validations (email format, date format, etc.) if necessary
-      
+
+      // Helper to parse yyyy-mm-dd
+      const parseDate = (str: string) => {
+        if (!str) return null;
+        const [yyyy, mm, dd] = str.split('-');
+        if (!yyyy || !mm || !dd) return null;
+        return new Date(Number(yyyy), Number(mm) - 1, Number(dd));
+      };
+      const today = new Date();
+      today.setHours(0,0,0,0);
+
+      // Health Card Expiry
+      if (formData.healthCardExpiry) {
+        const expiry = parseDate(formData.healthCardExpiry);
+        if (!expiry || isNaN(expiry.getTime())) {
+          newErrors.healthCardExpiry = 'Invalid date format';
+        } else if (expiry < today) {
+          newErrors.healthCardExpiry = 'Health card expiry cannot be in the past';
+        }
+      }
+      // Iqama Expiry
+      if (formData.iqamaExpiryDate) {
+        const expiry = parseDate(formData.iqamaExpiryDate);
+        if (!expiry || isNaN(expiry.getTime())) {
+          newErrors.iqamaExpiryDate = 'Invalid date format';
+        } else if (expiry < today) {
+          newErrors.iqamaExpiryDate = 'Iqama expiry cannot be in the past';
+        }
+      }
+      // Date of Birth
+      if (formData.dateOfBirth) {
+        const dob = parseDate(formData.dateOfBirth);
+        if (!dob || isNaN(dob.getTime())) {
+          newErrors.dateOfBirth = 'Invalid date format';
+        } else if (dob > today) {
+          newErrors.dateOfBirth = 'Date of birth cannot be in the future';
+        }
+      }
+
       setErrors(newErrors);
       return Object.keys(newErrors).length === 0;
   };
@@ -138,9 +175,9 @@ export default function EmployeeDetailsForm({ onNext, initialData }: EmployeeDet
         <Select label="Position" name="position" value={formData.position} onChange={handleChange} options={positionOptions} error={errors.position} />
         <Input label="Health Card Number" name="healthCardNumber" value={formData.healthCardNumber} onChange={handleChange} placeholder="Health Card Num" />
         <Input label="Iqama ID" name="iqamaId" value={formData.iqamaId} onChange={handleChange} placeholder="Enter value" error={errors.iqamaId} />
-        <Input label="Health Card Expiry" name="healthCardExpiry" value={formData.healthCardExpiry} onChange={handleChange} placeholder="dd/mm/yyyy" type="text" /> 
-        <Input label="Iqama ID Expiry Date" name="iqamaExpiryDate" value={formData.iqamaExpiryDate} onChange={handleChange} placeholder="dd/mm/yyyy" type="text" /> 
-        <Input label="Date of Birth" name="dateOfBirth" value={formData.dateOfBirth} onChange={handleChange} placeholder="dd/mm/yyyy" type="text" /> 
+        <Input label="Health Card Expiry" name="healthCardExpiry" value={formData.healthCardExpiry} onChange={handleChange} type="date" error={errors.healthCardExpiry} /> 
+        <Input label="Iqama ID Expiry Date" name="iqamaExpiryDate" value={formData.iqamaExpiryDate} onChange={handleChange} type="date" error={errors.iqamaExpiryDate} /> 
+        <Input label="Date of Birth" name="dateOfBirth" value={formData.dateOfBirth} onChange={handleChange} type="date" error={errors.dateOfBirth} /> 
         <Input label="Email" name="loginId" value={formData.loginId} onChange={handleChange} placeholder="Enter value" type="email" />
         <Input label="Password" name="password" value={formData.password} onChange={handleChange} placeholder="Enter value" type="password" />
       </div>

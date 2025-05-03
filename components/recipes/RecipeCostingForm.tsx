@@ -27,7 +27,7 @@ export default function RecipeCostingForm({ onNext, onBack, initialData }: Recip
   useEffect(() => {
     if (totalIngredientsCost > 0 && initialData.portions && parseInt(initialData.portions) > 0) {
       const perPortion = totalIngredientsCost / parseInt(initialData.portions);
-      setCostPerPortion(perPortion.toFixed(2));
+      setCostPerPortion(perPortion.toString());
     }
   }, [totalIngredientsCost, initialData.portions]);
 
@@ -36,23 +36,23 @@ export default function RecipeCostingForm({ onNext, onBack, initialData }: Recip
     // Cost per recipe
     if (costPerPortion && initialData.portions) {
       const recipeCost = parseFloat(costPerPortion) * parseInt(initialData.portions);
-      setCostPerRecipe(recipeCost.toFixed(2));
+      setCostPerRecipe(recipeCost.toString());
     }
 
     // Food cost % actual
     if (menuPrice && costPerPortion) {
       const actualPercent = (parseFloat(costPerPortion) / parseFloat(menuPrice)) * 100;
-      setFoodCostActualPercent(actualPercent.toFixed(2));
+      setFoodCostActualPercent(actualPercent.toString());
     }
 
     // Margin per portion
     if (menuPrice && costPerPortion) {
       const margin = parseFloat(menuPrice) - parseFloat(costPerPortion);
-      setMarginPerPortion(margin.toFixed(2));
+      setMarginPerPortion(margin.toString());
       
       // Check for negative margin and set error
       if (margin < 0) {
-        setErrors(prev => ({ ...prev, marginPerPortion: 'Margin cannot be negative. Please adjust menu price.' }));
+        setErrors(prev => ({ ...prev, marginPerPortion: 'Margin cannot be negative. Please increase the menu price.' }));
       } else {
         setErrors(prev => {
           const newErrors = { ...prev };
@@ -65,7 +65,7 @@ export default function RecipeCostingForm({ onNext, onBack, initialData }: Recip
     // Ideal selling price
     if (foodCostBudgetPercent && costPerPortion) {
       const idealPrice = parseFloat(costPerPortion) / (parseFloat(foodCostBudgetPercent) / 100);
-      setIdealSellingPrice(idealPrice.toFixed(2));
+      setIdealSellingPrice(idealPrice.toString());
     }
   }, [menuPrice, costPerPortion, foodCostBudgetPercent, initialData.portions]);
 
@@ -94,7 +94,7 @@ export default function RecipeCostingForm({ onNext, onBack, initialData }: Recip
     }
 
     if (marginPerPortion && parseFloat(marginPerPortion) < 0) {
-      newErrors.marginPerPortion = 'Margin cannot be negative.';
+      newErrors.marginPerPortion = 'Margin cannot be negative. Please increase the menu price.';
     }
 
     if (foodCostActualPercent && (parseFloat(foodCostActualPercent) < 0 || parseFloat(foodCostActualPercent) > 100)) {
@@ -201,7 +201,7 @@ export default function RecipeCostingForm({ onNext, onBack, initialData }: Recip
                 type="text"
                 readOnly
                 className="w-full p-3 border border-gray-300 rounded-lg bg-gray-100 pl-8"
-                value={costPerPortion}
+                value={parseFloat(costPerPortion).toFixed(2)}
               />
             </div>
           </div>
@@ -215,7 +215,7 @@ export default function RecipeCostingForm({ onNext, onBack, initialData }: Recip
                 type="text"
                 readOnly
                 className="w-full p-3 border border-gray-300 rounded-lg bg-gray-100 pl-8"
-                value={costPerRecipe}
+                value={parseFloat(costPerRecipe).toFixed(2)}
               />
             </div>
           </div>
@@ -228,10 +228,11 @@ export default function RecipeCostingForm({ onNext, onBack, initialData }: Recip
               <input
                 type="text"
                 readOnly
-                className="w-full p-3 border border-gray-300 rounded-lg bg-gray-100 pl-8"
-                value={marginPerPortion}
+                className={`w-full p-3 border ${errors.marginPerPortion ? 'border-red-500' : 'border-gray-300'} rounded-lg bg-gray-100 pl-8`}
+                value={parseFloat(marginPerPortion).toFixed(2)}
               />
             </div>
+            {errors.marginPerPortion && <p className="text-red-500 text-sm mt-1">{errors.marginPerPortion}</p>}
           </div>
         </div>
       </div>

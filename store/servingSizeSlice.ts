@@ -7,6 +7,7 @@ interface ServingSize {
   servingSizeId: number;
   name: string;
   unitOfMeasurementId: number;
+  unitOfMeasurement?: string;
   createdAt?: string;
   updatedAt?: string | null;
 }

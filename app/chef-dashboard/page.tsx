@@ -8,6 +8,7 @@ import { selectCurrentUser } from '@/store/authSlice';
 import api from '@/store/api';
 import AssignOrder from '@/components/AssignOrder';
 import Loader from '@/components/common/Loader';
+import Link from 'next/link';
 
 interface DashboardStats {
   totalPreparedMainRecipes: number;
@@ -187,6 +188,30 @@ export default function ChefDashboard() {
             </div>
           </div>
         </div>
+
+        {currentUser?.role === 'HEAD_CHEF' && (
+          <div className="bg-white p-4 sm:p-6 md:p-8 rounded-2xl shadow-sm mb-6">
+            <h2 className="text-base md:text-lg font-bold mb-4 md:mb-6">
+              Reports
+            </h2>
+            <div className="flex flex-wrap gap-2 md:gap-4">
+              {[
+                { name: "Non Conformance Report", path: "/non-conformance" },
+              ].map((report) => (
+                <Link
+                  key={report.path}
+                  href={report.path}
+                  passHref
+                  legacyBehavior
+                >
+                  <a className="bg-[#339A89] text-white px-4 md:px-6 py-1.5 md:py-2 rounded-full hover:bg-[#2b8274] transition-colors text-xs md:text-sm no-underline">
+                    {report.name}
+                  </a>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Assigned Orders Section */}
         <div className="bg-white rounded-lg shadow-sm p-6">

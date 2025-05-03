@@ -3,6 +3,10 @@
 import { useEffect, useState } from 'react';
 import moment from 'moment';
 import api from '@/store/api';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchAllEmployees } from '@/store/employeeSlice';
+import type { AppDispatch } from '@/store/store';
+import { useUnits } from '@/hooks/useUnits';
 
 interface InventoryLocation {
   inventoryId: number;
@@ -16,12 +20,41 @@ interface InventoryLocation {
 export default function InventoryByRecipe() {
   const [searchQuery, setSearchQuery] = useState('');
   const [recipes, setRecipes] = useState([]);
+  const [employees, setEmployees] = useState<any[]>([]);
+  const { units } = useUnits();
 
-  // Call API on mount
+  // Get all employees from Redux state
+  // const employees = useSelector((state: any) => state.employee.kitchenEmployeeDTOS || []);
+  const dispatch = useDispatch<AppDispatch>();
+
+  // Helper to get employee name by user ID
+  const getEmployeeName = (userId: number) => {
+    console.log(employees, 'employees');
+    const emp = employees.find((e: any) => Number(e.employeeId) === Number(userId));
+    if (emp && emp.employeeDetailsDTO) {
+      return `${emp.employeeDetailsDTO.firstname} ${emp.employeeDetailsDTO.familyName}`;
+    }
+    return 'N/A';
+  };
+
+  // Helper to get formatted quantity with unit
+  const getFormattedQuantity = (uom: string, quantity: number) => {
+    if (uom.includes('@')) {
+      const [unitId] = uom.split('@');
+      const unit = units.find(u => u.unitOfMeasurementId === Number(unitId));
+      if (unit) {
+        return `${quantity} ${unit.unitName}`;
+      }
+    }
+    return `${quantity} ${uom}`;
+  };
+
   useEffect(() => {
     const fetchRecipes = async () => {
       try {
-        const response = await api.post('/inventory/view/prepared-main-recipe', {page: 0, size: 1000, sortBy: 'preparedDate', direction: 'desc'});
+        const responseEmployees = await dispatch(fetchAllEmployees());
+        setEmployees(responseEmployees.payload);  
+        const response = await api.post('/inventory/view/prepared-main-recipe', {page: 0, size: 1000, sortBy: 'preparedDate', direction: 'asc'});
         const list = response?.data?.preparedMainRecipeList || [];
 
         const mapped = list.map((item: any) => {
@@ -35,7 +68,8 @@ export default function InventoryByRecipe() {
           name: item.mainRecipeNameAndDescription,
           preparedBy: item.preparedByUserId,
             storageAndBranch: storageLocations || 'N/A',
-            quantity: `${item.totalQuantityAcrossLocations} ${item.uom}`,
+            quantity: item.totalQuantityAcrossLocations,
+            uom: item.uom,
             batchNumber: item.mainRecipeBatchNumber,
             expirationDate: moment(item.expirationDate).format('DD/MM/YYYY'),
             status: item.preparedMainRecipeStatus,
@@ -66,10 +100,11 @@ export default function InventoryByRecipe() {
               <th className="px-6 py-4 text-left">Recipe Name & Description</th>
               <th className="px-6 py-4 text-left">Prepared By</th>
               <th className="px-6 py-4 text-left">Storage Location, Branch</th>
-              <th className="px-6 py-4 text-left">Total Quantity</th>
-              <th className="px-6 py-4 text-left">Batch Number</th>
+              <th className="px-6 py-4 text-left">In Stock</th>
+             
               <th className="px-6 py-4 text-left">Expiration Date</th>
-              <th className="px-6 py-4 text-left">Status</th>
+              {/* <th className="px-6 py-4 text-left">Status</th> */}
+              <th className="px-6 py-4 text-left">Batch Number</th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
@@ -77,12 +112,13 @@ export default function InventoryByRecipe() {
               <tr key={recipe.id}>
                 <td className="px-6 py-4">{recipe.date}</td>
                 <td className="px-6 py-4">{recipe.name}</td>
-                <td className="px-6 py-4">{recipe.preparedBy}</td>
+                <td className="px-6 py-4">{getEmployeeName(recipe.preparedBy)}</td>
                 <td className="px-6 py-4">{recipe.storageAndBranch}</td>
-                <td className="px-6 py-4">{recipe.quantity}</td>
-                <td className="px-6 py-4">{recipe.batchNumber}</td>
+                <td className="px-6 py-4">{getFormattedQuantity(recipe.uom, recipe.quantity)}</td>
+               
                 <td className="px-6 py-4">{recipe.expirationDate}</td>
-                <td className="px-6 py-4">{recipe.status}</td>
+                {/* <td className="px-6 py-4">{recipe.status}</td> */}
+                <td className="px-6 py-4">{recipe.batchNumber}</td>
               </tr>
             ))}
           </tbody>

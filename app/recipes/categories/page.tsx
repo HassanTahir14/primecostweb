@@ -7,6 +7,7 @@ import Button from '@/components/common/button';
 import Modal from '@/components/common/Modal';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
+import Loader from '@/components/common/Loader';
 import { 
   fetchAllCategories, 
   addCategory, 
@@ -74,7 +75,13 @@ export default function CategoriesPage() {
   };
 
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <PageLayout title="Recipe Categories">
+        <div className="flex justify-center items-center h-64">
+          <Loader size="medium" />
+        </div>
+      </PageLayout>
+    );
   }
 
   if (error) {

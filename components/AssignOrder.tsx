@@ -235,6 +235,28 @@ export default function AssignOrder({ onClose }: AssignOrderProps) {
     }
   };
 
+  const calculateDuration = (startTime: string, finishTime: string) => {
+    if (startTime === 'Not started' || finishTime === 'Not finished') {
+      return 'Not started';
+    }
+
+    const start = new Date(startTime);
+    const finish = new Date(finishTime);
+    const diffInSeconds = Math.floor((finish.getTime() - start.getTime()) / 1000);
+
+    const hours = Math.floor(diffInSeconds / 3600);
+    const minutes = Math.floor((diffInSeconds % 3600) / 60);
+    const seconds = diffInSeconds % 60;
+
+    if (hours > 0) {
+      return `${hours}h ${minutes}m ${seconds}s`;
+    } else if (minutes > 0) {
+      return `${minutes}m ${seconds}s`;
+    } else {
+      return `${seconds}s`;
+    }
+  };
+
   if (isRoleLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -270,11 +292,24 @@ export default function AssignOrder({ onClose }: AssignOrderProps) {
       </div>
 
       <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6 flex-1">
-        <div className={`grid ${isAdmin ? 'grid-cols-4' : 'grid-cols-5'} border-b pb-3 sm:pb-4 mb-3 sm:mb-4`}>
-          {isAdmin && <h2 className="text-gray-500 text-xs sm:text-sm">Assigned To</h2>}
-          <h2 className="text-gray-500 text-xs sm:text-sm">Order Id</h2>
-          <h2 className="text-gray-500 text-xs sm:text-sm">Order Type</h2>
-          <h2 className="text-gray-500 text-xs sm:text-sm">Order Status</h2>
+        <div className={`grid ${isAdmin ? 'grid-cols-7' : isChef ? 'grid-cols-6' : 'grid-cols-4'} border-b pb-3 sm:pb-4 mb-3 sm:mb-4`}>
+          {isAdmin && (
+            <>
+              <h2 className="text-gray-500 text-xs sm:text-sm">Assigned To</h2>
+              <h2 className="text-gray-500 text-xs sm:text-sm">Assigned By</h2>
+              <h2 className="text-gray-500 text-xs sm:text-sm">Branch</h2>
+            </>
+          )}
+          {isChef && (
+            <>
+              <h2 className="text-gray-500 text-xs sm:text-sm">Order ID</h2>
+              <h2 className="text-gray-500 text-xs sm:text-sm">Recipe Name</h2>
+            </>
+          )}
+          <h2 className="text-gray-500 text-xs sm:text-sm">Type</h2>
+          {isAdmin && <h2 className="text-gray-500 text-xs sm:text-sm">Finish Time</h2>}
+          {/* {isAdmin && <h2 className="text-gray-500 text-xs sm:text-sm">Finish Time</h2>} */}
+          <h2 className="text-gray-500 text-xs sm:text-sm">Status</h2>
           {isChef && <h2 className="text-gray-500 text-xs sm:text-sm">Actions</h2>}
         </div>
 
@@ -291,15 +326,38 @@ export default function AssignOrder({ onClose }: AssignOrderProps) {
             {orders.map((order) => (
               <div 
                 key={order.orderId} 
-                className={`grid ${isAdmin ? 'grid-cols-4' : 'grid-cols-5'} items-center py-3 sm:py-4 border-b`}
+                className={`grid ${isAdmin ? 'grid-cols-7' : isChef ? 'grid-cols-6' : 'grid-cols-4'} items-center py-3 sm:py-4 border-b`}
               >
+                {isChef && (
+                  <>
+                    <span className="text-gray-800 text-sm sm:text-base">{order.orderId}</span>
+                    <span className="text-gray-800 text-sm sm:text-base">{(order as ChefOrder).recipeName}</span>
+                  </>
+                )}
+                {isAdmin && (
+                  <>
+                    <span className="text-gray-800 text-sm sm:text-base">
+                      {(order as AdminOrder).assignedTo}
+                    </span>
+                    <span className="text-gray-800 text-sm sm:text-base">
+                      {(order as AdminOrder).assignedBy}
+                    </span>
+                    <span className="text-gray-800 text-sm sm:text-base">
+                      {(order as AdminOrder).branchName}
+                    </span>
+                  </>
+                )}
+                <span className="text-gray-800 text-sm sm:text-base">{order.orderType}</span>
                 {isAdmin && (
                   <span className="text-gray-800 text-sm sm:text-base">
-                    {(order as AdminOrder).assignedTo}
+                    {calculateDuration((order as AdminOrder).startTime, (order as AdminOrder).finishTime)}
                   </span>
                 )}
-                <span className="text-gray-800 text-sm sm:text-base">{order.orderId}</span>
-                <span className="text-gray-800 text-sm sm:text-base">{order.orderType}</span>
+                {/* {isAdmin && (
+                  <span className="text-gray-800 text-sm sm:text-base">
+                    {(order as AdminOrder).finishTime === 'Not finished' ? 'Not finished' : new Date((order as AdminOrder).finishTime).toLocaleString()}
+                  </span>
+                )} */}
                 <span className={`text-sm sm:text-base font-medium ${getStatusColor(order.orderStatus)}`}>
                   {formatStatus(order.orderStatus)}
                 </span>

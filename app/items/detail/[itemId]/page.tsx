@@ -131,6 +131,8 @@ export default function ItemDetailPage() {
   const [purchaseOrders, setPurchaseOrders] = useState<PurchaseOrderTransaction[]>([]);
   const [purchaseOrdersLoading, setPurchaseOrdersLoading] = useState(false);
   const [purchaseOrdersError, setPurchaseOrdersError] = useState<string | null>(null);
+  // Only use RECEIVED purchase orders for calculations and display
+  const receivedPurchaseOrders = purchaseOrders.filter(po => po.purchaseOrderStatus === 'RECEIVED');
 
   useEffect(() => {
     const authUserStr = localStorage.getItem('authUser');
@@ -319,8 +321,8 @@ export default function ItemDetailPage() {
 
   // Calculate total stock in primary unit (PLT)
   let totalStockPrimary = 0;
-  if (item && purchaseOrders.length > 0 && primaryUnit && secondaryUnit && conversionRate) {
-    purchaseOrders.forEach(po => {
+  if (item && receivedPurchaseOrders.length > 0 && primaryUnit && secondaryUnit && conversionRate) {
+    receivedPurchaseOrders.forEach(po => {
       if (po.unitId === primaryUnit.unitOfMeasurementId) {
         totalStockPrimary += po.quantity;
       } else if (po.unitId === secondaryUnit.unitOfMeasurementId) {
@@ -380,8 +382,8 @@ export default function ItemDetailPage() {
   // Prepare branch details with calculated quantities for PDF
   const branchDetailsForPDF = item?.branchDetails?.map(detail => {
     let branchTotal = 0;
-    if (purchaseOrders.length > 0 && primaryUnit && secondaryUnit && conversionRate) {
-      purchaseOrders.forEach(po => {
+    if (receivedPurchaseOrders.length > 0 && primaryUnit && secondaryUnit && conversionRate) {
+      receivedPurchaseOrders.forEach(po => {
         if (po.branchId === detail.branchId) {
           if (po.unitId === primaryUnit.unitOfMeasurementId) {
             branchTotal += po.quantity;
@@ -392,7 +394,7 @@ export default function ItemDetailPage() {
       });
       branchTotal = Math.round(branchTotal * 100) / 100;
     } else {
-      branchTotal = detail.quantity;
+      branchTotal = 0;
     }
     return {
       ...detail,
@@ -402,7 +404,11 @@ export default function ItemDetailPage() {
   }) || [];
 
   return (
-    <PageLayout title={combinedLoading ? "Loading Item..." : (item ? `Item: ${item.name}` : "Item Detail")}>
+    <PageLayout title={
+      combinedLoading
+        ? "Loading Item..."
+        : (item ? `Item: ${item.name.split('@')[0]}` : "Item Detail")
+    }>
       <GenericDetailPage
         title="Item Details"
         data={detailsData}
@@ -428,8 +434,8 @@ export default function ItemDetailPage() {
                   {item.branchDetails.map((detail) => {
                     // Calculate total quantity for this branch from purchase orders
                     let branchTotal = 0;
-                    if (purchaseOrders.length > 0 && primaryUnit && secondaryUnit && conversionRate) {
-                      purchaseOrders.forEach(po => {
+                    if (receivedPurchaseOrders.length > 0 && primaryUnit && secondaryUnit && conversionRate) {
+                      receivedPurchaseOrders.forEach(po => {
                         if (po.branchId === detail.branchId) {
                           if (po.unitId === primaryUnit.unitOfMeasurementId) {
                             branchTotal += po.quantity;
@@ -468,7 +474,7 @@ export default function ItemDetailPage() {
       )}
 
       {/* Stock details from purchases */}
-      {!purchaseOrdersLoading && purchaseOrders.length > 0 && (
+      {!purchaseOrdersLoading && receivedPurchaseOrders.length > 0 && (
         <div className="flex-1 flex flex-col p-4 md:p-6 lg:p-8 bg-gray-50">
           <div className="bg-white bg-opacity-70 p-4 sm:p-6 md:p-8 rounded-2xl shadow-lg">
             <h2 className="text-base md:text-lg font-bold mb-4">Stock details from purchases</h2>
@@ -500,7 +506,7 @@ export default function ItemDetailPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {purchaseOrders.map(po => (
+                  {receivedPurchaseOrders.map(po => (
                     <tr key={po.id} className="bg-white rounded-lg shadow-sm">
                       <td className="text-left px-4 py-2 font-medium text-gray-900">{po.id}</td>
                       <td className="text-left px-4 py-2 text-gray-900">{po.quantity}</td>

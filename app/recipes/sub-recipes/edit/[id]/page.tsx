@@ -17,7 +17,7 @@ import ConfirmationModal from '@/components/common/ConfirmationModal';
 import { getSubRecipeByIdThunk } from '@/store/subRecipeSlice';
 import { getImageUrlWithAuth } from '@/utils/imageUtils';
 import { updateSubRecipeThunk } from '@/store/subRecipeSlice';
-
+import Loader from '@/components/common/Loader';
 const steps = [
   { id: 'details', name: 'Details' },
   { id: 'ingredients', name: 'Ingredients' },
@@ -229,7 +229,13 @@ export default function EditRecipePage() {
   };
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return (
+      <PageLayout title="Edit Sub Recipe">
+        <div className="flex justify-center items-center h-64">
+          <Loader size="medium" />
+        </div>
+      </PageLayout>
+    );
   }
 
   if (error) {

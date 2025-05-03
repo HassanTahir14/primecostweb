@@ -23,7 +23,7 @@ import ConfirmationModal from './common/ConfirmationModal';
 
 interface UnitOfMeasurement {
   unitOfMeasurementId: number;
-  unitName: string;
+  unitName: string; // e.g., 'BLK', 'ORD', etc.
   unitDescription: string;
   createdAt: string;
   updatedAt: string | null;
@@ -32,7 +32,8 @@ interface UnitOfMeasurement {
 interface ServingSize {
   servingSizeId: number;
   name: string;
-  unitOfMeasurementId: number;
+  unitOfMeasurementId?: number;
+  unitOfMeasurement?: string;
 }
 
 const UNITS_OPTIONS = [
@@ -81,7 +82,7 @@ export default function ServingSize({ onClose }: { onClose: () => void }) {
   // Transform units of measurement for the select component
   const unitOptions = useMemo(() => 
     unitsOfMeasurement.map(unit => ({
-      label: `${unit.unitName} - ${unit.unitDescription}`,
+      label: unit.unitName,
       value: unit.unitOfMeasurementId.toString()
     })), [unitsOfMeasurement]
   );
@@ -170,11 +171,22 @@ export default function ServingSize({ onClose }: { onClose: () => void }) {
     }
   };
 
-  const openEditModal = (servingSize: ServingSize) => {
-    console.log('Opening edit modal with serving size:', servingSize);
+  const openEditModal = (servingSize: any) => {
     setCurrentServingSize(servingSize);
     setServingSizeName(servingSize.name);
-    setServingSizeUnit(servingSize.unitOfMeasurementId ? servingSize.unitOfMeasurementId.toString() : '');
+
+    // Find the correct unitOfMeasurementId for the select
+    let unitId = '';
+    if (servingSize.unitOfMeasurementId) {
+      unitId = servingSize.unitOfMeasurementId.toString();
+    } else if (servingSize.unitOfMeasurement) {
+      const found = unitsOfMeasurement.find(
+        u => u.unitName === servingSize.unitOfMeasurement
+      );
+      if (found) unitId = found.unitOfMeasurementId.toString();
+    }
+    setServingSizeUnit(unitId);
+
     setNameError('');
     setUnitError('');
     setIsEditModalOpen(true);
@@ -234,14 +246,14 @@ export default function ServingSize({ onClose }: { onClose: () => void }) {
               >
                 <span className="text-gray-800 text-sm sm:text-base">{size.name}</span>
                 <span className="text-gray-800 text-sm sm:text-base">
-                  {unitsOfMeasurement.find(u => u.unitOfMeasurementId === size.unitOfMeasurementId)?.unitDescription || ''}
+                  {size.unitOfMeasurement || unitsOfMeasurement.find(u => u.unitOfMeasurementId === size.unitOfMeasurementId)?.unitName || ''}
                 </span>
                 <div className="flex justify-end gap-2">
                   <Button 
                     variant="default" 
                     size="sm" 
                     className="rounded-full bg-[#339A89] text-white text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-1.5"
-                    onClick={() => openEditModal(size)}
+                    onClick={() => openEditModal(size as any)}
                     disabled={isLoading}
                   >
                     Edit
@@ -250,7 +262,7 @@ export default function ServingSize({ onClose }: { onClose: () => void }) {
                     variant="destructive" 
                     size="sm" 
                     className="rounded-full bg-red-500 text-white text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-1.5"
-                    onClick={() => handleDeleteClick(size)}
+                    onClick={() => handleDeleteClick(size as any)}
                     disabled={isLoading}
                   >
                     Delete

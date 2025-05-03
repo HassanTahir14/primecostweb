@@ -19,7 +19,7 @@ import {
   clearError
 } from '@/store/itemCategorySlice';
 import { AppDispatch } from '@/store/store';
-
+import Loader from './common/Loader';
 interface Category {
   categoryId: number;
   name: string;
@@ -127,7 +127,7 @@ export default function Categories({ onClose }: { onClose: () => void }) {
   if (loading && !isEditModalOpen && !isCreateModalOpen && !isDeleteModalOpen && !isMessageModalOpen) {
     return (
       <div className="flex-1 flex items-center justify-center">
-        <div className="text-lg">Loading...</div>
+        <Loader size="medium" />
       </div>
     );
   }

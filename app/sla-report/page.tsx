@@ -130,11 +130,23 @@ export default function SlaReportPage() {
                 <tbody className="divide-y divide-gray-100">
                   {slaData.map((item, index) => (
                     <tr key={item.id || index}>
-                      <td className="py-3 px-4">{item.type}</td>
+                      <td className="py-3 px-4">{item.type ? item.type.split('@')[0] : ''}</td>
                       <td className="py-3 px-4">{item.id}</td>
                       <td className="py-3 px-4">{item.from}</td>
                       <td className="py-3 px-4">{item.date}</td>
-                      <td className="py-3 px-4 font-semibold">{item.status}</td>
+                      <td
+                        className={`py-3 px-4 font-semibold ${
+                          item.status === 'APPROVED'
+                            ? 'text-green-600'
+                            : item.status === 'REJECTED'
+                            ? 'text-red-600'
+                            : item.status === 'PENDING'
+                            ? 'text-yellow-600'
+                            : ''
+                        }`}
+                      >
+                        {item.status}
+                      </td>
                     </tr>
                   ))}
                 </tbody>

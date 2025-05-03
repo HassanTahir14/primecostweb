@@ -4,6 +4,7 @@ import React from 'react';
 import Button from '@/components/common/button';
 import { Download } from 'lucide-react';
 import { exportToCSV } from '@/utils/exportUtils';
+import Loader from '../common/Loader';
 
 // Generic Column Definition
 export interface ColumnDefinition<T> {
@@ -99,7 +100,9 @@ function ReportTypeTable<T extends { [key: string]: any }>({
           <tbody className="divide-y divide-gray-100">
             {isLoading ? (
               <tr>
-                <td colSpan={columns.length} className="text-center py-10 text-gray-500">Loading...</td>
+                    <td colSpan={columns.length} className="text-center py-10 text-gray-500">
+                      <Loader size="medium" />
+                    </td>
               </tr>
             ) : safeData.length === 0 ? (
               <tr>

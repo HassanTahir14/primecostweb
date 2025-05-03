@@ -99,7 +99,7 @@ export default function ItemsMasterList() {
   useEffect(() => {
     dispatch(fetchAllItems({ 
         page: currentPage, 
-        size: 20, 
+        size: 200000, 
         searchQuery: searchQuery,
         sortBy: sortBy,
         direction: sortDirection
@@ -226,7 +226,8 @@ export default function ItemsMasterList() {
                     <th className="px-6 py-3 text-left">Item name</th>
                     <th className="px-6 py-3 text-left">Code</th>
                     <th className="px-6 py-3 text-left">Brand</th>
-                    <th className="px-6 py-3 text-left">Primary Unit</th>
+                    <th className="px-6 py-3 text-left">Token Status</th>
+                    {/* <th className="px-6 py-3 text-left">Primary Unit</th> */}
                     <th className="px-6 py-3 text-left">Cost (VAT Excl)</th>
                     <th className="px-6 py-3 text-left">Actions</th>
                     </tr>
@@ -237,7 +238,7 @@ export default function ItemsMasterList() {
                        <td colSpan={6} className="px-6 py-4 text-center text-sm text-gray-500">No items found.</td>
                        </tr>
                     )}
-                    {items.map((item) => (
+                    {items.map((item:any) => (
                     <tr 
                       key={item.itemId} 
                       className="hover:bg-gray-50 cursor-pointer"
@@ -255,7 +256,7 @@ export default function ItemsMasterList() {
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{item.code || '-'}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{item.itemsBrandName || '-'}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                            {item.primaryUnitValue}
+                            {item.tokenStatus}
                         </td>
                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                             SAR {item.purchaseCostWithoutVat?.toFixed(2) ?? '0.00'}

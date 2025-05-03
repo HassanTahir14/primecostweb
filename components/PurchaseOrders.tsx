@@ -90,6 +90,28 @@ const initialFormState: FormDataState = {
   vatAmount: '',
 };
 
+// Helper for date formatting
+function formatDate(dateString: string) {
+  if (!dateString) return '';
+  const date = new Date(dateString);
+  return date.toLocaleDateString('en-GB') + ' ' + date.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+}
+
+// Helper for status formatting
+function formatOrderStatus(status: string) {
+  if (!status) return '';
+  switch (status.toUpperCase()) {
+    case 'ON_HOLD': return 'On Hold';
+    case 'CANCELLED': return 'Cancelled';
+    case 'RECEIVED': return 'Received';
+    case 'UNDER_PROCESS': return 'Under Process';
+    case 'APPROVED': return 'Approved';
+    case 'PENDING': return 'Pending';
+    case 'REJECTED': return 'Rejected';
+    default: return status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
+  }
+}
+
 export default function PurchaseOrders({ onClose }: PurchaseOrdersProps) {
   const dispatch = useDispatch<AppDispatch>();
   const { 
@@ -423,7 +445,7 @@ export default function PurchaseOrders({ onClose }: PurchaseOrdersProps) {
         const successMsg = (resultAction.payload as any)?.description || 
                           (editingOrder ? 'Order updated successfully!' : 'Order added successfully!');
         resetFormAndCloseModal();
-        dispatch(fetchAllPurchaseOrders({ page: 0, size: 10, sortBy: 'dateOfOrder', direction: 'asc' }));
+        dispatch(fetchAllPurchaseOrders({ page: 0, size: 1000, sortBy: 'dateOfOrder', direction: 'asc' }));
         
         setFeedbackMessage(successMsg);
         setIsSuccess(true);
@@ -592,6 +614,8 @@ export default function PurchaseOrders({ onClose }: PurchaseOrdersProps) {
   };
   // --- End Receive Order Logic ---
 
+  const [isDateAsc, setIsDateAsc] = useState(true);
+
   return (
     <div className="flex-1 flex flex-col bg-white min-h-screen px-3 py-3 sm:px-4 md:px-8 sm:py-4 md:py-6">
       <div className="flex items-center justify-between mb-4 sm:mb-6">
@@ -602,17 +626,25 @@ export default function PurchaseOrders({ onClose }: PurchaseOrdersProps) {
           <h1 className="text-xl sm:text-2xl font-bold">Purchase Orders</h1>
         </div>
 
-        <Button 
-          onClick={() => {
-            resetFormAndCloseModal();
-            setEditingOrder(null);
-            setIsModalOpen(true);
-          }}
-          className="rounded-full bg-[#05A49D] text-white text-xs sm:text-sm px-3 py-1.5 sm:px-4 sm:py-2"
-          disabled={poLoading}
-        >
-          Create Order
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button 
+            onClick={() => {
+              resetFormAndCloseModal();
+              setEditingOrder(null);
+              setIsModalOpen(true);
+            }}
+            className="rounded-full bg-[#05A49D] text-white text-xs sm:text-sm px-3 py-1.5 sm:px-4 sm:py-2"
+            disabled={poLoading}
+          >
+            Create Order
+          </Button>
+          <Button
+            onClick={() => setIsDateAsc((prev) => !prev)}
+            className="rounded-full bg-[#28addb] text-white text-xs sm:text-sm px-3 py-1.5 sm:px-4 sm:py-2"
+          >
+            Sort by Date: {isDateAsc ? 'Oldest First' : 'Newest First'}
+          </Button>
+        </div>
       </div>
 
       <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6 flex-1">
@@ -621,75 +653,79 @@ export default function PurchaseOrders({ onClose }: PurchaseOrdersProps) {
             <div className="text-center py-10 text-gray-500">Loading purchase orders...</div>
           ) : (
             <table className="w-full text-left">
-            <thead>
+              <thead>
                 <tr className="border-b border-gray-200">
+                  <th className="py-4 px-6 font-medium text-sm text-gray-500">PO ID</th>
                   <th className="py-4 px-6 font-medium text-sm text-gray-500">Item Name</th>
-                  <th className="py-4 px-6 font-medium text-sm text-gray-500">Item Code</th>
                   <th className="py-4 px-6 font-medium text-sm text-gray-500">Quantity</th>
-                  <th className="py-4 px-6 font-medium text-sm text-gray-500">Purchase Cost</th>
                   <th className="py-4 px-6 font-medium text-sm text-gray-500">Unit</th>
-                  <th className="py-4 px-6 font-medium text-sm text-gray-500">Category</th>
-                  <th className="py-4 px-6 font-medium text-sm text-gray-500">Status</th>
-                  <th className="py-4 px-6 font-medium text-sm text-gray-500 text-center">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
+                  <th className="py-4 px-6 font-medium text-sm text-gray-500">Order Date</th>
+                  <th className="py-4 px-6 font-medium text-sm text-gray-500">Cost with VAT</th>
+                  <th className="py-4 px-6 font-medium text-sm text-gray-500">Token Status</th>
+                  <th className="py-4 px-6 font-medium text-sm text-gray-500">Order Status</th>
+                  <th className="py-4 px-6 font-medium text-sm text-gray-500 text-center">Action</th>
+                </tr>
+              </thead>
+              <tbody>
                 {purchaseOrders.length > 0 ? (
-                  purchaseOrders.map((order) => {
-                    const categoryName = getCategoryName(order.categoryId);
-                    const unitName = getUnitName(order.unitId);
-                    
-                    return (
-                      <tr key={order.id} className="border-b border-gray-200 last:border-b-0">
-                        <td className="py-4 px-6 text-sm">{(order.itemName || 'N/A').split('@')[0]}</td>
-                        <td className="py-4 px-6 text-sm">{order.itemCode || 'N/A'}</td>
-                        <td className="py-4 px-6 text-sm">{order.quantity} {unitName}</td>
-                        <td className="py-4 px-6 text-sm">{unitName}</td>
-                        <td className="py-4 px-6 text-sm">{categoryName}</td>
-                        <td className="py-4 px-6 text-sm">
-                          <span className={`px-2 py-1 rounded-full text-xs ${
-                            order.purchaseOrderStatus === 'RECEIVED' ? 'bg-green-100 text-green-800' :
-                            order.purchaseOrderStatus === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
-                            'bg-gray-100 text-gray-800'
-                          }`}>
-                              {order.purchaseOrderStatus || 'N/A'}
-                          </span>
-                        </td>
-                        <td className="py-4 px-6 text-sm">{(order as any).createdAt || 'N/A'}</td>
-                        <td className="py-4 px-6 text-center">
-                          <div className="flex items-center justify-center space-x-2">
-                            <Button 
-                              variant="default" 
-                              size="sm" 
+                  [...purchaseOrders]
+                    .sort((a: any, b: any) => isDateAsc
+                      ? new Date(a.dateOfOrder).getTime() - new Date(b.dateOfOrder).getTime()
+                      : new Date(b.dateOfOrder).getTime() - new Date(a.dateOfOrder).getTime()
+                    )
+                    .map((order) => {
+                      const costWithVat = (order.purchaseCost ?? 0) + (order.vatAmount ?? 0);
+                      return (
+                        <tr key={order.id} className="border-b border-gray-200 last:border-b-0">
+                          <td className="py-4 px-6 text-sm">{order.id}</td>
+                          <td className="py-4 px-6 text-sm">{order.itemName?.split('@')[0]}</td>
+                          <td className="py-4 px-6 text-sm">{order.quantity}</td>
+                          <td className="py-4 px-6 text-sm">{order.unitName}</td>
+                          <td className="py-4 px-6 text-sm">{formatDate(order.dateOfOrder)}</td>
+                          <td className="py-4 px-6 text-sm">USD {costWithVat.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                          <td className="py-4 px-6 text-sm">
+                            <span className={order.tokenStatus === 'PENDING' ? 'text-red-600 font-bold' : ''}>
+                              {order.tokenStatus.charAt(0).toUpperCase() + order.tokenStatus.slice(1).toLowerCase()}
+                            </span>
+                            {order.tokenStatus === 'PENDING' && (
+                              <div className="text-red-600 font-bold">Approve the Token</div>
+                            )}
+                          </td>
+                          <td className="py-4 px-6 text-sm">{formatOrderStatus(order.purchaseOrderStatus)}</td>
+                          <td className="py-4 px-6 text-center">
+                            <div className="flex items-center justify-center space-x-2">
+                              <Button 
+                                variant="default" 
+                                size="sm" 
                                 className="rounded-full bg-[#05A49D] text-white text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-1.5"
-                              onClick={() => handleEditClick(order)}
+                                onClick={() => handleEditClick(order)}
                                 disabled={poLoading}
-                            >
-                                Edit
-                            </Button>
-                            <Button 
-                              variant="default" 
-                              size="sm" 
-                              className="rounded-full bg-[#28addb] text-white text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-1.5"
-                              onClick={() => handleReceiveClick(order)}
-                              disabled={poLoading || order.purchaseOrderStatus === 'RECEIVED' || order.purchaseOrderStatus === 'CANCELLED'}
-                            >
-                              Received Order?
-                            </Button>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })
+                              >
+                                Update
+                              </Button>
+                              <Button 
+                                variant="default" 
+                                size="sm" 
+                                className="rounded-full bg-[#28addb] text-white text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-1.5"
+                                onClick={() => handleReceiveClick(order)}
+                                disabled={poLoading || order.purchaseOrderStatus === 'RECEIVED' || order.purchaseOrderStatus === 'CANCELLED'}
+                              >
+                                Order Received?
+                              </Button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })
                 ) : (
                   <tr>
-                    <td colSpan={8} className="text-center py-10 text-gray-500">
+                    <td colSpan={9} className="text-center py-10 text-gray-500">
                       {poError ? 'Error loading data.' : 'No purchase orders found.'}
                     </td>
                   </tr>
-              )}
-            </tbody>
-          </table>
+                )}
+              </tbody>
+            </table>
           )}
         </div>
       </div>

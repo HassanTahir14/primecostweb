@@ -15,6 +15,7 @@ import {
   deleteCategory 
 } from '@/store/subRecipeCategorySlice';
 import type { AppDispatch, RootState } from '@/store/store';
+import Loader from '@/components/common/Loader';
 
 interface Category {
   subRecipeCategoryId: number;
@@ -131,7 +132,13 @@ export default function CategoriesPage() {
   };
 
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <PageLayout title="Recipe Categories">
+        <div className="flex justify-center items-center h-64">
+          <Loader size="medium" />
+        </div>
+      </PageLayout>
+    );
   }
 
   if (error) {

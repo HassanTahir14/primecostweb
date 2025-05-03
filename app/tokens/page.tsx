@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import PageLayout from '@/components/PageLayout';
 import api from '@/store/api';
 import ConfirmationModal from '@/components/common/ConfirmationModal';
+import Modal from '@/components/common/Modal';
 
 interface Token {
   tokenId: number;
@@ -38,6 +39,15 @@ export default function TokensPage() {
     pending: 0,
     rejected: 0,
     approved: 0
+  });
+
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+  const today = new Date().toISOString().split('T')[0];
+  const [filter, setFilter] = useState({
+    fromDate: '',
+    toDate: '',
+    noOfRecords: 50,
+    sortBy: 'asc',
   });
 
   const formatDate = (dateString: string) => {
@@ -102,6 +112,48 @@ export default function TokensPage() {
     }
   };
 
+  const fetchTokensWithFilter = async () => {
+    setIsLoading(true);
+    try {
+      const response = await api.post('/tokens/get', {
+        page: 0,
+        size: filter.noOfRecords,
+        sortBy: 'createdAt',
+        direction: filter.sortBy,
+        startDate: filter.fromDate || '2020-04-27',
+        endDate: filter.toDate || today,
+      });
+      if (response.data && response.data.tokens) {
+        let fetchedTokens: Token[] = response.data.tokens;
+        fetchedTokens.sort((a, b) => {
+          const dateA = new Date(a.createdAt).getTime();
+          const dateB = new Date(b.createdAt).getTime();
+          return isLatestTokens ? dateB - dateA : dateA - dateB;
+        });
+        const formattedTokens = fetchedTokens.map((token: Token) => ({
+          ...token,
+          createdAt: formatDate(token.createdAt),
+          updatedAt: formatDate(token.updatedAt),
+        }));
+        setTokens(formattedTokens);
+        const pendingCount = response.data.tokens.filter((token: Token) => token.tokenStatus === 'PENDING').length;
+        const rejectedCount = response.data.tokens.filter((token: Token) => token.tokenStatus === 'REJECTED').length;
+        const approvedCount = response.data.tokens.filter((token: Token) => token.tokenStatus === 'APPROVED').length;
+        setStats({
+          pending: pendingCount,
+          rejected: rejectedCount,
+          approved: approvedCount
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching tokens:', error);
+      setModalMessage('Failed to load tokens. Please try again later.');
+      setIsErrorModalOpen(true);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
     fetchTokens();
   }, [isLatestTokens]);
@@ -143,88 +195,63 @@ export default function TokensPage() {
         <div className="flex flex-col space-y-6">
           <div className="flex justify-between items-center flex-wrap gap-4">
             <h1 className="text-3xl font-semibold text-gray-900">Token</h1>
-            
             <div className="flex space-x-4">
-              <div className="bg-[#00997B] text-white rounded-lg py-3 px-5 text-center">
+              <button
+                className="bg-[#00997B] text-white rounded-lg py-3 px-6 font-semibold shadow"
+                onClick={() => setIsFilterModalOpen(true)}
+                style={{ minWidth: '140px' }}
+              >
+                Apply Filter
+              </button>
+              <div className="bg-[#00997B] text-white rounded-lg py-3 px-5 text-center font-medium">
                 <p className="font-medium">Pending: {stats.pending}</p>
               </div>
-              <div className="bg-[#00997B] text-white rounded-lg py-3 px-5 text-center">
+              <div className="bg-[#00997B] text-white rounded-lg py-3 px-5 text-center font-medium">
                 <p className="font-medium">Rejected: {stats.rejected}</p>
               </div>
-              <div className="bg-[#00997B] text-white rounded-lg py-3 px-5 text-center">
+              <div className="bg-[#00997B] text-white rounded-lg py-3 px-5 text-center font-medium">
                 <p className="font-medium">Approved: {stats.approved}</p>
               </div>
             </div>
           </div>
-          
-          <div className="flex justify-end items-center">
-            <label className="flex items-center cursor-pointer">
-              <span className="mr-3 text-gray-700 font-medium">Latest Tokens</span>
-              <div className="relative">
-                <input 
-                  type="checkbox" 
-                  className="sr-only" 
-                  checked={isLatestTokens}
-                  onChange={() => setIsLatestTokens(!isLatestTokens)} 
-                />
-                <div className={`block w-14 h-8 rounded-full ${isLatestTokens ? 'bg-[#00997B]' : 'bg-gray-300'}`}></div>
-                <div className={`absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition-transform duration-300 ${isLatestTokens ? 'transform translate-x-6' : ''}`}></div>
-              </div>
-            </label>
+          <div className="grid grid-cols-3 gap-2 px-2 py-2 border-b border-gray-200">
+            <div className="text-lg font-semibold text-gray-400">Token Type</div>
+            <div className="text-lg font-semibold text-gray-400 text-center">Status</div>
+            <div className="text-lg font-semibold text-gray-400 text-right">Requested By</div>
           </div>
-          
-          <div className="overflow-x-auto">
+          <div className="flex flex-col gap-3">
             {isLoading ? (
               <div className="flex justify-center py-6">
                 <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-gray-900"></div>
               </div>
             ) : (
-              <table className="w-full">
-                <thead>
-                  <tr className="text-left border-b border-gray-200">
-                    <th className="py-4 px-6 font-medium text-gray-600 w-1/5">Token Type</th>
-                    <th className="py-4 px-6 font-medium text-gray-600 w-1/6">Status</th>
-                    <th className="py-4 px-6 font-medium text-gray-600 w-1/4">
-                      <div>Created at:</div>
-                    </th>
-                    <th className="py-4 px-6 font-medium text-gray-600 w-1/4">
-                      <div>Updated at:</div>
-                    </th>
-                    <th className="py-4 px-6 font-medium text-gray-600 w-1/6">Requested By</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200">
-                  {tokens.map((token) => (
-                    <tr 
-                      key={token.tokenId} 
-                      className={`border-b border-gray-100 ${
-                        isActionLoading === token.tokenId ? 'opacity-50' : ''
-                      } ${
-                        token.tokenStatus === 'PENDING' ? 'cursor-pointer hover:bg-gray-50' : ''
-                      }`}
-                      onClick={() => token.tokenStatus === 'PENDING' && handleRowClick(token.tokenId)}
-                    >
-                      <td className="py-4 px-6">{token.tokenType.split('@')[0]}</td>
-                      <td className="py-4 px-6 font-semibold">
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          token.tokenStatus === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
-                          token.tokenStatus === 'APPROVED' ? 'bg-green-100 text-green-800' :
-                          token.tokenStatus === 'REJECTED' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800'
-                        }`}>
-                          {token.tokenStatus}
-                        </span>
-                      </td>
-                      <td className="py-4 px-6 text-gray-600">
-                        {token.createdAt}
-                      </td>
-                      <td className="py-4 px-6 text-gray-600">
-                        {token.updatedAt}
-                      </td>
-                      <td className="py-4 px-6 text-[#00997B] font-semibold">{token.requestorName}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              tokens.map((token) => (
+                <div
+                  key={token.tokenId}
+                  className={`grid grid-cols-3 items-center bg-white rounded-lg px-2 py-4 shadow-sm border border-gray-100 ${
+                    isActionLoading === token.tokenId ? 'opacity-50' : ''
+                  } ${
+                    token.tokenStatus === 'PENDING' ? 'cursor-pointer hover:bg-gray-50' : ''
+                  }`}
+                  onClick={() => token.tokenStatus === 'PENDING' && handleRowClick(token.tokenId)}
+                >
+                  <div className="flex flex-col min-w-0">
+                    <div className="text-base font-semibold text-gray-900">{token.tokenType.split('@')[0]}</div>
+                    <div className="text-sm text-gray-400 mt-1">Created at:{token.createdAt}</div>
+                  </div>
+                  <div className="flex flex-col items-center">
+                    <span className={`text-base font-bold ${
+                      token.tokenStatus === 'PENDING' ? 'text-red-500' :
+                      token.tokenStatus === 'APPROVED' ? 'text-black' :
+                      token.tokenStatus === 'REJECTED' ? 'text-gray-500' : 'text-gray-800'
+                    }`}>
+                      {token.tokenStatus}
+                    </span>
+                    <span className="text-xs text-gray-400 mt-1">Updated at:{token.updatedAt}</span>
+                  </div>
+                  <div className="text-[#00997B] font-semibold text-base text-right">{token.requestorName}</div>
+                </div>
+              ))
             )}
             {tokens.length === 0 && !isLoading && (
               <div className="text-center py-6 text-gray-500">
@@ -263,6 +290,67 @@ export default function TokensPage() {
         cancelText="Cancel"
         isAlert={false}
       />
+
+      {/* Filter Modal */}
+      <Modal isOpen={isFilterModalOpen} onClose={() => setIsFilterModalOpen(false)} size="md">
+        <div className="flex flex-col gap-4">
+          <div>
+            <label className="block mb-1 font-medium">From Date</label>
+            <input
+              type="date"
+              className="w-full border rounded px-3 py-2"
+              value={filter.fromDate}
+              onChange={e => setFilter(f => ({ ...f, fromDate: e.target.value }))}
+            />
+          </div>
+          <div>
+            <label className="block mb-1 font-medium">To Date</label>
+            <input
+              type="date"
+              className="w-full border rounded px-3 py-2"
+              value={filter.toDate}
+              onChange={e => setFilter(f => ({ ...f, toDate: e.target.value }))}
+            />
+          </div>
+          <div>
+            <label className="block mb-1 font-medium">No of records</label>
+            <input
+              type="number"
+              className="w-full border rounded px-3 py-2"
+              value={filter.noOfRecords}
+              onChange={e => setFilter(f => ({ ...f, noOfRecords: parseInt(e.target.value, 10) || 0 }))}
+            />
+          </div>
+          <div>
+            <label className="block mb-1 font-medium">Sort By</label>
+            <select
+              className="w-full border rounded px-3 py-2"
+              value={filter.sortBy}
+              onChange={e => setFilter(f => ({ ...f, sortBy: e.target.value }))}
+            >
+              <option value="asc">Ascending</option>
+              <option value="desc">Descending</option>
+            </select>
+          </div>
+          <div className="flex justify-end gap-2 mt-4">
+            <button
+              className="bg-gray-200 text-gray-700 rounded px-4 py-2"
+              onClick={() => setIsFilterModalOpen(false)}
+            >
+              Cancel
+            </button>
+            <button
+              className="bg-[#00997B] text-white rounded px-4 py-2"
+              onClick={() => {
+                setIsFilterModalOpen(false);
+                fetchTokensWithFilter();
+              }}
+            >
+              Apply
+            </button>
+          </div>
+        </div>
+      </Modal>
     </PageLayout>
   );
 } 

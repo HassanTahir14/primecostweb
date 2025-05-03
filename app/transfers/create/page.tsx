@@ -22,6 +22,7 @@ import TransferInventoryItemsTable from '@/components/transfers/TransferInventor
 import TransferRecipeTable from '@/components/transfers/TransferRecipeTable';
 import TransferSubRecipeTable from '@/components/transfers/TransferSubRecipeTable';
 import TransferCostTable from '@/components/transfers/TransferCostTable';
+import Loader from '@/components/common/Loader';
 
 // Define interfaces for better type safety
 interface UnitOfMeasurement {
@@ -461,9 +462,17 @@ function CreateTransferContent() {
 }
 
 export default function CreateTransferPage() {
-    return (
-        <Suspense fallback={<div>Loading...</div>}> 
-            <CreateTransferContent />
-        </Suspense>
-    );
+  return (
+    <Suspense
+      fallback={
+        <PageLayout title="Create Transfer">
+          <div className="flex justify-center items-center h-64">
+            <Loader size="medium" />
+          </div>
+        </PageLayout>
+      }
+    >
+      <CreateTransferContent />
+    </Suspense>
+  );
 } 

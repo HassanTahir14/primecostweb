@@ -117,7 +117,7 @@ export default function Suppliers({ onClose, onEdit }: SuppliersProps) {
                         >
                           Edit
                         </Button>
-                        <Button 
+                        {/* <Button 
                           variant="destructive" 
                           size="sm" 
                           className="rounded-full bg-red-500 text-white text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-1.5"
@@ -125,7 +125,7 @@ export default function Suppliers({ onClose, onEdit }: SuppliersProps) {
                           disabled={loading}
                         >
                           Delete
-                        </Button>
+                        </Button> */}
                       </div>
                     </td>
                   </tr>

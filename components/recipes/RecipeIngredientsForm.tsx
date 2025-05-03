@@ -48,7 +48,13 @@ export default function RecipeIngredientsForm({ onNext, onBack, initialData }: R
   const dispatch = useDispatch<AppDispatch>();
 
   useEffect(() => {
-    dispatch(fetchAllItems({}))
+    dispatch(fetchAllItems({
+      page: 0, 
+        size: 200000, 
+        searchQuery: '',
+        sortBy: 'name',
+        direction: 'asc'
+    }))
       .unwrap()
       .then((res) => {
         // Filter items to only show those with quantity > 0 in any branch
@@ -184,7 +190,7 @@ export default function RecipeIngredientsForm({ onNext, onBack, initialData }: R
       unit: selectedUnit?.unitName || 'KG',
       weight: selectedUnit?.unitName || 'KG',
       volume: null,
-      recipeCost: Number(recipeCost),
+      recipeCost: recipeCost,
       unitId: selectedUnitId
     };
 

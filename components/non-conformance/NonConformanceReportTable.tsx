@@ -3,6 +3,7 @@
 import React from 'react';
 // Import the correct interface from the slice
 import { NonConformanceReport } from '@/store/nonConformanceSlice'; 
+import Loader from '../common/Loader';
 
 // Interface for the props using the imported type
 interface NonConformanceReportTableProps {
@@ -52,7 +53,9 @@ const NonConformanceReportTable: React.FC<NonConformanceReportTableProps> = ({
           {isLoading ? (
             <tr>
                {/* Update colspan to match new number of columns */}
-              <td colSpan={11} className="text-center py-10 text-gray-500">Loading...</td>
+              <td colSpan={11} className="text-center py-10 text-gray-500">
+                <Loader size="medium" />
+              </td>
             </tr>
           ) : reports.length === 0 ? (
              <tr>

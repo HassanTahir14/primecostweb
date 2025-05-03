@@ -6,7 +6,7 @@ import { useSelector } from 'react-redux';
 import { RootState } from '@/store/store';
 import { FC } from 'react';
 import PageLayout from '@/components/PageLayout';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Loader } from 'lucide-react';
 import Link from 'next/link';
 import { getImageUrlWithAuth } from '@/utils/imageUtils';
 import api from '@/store/api';
@@ -99,7 +99,13 @@ export default function EmployeeDetailPage() {
 
   const renderContent = () => {
     if (isLoading) {
-      return <div className="flex justify-center items-center h-64">Loading...</div>;
+      return (
+        <PageLayout title="All Recipes">
+          <div className="flex justify-center items-center h-64">
+            <Loader size="medium" />
+          </div>
+        </PageLayout>
+      );
     }
 
     if (error) {

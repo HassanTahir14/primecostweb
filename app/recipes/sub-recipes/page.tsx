@@ -18,6 +18,7 @@ import ConfirmationModal from '@/components/common/ConfirmationModal';
 import { useRouter } from 'next/navigation';
 import SearchInput from '@/components/common/SearchInput';
 import AssignModal from '@/components/recipes/AssignModal';
+import Loader from '@/components/common/Loader';
 
 interface SubRecipe {
   id: number;
@@ -68,6 +69,8 @@ export default function SubRecipesPage() {
   const error = useSelector(selectSubRecipeError);
   const pagination = useSelector(selectSubRecipePagination);
   const [searchQuery, setSearchQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(0);
+  const pageSize = 10;
   const router = useRouter();
   
   // Modal states
@@ -76,6 +79,7 @@ export default function SubRecipesPage() {
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
   const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // State for modals
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
@@ -83,24 +87,35 @@ export default function SubRecipesPage() {
   const [confirmationMessage, setConfirmationMessage] = useState('');
   const [isSuccessMessage, setIsSuccessMessage] = useState(false);
 
-  useEffect(() => {
-    loadSubRecipes();
-  }, [dispatch]);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editModalMessage, setEditModalMessage] = useState('');
 
   const loadSubRecipes = async () => {
     try {
-      await dispatch(fetchSubRecipes({
-        page: 0,
-        size: 10,
+      const response = await dispatch(fetchSubRecipes({
+        page: currentPage,
+        size: pageSize,
         sortBy: "createdAt",
         direction: "asc"
       })).unwrap();
+
+      console.log('response', response);
     } catch (err) {
       console.error('Failed to fetch sub-recipes:', err);
       setErrorMessage('Failed to fetch sub-recipes');
       setIsErrorModalOpen(true);
     }
   };
+
+  useEffect(() => {
+    loadSubRecipes();
+  }, [dispatch, currentPage]);
+
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage);
+  };
+
+  const totalPages = Math.ceil((pagination?.total || 0) / pageSize);
 
   const handleDeleteClick = (recipe: SubRecipe) => {
     setSelectedRecipe(recipe);
@@ -123,6 +138,11 @@ export default function SubRecipesPage() {
   };
 
   const handleAssignClick = (subRecipe: any) => {
+    if (subRecipe.tokenStatus !== 'APPROVED') {
+      setEditModalMessage('Sub-recipe can only be assigned once it is approved by admin.');
+      setIsEditModalOpen(true);
+      return;
+    }
     setSelectedSubRecipeForAssign(subRecipe);
     setIsAssignModalOpen(true);
   };
@@ -144,7 +164,13 @@ export default function SubRecipesPage() {
   );
 
   if (status === 'loading') {
-    return <div>Loading...</div>;
+    return (
+      <PageLayout title="All Sub Recipes">
+        <div className="flex justify-center items-center h-64">
+          <Loader size="medium" />
+        </div>
+      </PageLayout>
+    );
   }
 
   return (
@@ -175,105 +201,78 @@ export default function SubRecipesPage() {
           </div>
         </div>
         
-        <div>
+        <div className="text-gray-500 text-sm mb-2">Sub Recipe Name</div>
+        <div className="space-y-2">
           {filteredSubRecipes.length > 0 ? (
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50 text-gray-700 uppercase text-xs">
-                  <tr>
-                    <th className="px-6 py-3 text-left">Sub-Recipe Name</th>
-                    <th className="px-6 py-3 text-left">Recipe Code</th>
-                    <th className="px-6 py-3 text-left">Category</th>
-                    <th className="px-6 py-3 text-left">Status</th>
-                    <th className="px-6 py-3 text-left">Portions</th>
-                    <th className="px-6 py-3 text-left">Cost Per Recipe</th>
-                    <th className="px-6 py-3 text-left">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {filteredSubRecipes.map((recipe: SubRecipe) => (
-                    <tr 
-                      key={recipe.id} 
-                      className="hover:bg-gray-50 cursor-pointer"
-                      onClick={(e) => {
-                        // Prevent navigation if clicking on action buttons
-                        if ((e.target as HTMLElement).closest('.action-buttons')) {
-                          return;
-                        }
-                        router.push(`/recipes/sub-recipes/${recipe.id}`);
-                      }}
-                    >
-                      <td className="px-6 py-4 whitespace-nowrap font-medium">{recipe.name}</td>
-                      <td className="px-6 py-4 whitespace-nowrap">{recipe.subRecipeCode}</td>
-                      <td className="px-6 py-4 whitespace-nowrap">{recipe.categoryName}</td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          recipe.tokenStatus === 'APPROVED' 
-                            ? 'bg-green-100 text-green-800' 
-                            : recipe.tokenStatus === 'PENDING'
-                            ? 'bg-yellow-100 text-yellow-800'
-                            : 'bg-red-100 text-red-800'
-                        }`}>
-                          {recipe.tokenStatus}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">{recipe.numberOfPortions}</td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        ${recipe.costPerRecipe}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center space-x-2 action-buttons">
-                          <Button 
-                            variant="default" 
-                            size="sm" 
-                            className={`rounded-full text-white text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-1.5 ${
-                              recipe.tokenStatus === 'APPROVED' 
-                                ? 'bg-[#28addb] hover:bg-[#2299c2]' 
-                                : 'bg-gray-400 cursor-not-allowed'
-                            }`}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              if (recipe.tokenStatus === 'APPROVED') {
-                                handleAssignClick(recipe);
-                              }
-                            }}
-                            disabled={recipe.tokenStatus !== 'APPROVED'}
-                          >
-                            Assign to?
-                          </Button>
-                          <Link href={`/recipes/sub-recipes/edit/${recipe.id}`}>
-                            <Button 
-                              variant="default" 
-                              size="sm" 
-                              className="rounded-full bg-[#339A89] text-white text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-1.5"
-                            >
-                              Edit
-                            </Button>
-                          </Link>
-                          {/* <Button 
-                            variant="destructive" 
-                            size="sm" 
-                            className="rounded-full bg-red-500 text-white text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-1.5"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDeleteClick(recipe);
-                            }}
-                          >
-                            Delete
-                          </Button> */}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            filteredSubRecipes.map((recipe: SubRecipe) => (
+              <div
+                key={recipe.id}
+                className="flex flex-col sm:flex-row sm:items-center justify-between border-b py-3"
+              >
+                <div>
+                  <div className="font-medium">{recipe.name}</div>
+                  <div>
+                    Token Status: {" "}
+                    <span className={recipe.tokenStatus === "APPROVED" ? "text-green-500 font-bold" : "text-teal-500 font-bold"}>
+                      {recipe.tokenStatus}
+                    </span>
+                    {recipe.tokenStatus === "PENDING" && (
+                      <span
+                        className="ml-2 text-red-500 font-bold cursor-pointer hover:underline"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          // TODO: Add approve token logic here
+                        }}
+                      >
+                        Approve the Token
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <div className="flex gap-2 mt-2 sm:mt-0">
+                  <Button onClick={() => handleAssignClick(recipe)}>Assign To</Button>
+                  <Button onClick={() => router.push(`/recipes/sub-recipes/${recipe.id}`)} variant="secondary">View</Button>
+                  <Button onClick={() => {
+                    if (recipe.tokenStatus !== 'APPROVED') {
+                      setEditModalMessage('Subrecipe can only be edited once it is approved by admin.');
+                      setIsEditModalOpen(true);
+                    } else {
+                      router.push(`/recipes/sub-recipes/edit/${recipe.id}`);
+                    }
+                  }} variant="secondary">Edit</Button>
+                </div>
+              </div>
+            ))
           ) : (
             <div className="text-center py-10 text-gray-500 border-t border-gray-200 pt-6">
               No sub recipes found!
             </div>
           )}
         </div>
+
+        {pagination && pagination.total > 0 && (
+          <div className="flex justify-between items-center pt-4">
+            <div className="text-sm text-gray-500">
+              Showing {pagination.page * pagination.size + 1} to {Math.min((pagination.page + 1) * pagination.size, pagination.total)} of {pagination.total} sub-recipes
+            </div>
+            <div className="flex gap-2">
+              <Button
+                variant="secondary"
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 0}
+              >
+                Previous
+              </Button>
+              <Button
+                variant="secondary"
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage >= totalPages - 1}
+              >
+                Next
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Delete Confirmation Modal */}
@@ -327,6 +326,15 @@ export default function SubRecipesPage() {
         onClose={() => setConfirmationMessage('')}
         title={isSuccessMessage ? 'Success' : 'Error'}
         message={confirmationMessage}
+        isAlert={true}
+        okText="OK"
+      />
+
+      <ConfirmationModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        title="Not Allowed"
+        message={editModalMessage}
         isAlert={true}
         okText="OK"
       />

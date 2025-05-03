@@ -36,15 +36,20 @@ export default function RecipesPage() {
   const [selectedRecipeForAssign, setSelectedRecipeForAssign] = useState<any>(null);
   const [confirmationMessage, setConfirmationMessage] = useState('');
   const [isSuccessMessage, setIsSuccessMessage] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editModalMessage, setEditModalMessage] = useState('');
 
   const router = useRouter();
+
+  const [currentPage, setCurrentPage] = useState(0);
+  const pageSize = 10;
 
   useEffect(() => {
     const loadRecipes = async () => {
       try {
         const response = await dispatch(fetchRecipes({
-          page: 0,
-          size: 10,
+          page: currentPage,
+          size: pageSize,
           sortBy: "createdAt",
           direction: "asc"
         })).unwrap();
@@ -58,7 +63,7 @@ export default function RecipesPage() {
     };
 
     loadRecipes();
-  }, [dispatch]);
+  }, [dispatch, currentPage]);
 
   const handleDeleteClick = (recipe: any) => {
     setSelectedRecipe(recipe);
@@ -77,7 +82,7 @@ export default function RecipesPage() {
       // Refresh the list
       dispatch(fetchRecipes({
         page: 0,
-        size: 10,
+        size: 1000000,
         sortBy: "createdAt",
         direction: "asc"
       }));
@@ -104,6 +109,12 @@ export default function RecipesPage() {
     setConfirmationMessage(message);
     setIsSuccessMessage(false);
   };
+
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage);
+  };
+
+  const totalPages = Math.ceil((pagination?.total || 0) / pageSize);
 
   const filteredRecipes = recipes?.filter((recipe: any) =>
     recipe.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -155,110 +166,59 @@ export default function RecipesPage() {
         </div>
         
         {/* Recipe List or Empty State */}
-        <div>
+        <div className="text-gray-500 text-sm mb-2">Recipe Name</div>
+        <div className="space-y-2">
           {filteredRecipes?.length > 0 ? (
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50 text-gray-700 uppercase text-xs">
-                  <tr>
-                    <th className="px-6 py-3 text-left">Image</th>
-                    <th className="px-6 py-3 text-left">Recipe Name</th>
-                    <th className="px-6 py-3 text-left">Category</th>
-                    <th className="px-6 py-3 text-left">Status</th>
-                    <th className="px-6 py-3 text-left">Portions</th>
-                    <th className="px-6 py-3 text-left">Recipe Cost</th>
-                    <th className="px-6 py-3 text-left">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {filteredRecipes.map((recipe: any) => (
-                    <tr 
-                      key={recipe.id} 
-                      className="hover:bg-gray-50 cursor-pointer"
-                      onClick={(e) => {
-                        // Prevent navigation if clicking on action buttons
-                        if ((e.target as HTMLElement).closest('.action-buttons')) {
-                          return;
-                        }
-                        router.push(`/recipes/${recipe.id}`);
-                      }}
-                    >
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        {recipe.images && recipe.images.length > 0 ? (
-                          <div className="w-12 h-12 rounded-md overflow-hidden relative">
-                            <AuthImage 
-                              src={getImageUrlWithAuth(recipe.images[0].path)}
-                              alt={recipe.name}
-                              className="object-cover w-full h-full"
-                              fallbackSrc="/placeholder-image.svg"
-                            />
-                          </div>
-                        ) : (
-                          <div className="w-12 h-12 bg-gray-200 rounded-md flex items-center justify-center text-gray-400">
-                            No img
-                          </div>
-                        )}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap font-medium">{recipe.name}</td>
-                      <td className="px-6 py-4 whitespace-nowrap">{recipe.categoryName}</td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          recipe.tokenStatus === 'APPROVED' 
-                            ? 'bg-green-100 text-green-800' 
-                            : 'bg-gray-100 text-gray-800'
-                        }`}>
-                          {recipe.tokenStatus || 'DRAFT'}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">{recipe.numberOfPortions}</td>
-                      <td className="px-6 py-4 whitespace-nowrap">${(recipe.costPerRecipe)}</td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center space-x-2 action-buttons">
-                          <Button 
-                            variant="default" 
-                            size="sm" 
-                            className={`rounded-full text-white text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-1.5 ${
-                              recipe.tokenStatus === 'APPROVED' 
-                                ? 'bg-[#28addb] hover:bg-[#2299c2]' 
-                                : 'bg-gray-400 cursor-not-allowed'
-                            }`}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              if (recipe.tokenStatus === 'APPROVED') {
-                                handleAssignClick(recipe);
-                              }
-                            }}
-                            disabled={recipe.tokenStatus !== 'APPROVED'}
-                          >
-                            Assign to?
-                          </Button>
-                          <Link href={`/recipes/edit/${recipe.id}`}>
-                            <Button 
-                              variant="default" 
-                              size="sm" 
-                              className="rounded-full bg-[#339A89] text-white text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-1.5"
-                            >
-                              Edit
-                            </Button>
-                          </Link>
-                          {/* <Button 
-                            variant="destructive" 
-                            size="sm" 
-                            className="rounded-full bg-red-500 text-white text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-1.5"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDeleteClick(recipe);
-                            }}
-                          >
-                            Delete
-                          </Button> */}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            filteredRecipes.map((recipe: any) => (
+              <div
+                key={recipe.id}
+                className="flex flex-col sm:flex-row sm:items-center justify-between border-b py-3"
+              >
+                <div>
+                  <div className="font-medium">{recipe.name}</div>
+                  <div>
+                    Token Status: {" "}
+                    <span className={recipe.tokenStatus === "APPROVED" ? "text-green-500 font-bold" : "text-teal-500 font-bold"}>
+                      {recipe.tokenStatus}
+                    </span>
+                    {recipe.tokenStatus === "PENDING" && (
+                      <span
+                        className="ml-2 text-red-500 font-bold cursor-pointer hover:underline"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          // TODO: Add approve token logic here
+                        }}
+                      >
+                        Approve the Token
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <div className="flex gap-2 mt-2 sm:mt-0">
+                  <Button 
+                    onClick={() => {
+                      if (recipe.tokenStatus !== 'APPROVED') {
+                        setEditModalMessage('Recipe can only be assigned once it is approved by admin.');
+                        setIsEditModalOpen(true);
+                      } else {
+                        handleAssignClick(recipe);
+                      }
+                    }}
+                  >
+                    Assign To
+                  </Button>
+                  <Button onClick={() => router.push(`/recipes/${recipe.id}`)} variant="secondary">View</Button>
+                  <Button onClick={() => {
+                    if (recipe.tokenStatus !== 'APPROVED') {
+                      setEditModalMessage('Recipe can only be edited once it is approved by admin.');
+                      setIsEditModalOpen(true);
+                    } else {
+                      router.push(`/recipes/edit/${recipe.id}`);
+                    }
+                  }} variant="secondary">Edit</Button>
+                </div>
+              </div>
+            ))
           ) : (
             <div className="text-center py-10 text-gray-500 border-t border-gray-200 pt-6">
               No recipes found!
@@ -266,9 +226,25 @@ export default function RecipesPage() {
           )}
         </div>
         {pagination && pagination.total > 0 && (
-          <div className="flex justify-end pt-4">
+          <div className="flex justify-between items-center pt-4">
             <div className="text-sm text-gray-500">
               Showing {pagination.page * pagination.size + 1} to {Math.min((pagination.page + 1) * pagination.size, pagination.total)} of {pagination.total} recipes
+            </div>
+            <div className="flex gap-2">
+              <Button
+                variant="secondary"
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 0}
+              >
+                Previous
+              </Button>
+              <Button
+                variant="secondary"
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage >= totalPages - 1}
+              >
+                Next
+              </Button>
             </div>
           </div>
         )}
@@ -316,6 +292,15 @@ export default function RecipesPage() {
         onError={handleAssignError}
         recipeId={selectedRecipeForAssign?.id || 0}
         isSubRecipe={false}
+      />
+
+      <ConfirmationModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        title="Not Allowed"
+        message={editModalMessage}
+        isAlert={true}
+        okText="OK"
       />
     </PageLayout>
   );

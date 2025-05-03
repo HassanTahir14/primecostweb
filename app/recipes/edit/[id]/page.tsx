@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { ArrowLeft } from 'lucide-react';
+import Loader from '@/components/common/Loader';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import PageLayout from '@/components/PageLayout';
@@ -242,7 +243,13 @@ export default function EditRecipePage() {
   };
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return (
+      <PageLayout title="All Recipes">
+        <div className="flex justify-center items-center h-64">
+          <Loader size="medium" />
+        </div>
+      </PageLayout>
+    );
   }
 
   if (error) {
