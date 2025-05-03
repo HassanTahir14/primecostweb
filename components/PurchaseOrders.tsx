@@ -289,17 +289,7 @@ export default function PurchaseOrders({ onClose }: PurchaseOrdersProps) {
     
     // Handle unit type changes
     if (name === 'unitType') {
-      const unitType = value as "primary" | "secondary";
-      updatedFormData.unitType = unitType;
-      
-      if (formData.itemId) {
-        const selectedItem = items.find(item => String(item.itemId) === formData.itemId);
-        if (selectedItem) {
-          updatedFormData.unitId = unitType === 'primary' 
-            ? String(selectedItem.primaryUnitId) 
-            : String(selectedItem.secondaryUnitId);
-        }
-      }
+      updatedFormData.unitType = value as "primary" | "secondary";
     } else {
       // For all other fields, update normally
       updatedFormData[name as keyof FormDataState] = value;
@@ -326,13 +316,15 @@ export default function PurchaseOrders({ onClose }: PurchaseOrdersProps) {
         
         if (updatedFormData.unitType === 'primary') {
           // For primary unit, use the original price
-          updatedFormData.purchaseCost = String(selectedItem.purchaseCostWithoutVat * quantity);
-          updatedFormData.vatAmount = String((selectedItem.purchaseCostWithVat - selectedItem.purchaseCostWithoutVat) * quantity);
+          const vatAmount = Math.round(((selectedItem.purchaseCostWithVat - selectedItem.purchaseCostWithoutVat) * quantity) * 100) / 100;
+          updatedFormData.purchaseCost = String(Math.round(selectedItem.purchaseCostWithoutVat * quantity * 100) / 100);
+          updatedFormData.vatAmount = String(vatAmount);
         } else {
           // For secondary unit, adjust the price based on the conversion ratio
           const conversionRatio = selectedItem.secondaryUnitValue;
-          updatedFormData.purchaseCost = String((selectedItem.purchaseCostWithoutVat / conversionRatio) * quantity);
-          updatedFormData.vatAmount = String(((selectedItem.purchaseCostWithVat - selectedItem.purchaseCostWithoutVat) / conversionRatio) * quantity);
+          const vatAmount = Math.round((((selectedItem.purchaseCostWithVat - selectedItem.purchaseCostWithoutVat) / conversionRatio) * quantity) * 100) / 100;
+          updatedFormData.purchaseCost = String(Math.round((selectedItem.purchaseCostWithoutVat / conversionRatio) * quantity * 100) / 100);
+          updatedFormData.vatAmount = String(vatAmount);
         }
       }
     }
@@ -673,7 +665,7 @@ export default function PurchaseOrders({ onClose }: PurchaseOrdersProps) {
                       ? new Date(a.dateOfOrder).getTime() - new Date(b.dateOfOrder).getTime()
                       : new Date(b.dateOfOrder).getTime() - new Date(a.dateOfOrder).getTime()
                     )
-                    .map((order) => {
+                    .map((order:any) => {
                       const costWithVat = (order.purchaseCost ?? 0) + (order.vatAmount ?? 0);
                       return (
                         <tr key={order.id} className="border-b border-gray-200 last:border-b-0">
@@ -842,7 +834,7 @@ export default function PurchaseOrders({ onClose }: PurchaseOrdersProps) {
                         <Input
                             type="number"
                             name="vatAmount"
-                            value={formData.vatAmount}
+                            value={Number(formData.vatAmount).toFixed(2)}
                             readOnly
                             className="w-full bg-gray-100 pl-12"
                             disabled={true}
