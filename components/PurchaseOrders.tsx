@@ -260,9 +260,9 @@ export default function PurchaseOrders({ onClose }: PurchaseOrdersProps) {
   }, [formData.itemId, formData.unitType, items]);
 
   useEffect(() => {
-    dispatch(fetchAllPurchaseOrders({ page: 0, size: 100, sortBy: 'dateOfOrder', direction: 'asc' }));
+    dispatch(fetchAllPurchaseOrders({ page: 0, size: 1000, sortBy: 'dateOfOrder', direction: 'asc' }));
     dispatch(fetchAllSuppliers());
-    dispatch(fetchAllItems({}));
+    dispatch(fetchAllItems({page: 0, size: 100000})); 
     dispatch(fetchAllBranches());
     dispatch(fetchAllStorageLocations());
     dispatch(fetchAllCategories());

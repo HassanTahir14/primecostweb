@@ -65,7 +65,8 @@ export default function Taxes({ onClose }: TaxesProps) {
           taxRate: parseFloat(taxRate),
           taxGroup
         }) as any);
-        showSuccessMessage('Tax updated successfully');
+        setModalMessage('Tax updated successfully');
+        setIsSuccessModalOpen(true);
       } else {
         await dispatch(addTax({
           taxCode,
@@ -73,13 +74,15 @@ export default function Taxes({ onClose }: TaxesProps) {
           taxRate: parseFloat(taxRate),
           taxGroup
         }) as any);
-        showSuccessMessage('Tax added successfully');
+        setModalMessage('Tax added successfully');
+        setIsSuccessModalOpen(true);
       }
       
       setIsCreateModalOpen(false);
       resetForm();
     } catch (error) {
-      showErrorMessage('Failed to process tax data');
+      setModalMessage('Failed to process tax data');
+      setIsErrorModalOpen(true);
     }
   };
 
@@ -107,9 +110,11 @@ export default function Taxes({ onClose }: TaxesProps) {
     try {
       await dispatch(deleteTax(selectedTaxId) as any);
       setIsDeleteModalOpen(false);
-      showSuccessMessage('Tax deleted successfully');
+      setModalMessage('Tax deleted successfully');
+      setIsSuccessModalOpen(true);
     } catch (error) {
-      showErrorMessage('Failed to delete tax');
+      setModalMessage('Failed to delete tax');
+      setIsErrorModalOpen(true);
     }
   };
 
@@ -126,6 +131,22 @@ export default function Taxes({ onClose }: TaxesProps) {
     
     if (!taxRate) {
       showErrorMessage('Tax rate is required');
+      return false;
+    }
+
+    const taxRateNum = parseFloat(taxRate);
+    if (isNaN(taxRateNum)) {
+      showErrorMessage('Tax rate must be a valid number');
+      return false;
+    }
+
+    if (taxRateNum < 0) {
+      showErrorMessage('Tax rate cannot be negative');
+      return false;
+    }
+
+    if (taxRateNum > 100) {
+      showErrorMessage('Tax rate cannot be greater than 100%');
       return false;
     }
     
@@ -182,7 +203,7 @@ export default function Taxes({ onClose }: TaxesProps) {
                 <tr key={tax.taxId} className="border-b">
                   <td className="py-3 sm:py-4 text-gray-800 text-sm sm:text-base pr-2">{tax.taxCode}</td>
                   <td className="py-3 sm:py-4 text-gray-800 text-sm sm:text-base pr-2">{tax.taxName}</td>
-                  <td className="py-3 sm:py-4 text-gray-800 text-sm sm:text-base pr-2">{tax.taxRate.toFixed(1)}</td>
+                  <td className="py-3 sm:py-4 text-gray-800 text-sm sm:text-base pr-2">{tax.taxRate ? tax.taxRate.toFixed(1) : '0.0'}</td>
                   <td className="py-3 sm:py-4 text-gray-800 text-sm sm:text-base pr-2">{tax.taxGroup}</td>
                   <td className="py-3 sm:py-4 text-right">
                     <div className="flex justify-end gap-2">
@@ -315,8 +336,13 @@ export default function Taxes({ onClose }: TaxesProps) {
       {/* Success Modal */}
       <ConfirmationModal
         isOpen={isSuccessModalOpen}
-        onClose={() => setIsSuccessModalOpen(false)}
-        title="Success"
+        onClose={() => {
+          setIsSuccessModalOpen(false);
+          if (modalMessage.includes('successfully')) {
+            window.location.reload();
+          }
+        }}
+        title={modalMessage.includes('successfully') ? "Success" : "Error"}
         message={modalMessage}
         isAlert={true}
         okText="OK"
@@ -325,8 +351,13 @@ export default function Taxes({ onClose }: TaxesProps) {
       {/* Error Modal */}
       <ConfirmationModal
         isOpen={isErrorModalOpen}
-        onClose={() => setIsErrorModalOpen(false)}
-        title="Error"
+        onClose={() => {
+          setIsErrorModalOpen(false);
+          if (modalMessage.includes('successfully')) {
+            window.location.reload();
+          }
+        }}
+        title={modalMessage.includes('successfully') ? "Success" : "Error"}
         message={modalMessage}
         isAlert={true}
         okText="OK"

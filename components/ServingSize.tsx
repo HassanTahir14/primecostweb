@@ -239,14 +239,14 @@ export default function ServingSize({ onClose }: { onClose: () => void }) {
           </div>
         ) : (
           <div className="space-y-3 sm:space-y-4">
-            {servingSizes.map((size) => (
+            {servingSizes?.map((size) => (
               <div 
                 key={size?.servingSizeId} 
                 className="grid grid-cols-3 items-center py-3 sm:py-4 border-b"
               >
-                <span className="text-gray-800 text-sm sm:text-base">{size.name}</span>
+                <span className="text-gray-800 text-sm sm:text-base">{size?.name || ''}</span>
                 <span className="text-gray-800 text-sm sm:text-base">
-                  {size.unitOfMeasurement || unitsOfMeasurement.find(u => u.unitOfMeasurementId === size.unitOfMeasurementId)?.unitName || ''}
+                  {size?.unitOfMeasurement || unitsOfMeasurement.find(u => u.unitOfMeasurementId === size?.unitOfMeasurementId)?.unitName || ''}
                 </span>
                 <div className="flex justify-end gap-2">
                   <Button 
@@ -421,7 +421,10 @@ export default function ServingSize({ onClose }: { onClose: () => void }) {
 
       <ConfirmationModal
         isOpen={isSuccessModalOpen}
-        onClose={() => setIsSuccessModalOpen(false)}
+        onClose={() => {
+          setIsSuccessModalOpen(false);
+          window.location.reload();
+        }}
         title="Success"
         message={successMessage}
         isAlert={true}

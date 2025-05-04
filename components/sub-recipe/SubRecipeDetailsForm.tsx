@@ -68,7 +68,8 @@ export default function SubRecipeDetailsForm({ onNext, initialData, isEditMode =
     dispatch(fetchAllServingSizes())
       .unwrap()
       .then((res) => {
-        setServingSizeList(res.servingSizeList || []);
+        console.log('Serving sizes response:', res);
+        setServingSizeList(res || []);
       })
       .catch((err) => {
         console.error('Failed to fetch serving sizes:', err);

@@ -25,7 +25,7 @@ export const fetchAllServingSizes = createAsyncThunk(
     try {
       const response = await servingSizeApi.fetchAll();
       console.log('API Response:', response); // Add this to debug
-      return response;
+      return response.servingSizeList || []; // Return the servingSizeList array directly
     } catch (error: any) {
       return rejectWithValue(error.response?.data || error.message);
     }
@@ -96,8 +96,7 @@ const servingSizeSlice = createSlice({
       })
       .addCase(fetchAllServingSizes.fulfilled, (state, action) => {
         state.loading = false;
-        // Handle the API response structure correctly
-        state.servingSizes = action.payload?.servingSizeList || [];
+        state.servingSizes = action.payload; // The payload is now the array directly
         console.log('Updated state:', state.servingSizes); // Add this to debug
       })
       .addCase(fetchAllServingSizes.rejected, (state, action) => {

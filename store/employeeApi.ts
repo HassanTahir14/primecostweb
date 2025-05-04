@@ -65,18 +65,18 @@ export const employeeApi = {
     // Create the JSON part, formatting times back to strings
     const requestDto = {
         employeeDetailsRequestDTO: {
-            firstname: employeeData.name || '',
+            firstname: employeeData.firstname || '',
             position: employeeData.position || '',
             mobileNumber: employeeData.mobileNumber || '',
-            iqamaExpiryDate: formatDateToYyyyMmDd(employeeData.iqamaIdExpiry),
+            iqamaExpiryDate: formatDateToYyyyMmDd(employeeData.iqamaExpiryDate),
             familyName: employeeData.familyName || '',
             iqamaId: employeeData.iqamaId || '',
             dateOfBirth: formatDateToYyyyMmDd(employeeData.dateOfBirth),
-            password: employeeData.password || '',
             nationality: employeeData.nationality || '',
             email: employeeData.email || '',
             healthCardExpiry: formatDateToYyyyMmDd(employeeData.healthCardExpiry),
-            healthCardNumber: employeeData.healthCardNumber || ''
+            healthCardNumber: employeeData.healthCardNumber || '',
+            password: employeeData.password || ''
         },
         // Format time objects back to HH:MM strings here
         dutySchedules: (employeeData.dutySchedulesDTO || []).map((schedule: any) => ({
@@ -110,9 +110,8 @@ export const employeeApi = {
     }
     
     const token = localStorage.getItem('authToken'); 
-    const response = await api.post('/kitchen/employees/add', formData, { // Send formData
+    const response = await api.post('/kitchen/employees/add', formData, {
         headers: {
-            // Content-Type is set automatically by the browser for FormData
             'Authorization': `Bearer ${token}`,
         }
     });
