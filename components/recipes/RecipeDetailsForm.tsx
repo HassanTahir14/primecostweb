@@ -10,6 +10,7 @@ import { fetchAllServingSizes } from '@/store/servingSizeSlice';
 import ConfirmationModal from '@/components/common/ConfirmationModal';
 import { getImageUrlWithAuth } from '@/utils/imageUtils';
 import AuthImage from '@/components/common/AuthImage';
+import Select from '@/components/common/select';
 
 interface RecipeImage {
   id?: number;
@@ -69,7 +70,8 @@ export default function RecipeDetailsForm({ onNext, initialData, isEditMode = fa
     dispatch(fetchAllServingSizes())
       .unwrap()
       .then((res) => {
-        setServingSizeList(res.servingSizeList || []);
+        console.log('Serving sizes response:', res);
+        setServingSizeList(res || []);
       })
       .catch((err) => {
         console.error('Failed to fetch serving sizes:', err);
@@ -251,16 +253,16 @@ export default function RecipeDetailsForm({ onNext, initialData, isEditMode = fa
 
       <div>
         <label className="block text-gray-700 font-medium mb-2">Serving Size</label>
-        <select
-          className={`w-full p-3 border ${errors.servingSize ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00997B] appearance-none bg-white`}
+        <Select
           value={formData.servingSize}
           onChange={(e) => setFormData(prev => ({ ...prev, servingSize: e.target.value }))}
-        >
-          <option value="" disabled>Select Serving Size</option>
-          {servingSizeList.map((size: any) => (
-            <option key={size.servingSizeId} value={size.servingSizeId}>{size.name}</option>
-          ))}
-        </select>
+          options={servingSizeList.map((size: any) => ({
+            label: `${size.name} ${size.unitOfMeasurement ? `(${size.unitOfMeasurement})` : ''}`,
+            value: size.servingSizeId.toString()
+          }))}
+          error={errors.servingSize}
+          className={`w-full ${errors.servingSize ? 'border-red-500' : ''}`}
+        />
         {errors.servingSize && <p className="text-red-500 text-sm">{errors.servingSize}</p>}
       </div>
 

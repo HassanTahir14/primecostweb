@@ -106,10 +106,40 @@ export default function EmployeeDetailsForm({ onNext, initialData }: EmployeeDet
   // Add validation function
   const validateForm = (): boolean => {
       const newErrors: Partial<Record<keyof FormDataState, string>> = {};
-      if (!formData.firstname.trim()) newErrors.firstname = 'Name is required';
-      if (!formData.position) newErrors.position = 'Position is required';
-      if (!formData.mobileNumber.trim()) newErrors.mobileNumber = 'Mobile number is required'; // Add mobile validation if needed
-      if (!formData.iqamaId.trim()) newErrors.iqamaId = 'Iqama ID is required';
+      
+      // First name validation
+      if (!formData.firstname.trim()) {
+          newErrors.firstname = 'First name is required';
+      } else if (formData.firstname.length > 50) {
+          newErrors.firstname = 'First name must be between 1 and 50 characters';
+      }
+
+      // Email validation
+      if (!formData.loginId.trim()) {
+          newErrors.loginId = 'Email is required';
+      } else if (formData.loginId.length < 5 || formData.loginId.length > 50) {
+          newErrors.loginId = 'Email must be between 5 and 50 characters';
+      }
+
+      // Iqama expiry date validation
+      if (!formData.iqamaExpiryDate) {
+          newErrors.iqamaExpiryDate = 'Iqama expiry date is required';
+      }
+
+      // Position validation
+      if (!formData.position) {
+          newErrors.position = 'Position is required';
+      }
+
+      // Mobile number validation
+      if (!formData.mobileNumber.trim()) {
+          newErrors.mobileNumber = 'Mobile number is required';
+      }
+
+      // Iqama ID validation
+      if (!formData.iqamaId.trim()) {
+          newErrors.iqamaId = 'Iqama ID is required';
+      }
 
       // Helper to parse yyyy-mm-dd
       const parseDate = (str: string) => {
@@ -130,6 +160,7 @@ export default function EmployeeDetailsForm({ onNext, initialData }: EmployeeDet
           newErrors.healthCardExpiry = 'Health card expiry cannot be in the past';
         }
       }
+
       // Iqama Expiry
       if (formData.iqamaExpiryDate) {
         const expiry = parseDate(formData.iqamaExpiryDate);
@@ -139,6 +170,7 @@ export default function EmployeeDetailsForm({ onNext, initialData }: EmployeeDet
           newErrors.iqamaExpiryDate = 'Iqama expiry cannot be in the past';
         }
       }
+
       // Date of Birth
       if (formData.dateOfBirth) {
         const dob = parseDate(formData.dateOfBirth);
@@ -155,12 +187,28 @@ export default function EmployeeDetailsForm({ onNext, initialData }: EmployeeDet
 
   const handleNextClick = () => {
     if (!validateForm()) {
-        // Optionally show an alert or focus the first error field
         console.warn("Validation failed:", errors);
         return; 
     }
-    console.log("Details Data:", formData);
-    onNext(formData);
+    
+    // Transform the data to match the API format
+    const transformedData = {
+        firstname: formData.firstname,
+        familyName: formData.familyName,
+        nationality: formData.nationality,
+        mobileNumber: formData.mobileNumber,
+        position: formData.position,
+        healthCardNumber: formData.healthCardNumber,
+        iqamaId: formData.iqamaId,
+        healthCardExpiry: formData.healthCardExpiry,
+        iqamaExpiryDate: formData.iqamaExpiryDate,
+        dateOfBirth: formData.dateOfBirth,
+        email: formData.loginId, // Map loginId to email
+        password: formData.password
+    };
+    
+    console.log("Details Data:", transformedData);
+    onNext(transformedData);
   };
 
   return (

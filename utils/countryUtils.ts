@@ -13,14 +13,30 @@ export const fetchCountries = async (): Promise<Country[]> => {
   }
 
   try {
+    console.log('Fetching countries from API...');
     const response = await axios.get('https://restcountries.com/v3.1/all');
+    console.log('API Response:', response.data);
+    
+    if (!Array.isArray(response.data)) {
+      console.error('Invalid API response format:', response.data);
+      throw new Error('Invalid API response format');
+    }
+
     const countries = response.data
-      .map((country: any) => ({
-        code: country.cca2,
-        name: country.name.common
-      }))
+      .map((country: any) => {
+        if (!country.cca2 || !country.name?.common) {
+          console.warn('Invalid country data:', country);
+          return null;
+        }
+        return {
+          code: country.cca2,
+          name: country.name.common
+        };
+      })
+      .filter((country: Country | null): country is Country => country !== null)
       .sort((a: Country, b: Country) => a.name.localeCompare(b.name));
     
+    console.log('Formatted countries:', countries);
     countriesCache = countries;
     return countries;
   } catch (error) {
@@ -42,8 +58,10 @@ export const fetchCountries = async (): Promise<Country[]> => {
 };
 
 export const formatCountryOptions = (countries: Country[]) => {
-  return countries.map(country => ({
+  const options = countries.map(country => ({
     label: country.name,
     value: country.code
   }));
+  console.log('Formatted country options:', options);
+  return options;
 }; 
