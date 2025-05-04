@@ -6,6 +6,7 @@ import { fetchAllItems } from '@/store/itemsSlice';
 import { useDispatch } from 'react-redux';
 import { AppDispatch } from '@/store/store';
 import { useUnits } from '@/hooks/useUnits';
+import Select from '@/components/common/select';
 
 interface Ingredient {
   id: number;
@@ -283,37 +284,33 @@ export default function RecipeIngredientsForm({ onNext, onBack, initialData }: R
             {/* Select Item */}
             <div>
               <label className="block text-gray-700 font-medium mb-2">Select Item</label>
-              <select
-                className={`w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00997B] ${errors.item ? 'border-red-500' : 'border-gray-300'}`}
+              <Select
+                label=""
+                options={itemList.map((item: any) => ({
+                  label: item.name.split('@')[0],
+                  value: item.name.split('@')[0]
+                }))}
                 value={item}
                 onChange={(e) => setItem(e.target.value)}
-              >
-                <option value="">Select an item</option>
-                {itemList.map((item: any) => (
-                  <option key={item.itemId} value={item.name.split('@')[0]}>
-                    {item.name.split('@')[0]}
-                  </option>
-                ))}
-              </select>
+                error={errors.item}
+              />
               {errors.item && <p className="text-red-500 text-sm mt-1">{errors.item}</p>}
             </div>
 
             {/* Unit Selection */}
             <div>
               <label className="block text-gray-700 font-medium mb-2">Unit</label>
-              <select
-                className={`w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00997B] ${errors.unit ? 'border-red-500' : 'border-gray-300'}`}
-                value={selectedUnitId || ''}
+              <Select
+                label=""
+                options={availableUnits.map((unit) => ({
+                  label: `${unit.unitName} - ${unit.unitDescription}`,
+                  value: unit.unitOfMeasurementId.toString()
+                }))}
+                value={selectedUnitId?.toString() || ''}
                 onChange={(e) => setSelectedUnitId(Number(e.target.value))}
                 disabled={!item}
-              >
-                <option value="">Select a unit</option>
-                {availableUnits.map((unit) => (
-                  <option key={unit.unitOfMeasurementId} value={unit.unitOfMeasurementId}>
-                    {unit.unitName} - {unit.unitDescription}
-                  </option>
-                ))}
-              </select>
+                error={errors.unit}
+              />
               {errors.unit && <p className="text-red-500 text-sm mt-1">{errors.unit}</p>}
             </div>
 

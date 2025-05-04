@@ -10,6 +10,7 @@ import { fetchAllServingSizes } from '@/store/servingSizeSlice';
 import ConfirmationModal from '@/components/common/ConfirmationModal';
 import { getImageUrlWithAuth } from '@/utils/imageUtils';
 import AuthImage from '@/components/common/AuthImage';
+import Select from '@/components/common/select';
 
 interface RecipeImage {
   id?: number;
@@ -224,16 +225,16 @@ export default function RecipeDetailsForm({ onNext, initialData, isEditMode = fa
 
       <div>
         <label className="block text-gray-700 font-medium mb-2">Recipe Category</label>
-        <select
-          className={`w-full p-3 border ${errors.category ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00997B] appearance-none bg-white`}
+        <Select
+          label=""
+          options={categoryList.map((cat: any) => ({
+            label: cat.name,
+            value: cat.categoryId.toString()
+          }))}
           value={formData.category}
           onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
-        >
-          <option value="" disabled>Select Option</option>
-          {categoryList.map((cat: any) => (
-            <option key={cat.categoryId} value={cat.categoryId}>{cat.name}</option>
-          ))}
-        </select>
+          error={errors.category}
+        />
         {errors.category && <p className="text-red-500 text-sm">{errors.category}</p>}
       </div>
 
@@ -251,16 +252,16 @@ export default function RecipeDetailsForm({ onNext, initialData, isEditMode = fa
 
       <div>
         <label className="block text-gray-700 font-medium mb-2">Serving Size</label>
-        <select
-          className={`w-full p-3 border ${errors.servingSize ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00997B] appearance-none bg-white`}
+        <Select
+          label=""
+          options={servingSizeList.map((size: any) => ({
+            label: size.name,
+            value: size.servingSizeId.toString()
+          }))}
           value={formData.servingSize}
           onChange={(e) => setFormData(prev => ({ ...prev, servingSize: e.target.value }))}
-        >
-          <option value="" disabled>Select Serving Size</option>
-          {servingSizeList.map((size: any) => (
-            <option key={size.servingSizeId} value={size.servingSizeId}>{size.name}</option>
-          ))}
-        </select>
+          error={errors.servingSize}
+        />
         {errors.servingSize && <p className="text-red-500 text-sm">{errors.servingSize}</p>}
       </div>
 
