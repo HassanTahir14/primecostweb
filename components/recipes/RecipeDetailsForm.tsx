@@ -39,9 +39,9 @@ export default function RecipeDetailsForm({ onNext, initialData, isEditMode = fa
   });
   
   // Initialize images from initialData
-  const [existingImages, setExistingImages] = useState<RecipeImage[]>(initialData.existingImages || []);
-  const [newImages, setNewImages] = useState<File[]>(initialData.newImages || []);
-  const [imageIdsToRemove, setImageIdsToRemove] = useState<number[]>(initialData.imageIdsToRemove || []);
+  const [existingImages, setExistingImages] = useState<RecipeImage[]>(initialData.images || []);
+  const [newImages, setNewImages] = useState<File[]>([]);
+  const [imageIdsToRemove, setImageIdsToRemove] = useState<number[]>([]);
   const [categoryList, setCategoryList] = useState<any[]>([]);
   const [servingSizeList, setServingSizeList] = useState<any[]>([]);
   const [errors, setErrors] = useState<any>({});
@@ -60,14 +60,8 @@ export default function RecipeDetailsForm({ onNext, initialData, isEditMode = fa
 
   // Update images when initialData changes
   useEffect(() => {
-    if (initialData.existingImages) {
-      setExistingImages(initialData.existingImages);
-    }
-    if (initialData.newImages) {
-      setNewImages(initialData.newImages);
-    }
-    if (initialData.imageIdsToRemove) {
-      setImageIdsToRemove(initialData.imageIdsToRemove);
+    if (initialData.images) {
+      setExistingImages(initialData.images);
     }
   }, [initialData]);
 
@@ -133,7 +127,7 @@ export default function RecipeDetailsForm({ onNext, initialData, isEditMode = fa
     if (validateForm()) {
       onNext({
         ...formData,
-        existingImages,
+        images: existingImages,
         newImages,
         imageIdsToRemove,
         recipeCode: formData.recipeCode

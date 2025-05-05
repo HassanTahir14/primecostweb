@@ -36,9 +36,9 @@ export default function SubRecipeDetailsForm({ onNext, initialData, isEditMode =
     selectedRecipe: initialData.selectedRecipe || '',
     portions: initialData.portions || '',
     servingSize: initialData.servingSize || '',
-    existingImages: initialData.existingImages || [],
-    newImages: initialData.newImages || [],
-    imageIdsToRemove: initialData.imageIdsToRemove || []
+    existingImages: initialData.images || [],
+    newImages: [],
+    imageIdsToRemove: []
   });
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
@@ -46,9 +46,9 @@ export default function SubRecipeDetailsForm({ onNext, initialData, isEditMode =
   const [categoryList, setCategoryList] = useState<any[]>([]);
   const [servingSizeList, setServingSizeList] = useState<any[]>([]);
   const [recipeList, setRecipeList] = useState<any[]>([]);
-  const [newImages, setNewImages] = useState<File[]>(initialData.newImages || []);
-  const [existingImages, setExistingImages] = useState<RecipeImage[]>(initialData.existingImages || []);
-  const [imageIdsToRemove, setImageIdsToRemove] = useState<number[]>(initialData.imageIdsToRemove || []);
+  const [newImages, setNewImages] = useState<File[]>([]);
+  const [existingImages, setExistingImages] = useState<RecipeImage[]>(initialData.images || []);
+  const [imageIdsToRemove, setImageIdsToRemove] = useState<number[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -149,7 +149,7 @@ export default function SubRecipeDetailsForm({ onNext, initialData, isEditMode =
 
     const dataToSubmit = {
       ...formData,
-      existingImages,
+      images: existingImages,
       newImages,
       imageIdsToRemove
     };
