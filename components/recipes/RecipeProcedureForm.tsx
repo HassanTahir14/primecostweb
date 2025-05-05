@@ -83,20 +83,121 @@ export default function RecipeProcedureForm({ onNext, onBack, initialData, isEdi
     return isValid;
   };
 
-  const handleSubmit = () => {
-    if (!validateForm()) {
-      setErrorMessage('Please fix the validation errors before proceeding');
-      setShowErrorModal(true);
-      return;
-    }
+  const handleFinalSubmit = async () => {
+    try {
+      if (!validateForm()) {
+        setErrorMessage('Please fix the validation errors before proceeding');
+        setShowErrorModal(true);
+        return;
+      }
 
-    onNext({
-      ...initialData,
-      procedureStep: steps.map(step => ({
-        ...step,
-        stepDescription: step.stepDescription.trim()
-      }))
-    });
+      setIsSubmitting(true);
+
+      // Ensure all steps have valid descriptions
+      const hasEmptySteps = steps.some(step => !step.stepDescription.trim());
+      if (hasEmptySteps) {
+        alert('All steps must have a description');
+        return;
+      }
+
+      // Create FormData for multipart/form-data
+      const formData = new FormData();
+
+      // Add recipe details
+      const recipeDTO = {
+        id: initialData.id,
+        recipeId: initialData.id,
+        recipeDetailsRequest: {
+          name: initialData.name || '',
+          recipeCode: initialData.recipeCode || '',
+          category: Number(initialData.category) || 0,
+          numberOfPortions: Number(initialData.portions) || 0,
+          servingSize: Number(initialData.servingSize) || 0
+        },
+        recipeCost: {
+          menuPrice: Number(initialData.menuPrice) || 0,
+          foodCostBudgetPercentage: Number(initialData.foodCostBudget) || 0,
+          foodCostActualPercentage: Number(initialData.foodCostActual) || 0,
+          idealSellingPrice: Number(initialData.idealSellingPrice) || 0,
+          costPerPortion: Number(initialData.costPerPortion) || 0,
+          costPerRecipe: Number(initialData.costPerRecipe) || 0,
+          marginPerPortion: Number(initialData.marginPerPortion) || 0
+        },
+        ingredient: initialData.ingredients?.map((ing: any) => ({
+          unit: ing.unit || 'string',
+          yieldPercentage: Number(ing.yieldPercentage || ing.yieldPercent) || 100,
+          quantity: Number(ing.quantity) || 0,
+          itemId: Number(ing.itemId) || 1,
+          weight: ing.weight || 'string',
+          epsPerUnit: Number(ing.epsPerUnit || ing.epUsdUnit) || 0,
+          volume: ing.volume || 'string',
+          recipeCost: Number(ing.recipeCost) || 0,
+          apsPerUnit: Number(ing.apsPerUnit || ing.apUsdUnit) || 0,
+          itemName: ing.itemName || ing.item || 'string'
+        })) || [],
+        procedureStep: steps.map(step => ({
+          ...step,
+          stepDescription: step.stepDescription.trim()
+        })),
+        isSubRecipeAsIngredient: initialData.isSubRecipeAsIngredient || false,
+        subRecipeIngredients: initialData.subRecipeIngredients || [],
+        imageIdsToRemove: initialData.imageIdsToRemove || []
+      };
+
+      console.log('Validated recipe data:', recipeDTO);
+
+      formData.append(
+        'recipe',
+        new Blob([JSON.stringify(recipeDTO)], { type: 'application/json' })
+      );
+      
+      // Add images to FormData
+      if (initialData.newImages && initialData.newImages.length > 0) {
+        // Append new images
+        initialData.newImages.forEach((file: File) => {
+          if (file instanceof File) {
+            formData.append('images', file);
+          }
+        });
+      } else if (initialData.existingImages && initialData.existingImages.length > 0) {
+        // Append existing images that haven't been removed
+        initialData.existingImages.forEach((image: RecipeImage) => {
+          if (image.path) {
+            // For existing images, we need to fetch them and add them to FormData
+            fetch(image.path)
+              .then(res => res.blob())
+              .then(blob => {
+                const file = new File([blob], `image${image.id}.jpg`, { type: 'image/jpeg' });
+                formData.append('images', file);
+              })
+              .catch(err => {
+                console.error('Error fetching image:', err);
+                setErrorMessage('Failed to process some images');
+                setShowErrorModal(true);
+              });
+          }
+        });
+      } else {
+        setErrorMessage('At least one image is required');
+        setShowErrorModal(true);
+        return;
+      }
+
+      let result;
+      if (isEditMode) {
+        result = await dispatch(updateRecipeThunk(formData)).unwrap();
+      } else {
+        result = await dispatch(createRecipe(formData)).unwrap();
+      }
+      console.log(result, 'result');
+      
+      setShowSuccessModal(true);
+    } catch (error: any) {
+      setErrorMessage(error.message || 'Failed to create recipe');
+      setShowErrorModal(true);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   // Mock data for step type select
@@ -151,8 +252,8 @@ export default function RecipeProcedureForm({ onNext, onBack, initialData, isEdi
 
       <div className="flex justify-between mt-8">
         <Button variant="secondary" onClick={onBack} disabled={isSubmitting}>Back</Button>
-        <Button onClick={handleSubmit} disabled={isSubmitting}>
-          Next
+        <Button onClick={handleFinalSubmit} disabled={isSubmitting}>
+          {isSubmitting ? (isEditMode ? 'Updating Recipe...' : 'Creating Recipe...') : (isEditMode ? 'UPDATE RECIPE' : 'CREATE RECIPE')}
         </Button>
       </div>
 
