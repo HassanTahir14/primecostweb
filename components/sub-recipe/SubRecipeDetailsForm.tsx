@@ -36,9 +36,9 @@ export default function SubRecipeDetailsForm({ onNext, initialData, isEditMode =
     selectedRecipe: initialData.selectedRecipe || '',
     portions: initialData.portions || '',
     servingSize: initialData.servingSize || '',
-    existingImages: initialData.images || [],
-    newImages: [],
-    imageIdsToRemove: []
+    images: initialData.images || [],
+    newImages: initialData.newImages || [],
+    imageIdsToRemove: initialData.imageIdsToRemove || []
   });
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
@@ -46,9 +46,9 @@ export default function SubRecipeDetailsForm({ onNext, initialData, isEditMode =
   const [categoryList, setCategoryList] = useState<any[]>([]);
   const [servingSizeList, setServingSizeList] = useState<any[]>([]);
   const [recipeList, setRecipeList] = useState<any[]>([]);
-  const [newImages, setNewImages] = useState<File[]>([]);
+  const [newImages, setNewImages] = useState<File[]>(initialData.newImages || []);
   const [existingImages, setExistingImages] = useState<RecipeImage[]>(initialData.images || []);
-  const [imageIdsToRemove, setImageIdsToRemove] = useState<number[]>([]);
+  const [imageIdsToRemove, setImageIdsToRemove] = useState<number[]>(initialData.imageIdsToRemove || []);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -94,6 +94,19 @@ export default function SubRecipeDetailsForm({ onNext, initialData, isEditMode =
         console.error('Failed to fetch recipes:', err);
       });
   }, [dispatch, initialData, isEditMode]);
+
+  // Update images when initialData changes
+  useEffect(() => {
+    if (initialData.images) {
+      setExistingImages(initialData.images);
+    }
+    if (initialData.newImages) {
+      setNewImages(initialData.newImages);
+    }
+    if (initialData.imageIdsToRemove) {
+      setImageIdsToRemove(initialData.imageIdsToRemove);
+    }
+  }, [initialData]);
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files || []);

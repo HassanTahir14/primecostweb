@@ -36,12 +36,15 @@ export default function RecipeDetailsForm({ onNext, initialData, isEditMode = fa
     category: initialData.category || '',
     portions: initialData.portions || '',
     servingSize: initialData.servingSize || '',
+    images: initialData.images || [],
+    newImages: initialData.newImages || [],
+    imageIdsToRemove: initialData.imageIdsToRemove || []
   });
   
   // Initialize images from initialData
   const [existingImages, setExistingImages] = useState<RecipeImage[]>(initialData.images || []);
-  const [newImages, setNewImages] = useState<File[]>([]);
-  const [imageIdsToRemove, setImageIdsToRemove] = useState<number[]>([]);
+  const [newImages, setNewImages] = useState<File[]>(initialData.newImages || []);
+  const [imageIdsToRemove, setImageIdsToRemove] = useState<number[]>(initialData.imageIdsToRemove || []);
   const [categoryList, setCategoryList] = useState<any[]>([]);
   const [servingSizeList, setServingSizeList] = useState<any[]>([]);
   const [errors, setErrors] = useState<any>({});
@@ -62,6 +65,12 @@ export default function RecipeDetailsForm({ onNext, initialData, isEditMode = fa
   useEffect(() => {
     if (initialData.images) {
       setExistingImages(initialData.images);
+    }
+    if (initialData.newImages) {
+      setNewImages(initialData.newImages);
+    }
+    if (initialData.imageIdsToRemove) {
+      setImageIdsToRemove(initialData.imageIdsToRemove);
     }
   }, [initialData]);
 
