@@ -51,10 +51,10 @@ export default function RecipeIngredientsForm({ onNext, onBack, initialData }: R
   useEffect(() => {
     dispatch(fetchAllItems({
       page: 0, 
-        size: 200000, 
-        searchQuery: '',
-        sortBy: 'name',
-        direction: 'asc'
+      size: 200000, 
+      searchQuery: '',
+      sortBy: 'name',
+      direction: 'asc'
     }))
       .unwrap()
       .then((res) => {
@@ -208,11 +208,21 @@ export default function RecipeIngredientsForm({ onNext, onBack, initialData }: R
     resetForm();
   };
 
+  const validateForm = () => {
+    if (ingredients.length === 0) {
+      setErrors({ ingredients: 'At least one ingredient is required' });
+      return false;
+    }
+    return true;
+  };
+
   const handleNextClick = () => {
-    onNext({ 
-      ...initialData, // Preserve all previous data
-      ingredients 
-    });
+    if (validateForm()) {
+      onNext({ 
+        ...initialData, // Preserve all previous data
+        ingredients 
+      });
+    }
   };
 
   return (
@@ -292,7 +302,7 @@ export default function RecipeIngredientsForm({ onNext, onBack, initialData }: R
                 }))}
                 value={item}
                 onChange={(e) => setItem(e.target.value)}
-                error={errors.item}
+               
               />
               {errors.item && <p className="text-red-500 text-sm mt-1">{errors.item}</p>}
             </div>
@@ -309,7 +319,7 @@ export default function RecipeIngredientsForm({ onNext, onBack, initialData }: R
                 value={selectedUnitId?.toString() || ''}
                 onChange={(e) => setSelectedUnitId(Number(e.target.value))}
                 disabled={!item}
-                error={errors.unit}
+               
               />
               {errors.unit && <p className="text-red-500 text-sm mt-1">{errors.unit}</p>}
             </div>

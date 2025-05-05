@@ -113,7 +113,7 @@ export default function CreateEmployeePage() {
         return <EmployeeDutyScheduleForm onNext={handleNext} onPrevious={handlePrevious} initialData={employeeData} />;
       case 'Salary':
         // Pass employeeLoading state to disable submit button while loading
-        return <EmployeeSalaryForm onSubmit={handleSubmit} onPrevious={handlePrevious} initialData={employeeData} />;
+        return <EmployeeSalaryForm onSubmit={handleSubmit} onPrevious={handlePrevious} initialData={employeeData} isLoading={employeeLoading} />;
       default:
         return null;
     }
@@ -141,14 +141,13 @@ export default function CreateEmployeePage() {
           {steps.map((step) => (
             <button
               key={step}
-              // Disable navigation by clicking tabs while submitting
-              disabled={employeeLoading}
-              onClick={() => {!employeeLoading && setActiveStep(step)}}
+              // Remove onClick to disable tab switching
+              disabled={true}
               className={`py-3 px-6 font-medium text-sm transition-colors duration-150 
                 ${activeStep === step 
                   ? 'border-b-2 border-[#00997B] text-[#00997B]' 
-                  : 'text-gray-500 hover:text-gray-700'
-              } ${employeeLoading ? 'cursor-not-allowed opacity-70' : ''}`}
+                  : 'text-gray-500 opacity-70'
+              } cursor-not-allowed`}
             >
               {step}
             </button>

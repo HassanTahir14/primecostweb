@@ -27,33 +27,29 @@ interface RecipeDetailsFormProps {
 }
 
 export default function SubRecipeDetailsForm({ onNext, initialData, isEditMode = false }: RecipeDetailsFormProps) {
+  const dispatch = useDispatch<AppDispatch>();
+  const router = useRouter();
+  const imageBaseUrl = process.env.NEXT_PUBLIC_IMAGE_URL || 'http://212.85.26.46:8082/api/v1/images/view';
   const [formData, setFormData] = useState({
     name: initialData.name || '',
-    recipeCode: initialData.recipeCode || '',
     category: initialData.category || '',
+    selectedRecipe: initialData.selectedRecipe || '',
     portions: initialData.portions || '',
     servingSize: initialData.servingSize || '',
-    selectedRecipe: initialData.selectedRecipe ? Number(initialData.selectedRecipe) : ''
+    existingImages: initialData.existingImages || [],
+    newImages: initialData.newImages || [],
+    imageIdsToRemove: initialData.imageIdsToRemove || []
   });
-
-  const [existingImages, setExistingImages] = useState<RecipeImage[]>(initialData.images || []);
-  const [newImages, setNewImages] = useState<File[]>([]);
-  const [imageIdsToRemove, setImageIdsToRemove] = useState<number[]>([]);
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
   const [categoryList, setCategoryList] = useState<any[]>([]);
   const [servingSizeList, setServingSizeList] = useState<any[]>([]);
   const [recipeList, setRecipeList] = useState<any[]>([]);
-  const [errors, setErrors] = useState<any>({});
+  const [newImages, setNewImages] = useState<File[]>(initialData.newImages || []);
+  const [existingImages, setExistingImages] = useState<RecipeImage[]>(initialData.existingImages || []);
+  const [imageIdsToRemove, setImageIdsToRemove] = useState<number[]>(initialData.imageIdsToRemove || []);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  
-  // Modal states
-  const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
-
-  const dispatch = useDispatch<AppDispatch>();
-  const router = useRouter();
-
-  // Get the image base URL for API images
-  const imageBaseUrl = process.env.NEXT_PUBLIC_IMAGE_URL || 'http://212.85.26.46:8082/api/v1/images/view';
 
   useEffect(() => {
     dispatch(fetchAllCategories())
@@ -116,18 +112,28 @@ export default function SubRecipeDetailsForm({ onNext, initialData, isEditMode =
   };
 
   const validateForm = () => {
-    const newErrors: any = {};
+    const newErrors: { [key: string]: string } = {};
 
-    if (!formData.name) newErrors.name = 'Name is required';
-    if (!formData.category) newErrors.category = 'Category is required';
-    if (!formData.portions || isNaN(Number(formData.portions)) || Number(formData.portions) <= 0)
-      newErrors.portions = 'Portions must be a positive number';
-    if (!formData.servingSize) newErrors.servingSize = 'Serving size is required';
-    if (!formData.selectedRecipe) newErrors.selectedRecipe = 'Recipe is required';
-    if (existingImages.length + newImages.length === 0) {
-      newErrors.images = 'At least one image is required';
-      setErrorMessage('Please upload at least one image before proceeding.');
-      setIsErrorModalOpen(true);
+    if (!formData.name.trim()) {
+      newErrors.name = 'Name is required';
+    }
+
+    if (!formData.category) {
+      newErrors.category = 'Category is required';
+    }
+
+    if (!formData.selectedRecipe) {
+      newErrors.selectedRecipe = 'Recipe is required';
+    }
+
+    if (!formData.portions) {
+      newErrors.portions = 'Number of portions is required';
+    } else if (parseInt(formData.portions) <= 0) {
+      newErrors.portions = 'Number of portions must be greater than 0';
+    }
+
+    if (!formData.servingSize) {
+      newErrors.servingSize = 'Serving size is required';
     }
 
     setErrors(newErrors);
@@ -135,22 +141,20 @@ export default function SubRecipeDetailsForm({ onNext, initialData, isEditMode =
   };
 
   const handleSubmit = () => {
-    if (validateForm()) {
-      const selectedRecipeData = recipeList.find(recipe => recipe.id === formData.selectedRecipe);
-      if (!selectedRecipeData) {
-        setErrorMessage('Please select a valid recipe');
-        setIsErrorModalOpen(true);
-        return;
-      }
-
-      onNext({
-        ...formData,
-        existingImages,
-        newImages,
-        imageIdsToRemove,
-        recipeCode: selectedRecipeData.recipeCode
-      });
+    if (!validateForm()) {
+      setErrorMessage('Please fix the validation errors before proceeding');
+      setIsErrorModalOpen(true);
+      return;
     }
+
+    const dataToSubmit = {
+      ...formData,
+      existingImages,
+      newImages,
+      imageIdsToRemove
+    };
+
+    onNext(dataToSubmit);
   };
 
   return (
@@ -260,7 +264,6 @@ export default function SubRecipeDetailsForm({ onNext, initialData, isEditMode =
           }))}
           value={formData.category}
           onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
-          error={errors.category}
         />
         {errors.category && <p className="text-red-500 text-sm">{errors.category}</p>}
       </div>
@@ -275,7 +278,6 @@ export default function SubRecipeDetailsForm({ onNext, initialData, isEditMode =
           }))}
           value={formData.selectedRecipe === '' ? '' : String(formData.selectedRecipe)}
           onChange={(e) => setFormData(prev => ({ ...prev, selectedRecipe: Number(e.target.value) }))}
-          error={errors.selectedRecipe}
         />
         {errors.selectedRecipe && <p className="text-red-500 text-sm">{errors.selectedRecipe}</p>}
       </div>
@@ -302,7 +304,6 @@ export default function SubRecipeDetailsForm({ onNext, initialData, isEditMode =
           }))}
           value={formData.servingSize}
           onChange={(e) => setFormData(prev => ({ ...prev, servingSize: e.target.value }))}
-          error={errors.servingSize}
         />
         {errors.servingSize && <p className="text-red-500 text-sm">{errors.servingSize}</p>}
       </div>

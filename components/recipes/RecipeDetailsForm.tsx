@@ -38,9 +38,10 @@ export default function RecipeDetailsForm({ onNext, initialData, isEditMode = fa
     servingSize: initialData.servingSize || '',
   });
   
-  const [existingImages, setExistingImages] = useState<RecipeImage[]>(initialData.images || []);
-  const [newImages, setNewImages] = useState<File[]>([]);
-  const [imageIdsToRemove, setImageIdsToRemove] = useState<number[]>([]);
+  // Initialize images from initialData
+  const [existingImages, setExistingImages] = useState<RecipeImage[]>(initialData.existingImages || []);
+  const [newImages, setNewImages] = useState<File[]>(initialData.newImages || []);
+  const [imageIdsToRemove, setImageIdsToRemove] = useState<number[]>(initialData.imageIdsToRemove || []);
   const [categoryList, setCategoryList] = useState<any[]>([]);
   const [servingSizeList, setServingSizeList] = useState<any[]>([]);
   const [errors, setErrors] = useState<any>({});
@@ -56,6 +57,19 @@ export default function RecipeDetailsForm({ onNext, initialData, isEditMode = fa
 
   // Update the image base URL
   const imageBaseUrl = process.env.NEXT_PUBLIC_IMAGE_URL || 'http://212.85.26.46:8082/api/v1/images/view';
+
+  // Update images when initialData changes
+  useEffect(() => {
+    if (initialData.existingImages) {
+      setExistingImages(initialData.existingImages);
+    }
+    if (initialData.newImages) {
+      setNewImages(initialData.newImages);
+    }
+    if (initialData.imageIdsToRemove) {
+      setImageIdsToRemove(initialData.imageIdsToRemove);
+    }
+  }, [initialData]);
 
   useEffect(() => {
     dispatch(fetchAllCategories())
@@ -234,7 +248,6 @@ export default function RecipeDetailsForm({ onNext, initialData, isEditMode = fa
           }))}
           value={formData.category}
           onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
-          error={errors.category}
         />
         {errors.category && <p className="text-red-500 text-sm">{errors.category}</p>}
       </div>
@@ -261,7 +274,7 @@ export default function RecipeDetailsForm({ onNext, initialData, isEditMode = fa
           }))}
           value={formData.servingSize}
           onChange={(e) => setFormData(prev => ({ ...prev, servingSize: e.target.value }))}
-          error={errors.servingSize}
+      
         />
         {errors.servingSize && <p className="text-red-500 text-sm">{errors.servingSize}</p>}
       </div>

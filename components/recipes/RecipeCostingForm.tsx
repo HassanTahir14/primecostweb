@@ -76,7 +76,7 @@ export default function RecipeCostingForm({ onNext, onBack, initialData }: Recip
     }, 0);
   }
 
-  const validate = () => {
+  const validateForm = () => {
     const newErrors: { [key: string]: string } = {};
 
     if (!menuPrice) {
@@ -106,7 +106,7 @@ export default function RecipeCostingForm({ onNext, onBack, initialData }: Recip
   };
 
   const handleSubmit = () => {
-    if (!validate()) return;
+    if (!validateForm()) return;
 
     const costingData = {
       ...initialData, // Preserve all previous data

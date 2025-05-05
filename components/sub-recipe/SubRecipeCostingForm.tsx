@@ -10,45 +10,46 @@ interface RecipeCostingFormProps {
 }
 
 export default function SubRecipeCostingForm({ onNext, onBack, initialData }: RecipeCostingFormProps) {
-  // Get total ingredients cost from previous step if available
-  const totalIngredientsCost = calculateTotalIngredientsCost(initialData.ingredients || []);
-  
-  const [menuPrice, setMenuPrice] = useState(initialData.menuPrice || '');
-  const [foodCostBudgetPercent, setFoodCostBudgetPercent] = useState(initialData.foodCostBudget || '');
-  const [costPerPortion, setCostPerPortion] = useState('');
-  const [foodCostActualPercent, setFoodCostActualPercent] = useState('');
-  const [idealSellingPrice, setIdealSellingPrice] = useState('');
-  const [costPerRecipe, setCostPerRecipe] = useState('');
-  const [marginPerPortion, setMarginPerPortion] = useState('');
-
+  const [formData, setFormData] = useState({
+    menuPrice: initialData.menuPrice || '',
+    foodCostBudget: initialData.foodCostBudget || '',
+    foodCostActual: initialData.foodCostActual || '',
+    idealSellingPrice: initialData.idealSellingPrice || '',
+    costPerPortion: initialData.costPerPortion || '',
+    costPerRecipe: initialData.costPerRecipe || '',
+    marginPerPortion: initialData.marginPerPortion || ''
+  });
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
+
+  // Calculate total ingredients cost from previous step if available
+  const totalIngredientsCost = calculateTotalIngredientsCost(initialData.ingredients || []);
 
   // Calculate cost per portion based on ingredients cost and portions
   useEffect(() => {
     if (totalIngredientsCost > 0 && initialData.portions && parseInt(initialData.portions) > 0) {
       const perPortion = totalIngredientsCost / parseInt(initialData.portions);
-      setCostPerPortion(perPortion.toFixed(2));
+      setFormData(prev => ({ ...prev, costPerPortion: perPortion.toFixed(2) }));
     }
   }, [totalIngredientsCost, initialData.portions]);
 
   // Calculate other values based on inputs
   useEffect(() => {
     // Cost per recipe
-    if (costPerPortion && initialData.portions) {
-      const recipeCost = parseFloat(costPerPortion) * parseInt(initialData.portions);
-      setCostPerRecipe(recipeCost.toFixed(2));
+    if (formData.costPerPortion && initialData.portions) {
+      const recipeCost = parseFloat(formData.costPerPortion) * parseInt(initialData.portions);
+      setFormData(prev => ({ ...prev, costPerRecipe: recipeCost.toFixed(2) }));
     }
 
     // Food cost % actual
-    if (menuPrice && costPerPortion) {
-      const actualPercent = (parseFloat(costPerPortion) / parseFloat(menuPrice)) * 100;
-      setFoodCostActualPercent(actualPercent.toFixed(2));
+    if (formData.menuPrice && formData.costPerPortion) {
+      const actualPercent = (parseFloat(formData.costPerPortion) / parseFloat(formData.menuPrice)) * 100;
+      setFormData(prev => ({ ...prev, foodCostActual: actualPercent.toFixed(2) }));
     }
 
     // Margin per portion
-    if (menuPrice && costPerPortion) {
-      const margin = parseFloat(menuPrice) - parseFloat(costPerPortion);
-      setMarginPerPortion(margin.toFixed(2));
+    if (formData.menuPrice && formData.costPerPortion) {
+      const margin = parseFloat(formData.menuPrice) - parseFloat(formData.costPerPortion);
+      setFormData(prev => ({ ...prev, marginPerPortion: margin.toFixed(2) }));
       
       // Check for negative margin and set error
       if (margin < 0) {
@@ -63,11 +64,11 @@ export default function SubRecipeCostingForm({ onNext, onBack, initialData }: Re
     }
 
     // Ideal selling price
-    if (foodCostBudgetPercent && costPerPortion) {
-      const idealPrice = parseFloat(costPerPortion) / (parseFloat(foodCostBudgetPercent) / 100);
-      setIdealSellingPrice(idealPrice.toFixed(2));
+    if (formData.foodCostBudget && formData.costPerPortion) {
+      const idealPrice = parseFloat(formData.costPerPortion) / (parseFloat(formData.foodCostBudget) / 100);
+      setFormData(prev => ({ ...prev, idealSellingPrice: idealPrice.toFixed(2) }));
     }
-  }, [menuPrice, costPerPortion, foodCostBudgetPercent, initialData.portions]);
+  }, [formData.menuPrice, formData.costPerPortion, formData.foodCostBudget, initialData.portions]);
 
   // Calculate total cost from ingredients
   function calculateTotalIngredientsCost(ingredients: any[]) {
@@ -76,29 +77,29 @@ export default function SubRecipeCostingForm({ onNext, onBack, initialData }: Re
     }, 0);
   }
 
-  const validate = () => {
+  const validateForm = () => {
     const newErrors: { [key: string]: string } = {};
 
-    if (!menuPrice) {
-      newErrors.menuPrice = 'Menu Price is required.';
-    } else if (parseFloat(menuPrice) <= 0) {
-      newErrors.menuPrice = 'Must be greater than 0.';
+    if (!formData.menuPrice) {
+      newErrors.menuPrice = 'Menu Price is required';
+    } else if (parseFloat(formData.menuPrice) <= 0) {
+      newErrors.menuPrice = 'Menu Price must be greater than 0';
     }
 
-    if (!foodCostBudgetPercent) {
-      newErrors.foodCostBudgetPercent = 'Food Cost % Budget is required.';
-    } else if (parseFloat(foodCostBudgetPercent) <= 0) {
-      newErrors.foodCostBudgetPercent = 'Must be greater than 0.';
-    } else if (parseFloat(foodCostBudgetPercent) > 100) {
-      newErrors.foodCostBudgetPercent = 'Must be between 0 and 100.';
+    if (!formData.foodCostBudget) {
+      newErrors.foodCostBudget = 'Food Cost % Budget is required';
+    } else if (parseFloat(formData.foodCostBudget) <= 0) {
+      newErrors.foodCostBudget = 'Food Cost % Budget must be greater than 0';
+    } else if (parseFloat(formData.foodCostBudget) > 100) {
+      newErrors.foodCostBudget = 'Food Cost % Budget must be between 0 and 100';
     }
 
-    if (marginPerPortion && parseFloat(marginPerPortion) < 0) {
-      newErrors.marginPerPortion = 'Margin cannot be negative.';
+    if (formData.marginPerPortion && parseFloat(formData.marginPerPortion) < 0) {
+      newErrors.marginPerPortion = 'Margin cannot be negative';
     }
 
-    if (foodCostActualPercent && (parseFloat(foodCostActualPercent) < 0 || parseFloat(foodCostActualPercent) > 100)) {
-      newErrors.foodCostActualPercent = 'Must be between 0 and 100.';
+    if (formData.foodCostActual && (parseFloat(formData.foodCostActual) < 0 || parseFloat(formData.foodCostActual) > 100)) {
+      newErrors.foodCostActual = 'Food Cost % Actual must be between 0 and 100';
     }
 
     setErrors(newErrors);
@@ -106,18 +107,11 @@ export default function SubRecipeCostingForm({ onNext, onBack, initialData }: Re
   };
 
   const handleSubmit = () => {
-    if (!validate()) return;
+    if (!validateForm()) {
+      return;
+    }
 
-    const costingData = {
-      menuPrice,
-      foodCostBudget: foodCostBudgetPercent,
-      foodCostActual: foodCostActualPercent,
-      idealSellingPrice,
-      costPerPortion,
-      costPerRecipe,
-      marginPerPortion
-    };
-    onNext(costingData);
+    onNext(formData);
   };
 
   const inputClasses = "w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00997B]";
@@ -138,8 +132,8 @@ export default function SubRecipeCostingForm({ onNext, onBack, initialData }: Re
                 type="number"
                 placeholder="Enter value"
                 className={`${inputClasses} pl-8 border-gray-300 ${errors.menuPrice ? 'border-red-500' : ''}`}
-                value={menuPrice}
-                onChange={(e) => setMenuPrice(e.target.value)}
+                value={formData.menuPrice}
+                onChange={(e) => setFormData(prev => ({ ...prev, menuPrice: e.target.value }))}
               />
             </div>
             {errors.menuPrice && <p className={errorClasses}>{errors.menuPrice}</p>}
@@ -153,12 +147,12 @@ export default function SubRecipeCostingForm({ onNext, onBack, initialData }: Re
               <input
                 type="number"
                 placeholder="Enter value"
-                className={`${inputClasses} pl-8 border-gray-300 ${errors.foodCostBudgetPercent ? 'border-red-500' : ''}`}
-                value={foodCostBudgetPercent}
-                onChange={(e) => setFoodCostBudgetPercent(e.target.value)}
+                className={`${inputClasses} pl-8 border-gray-300 ${errors.foodCostBudget ? 'border-red-500' : ''}`}
+                value={formData.foodCostBudget}
+                onChange={(e) => setFormData(prev => ({ ...prev, foodCostBudget: e.target.value }))}
               />
             </div>
-            {errors.foodCostBudgetPercent && <p className={errorClasses}>{errors.foodCostBudgetPercent}</p>}
+            {errors.foodCostBudget && <p className={errorClasses}>{errors.foodCostBudget}</p>}
           </div>
 
           {/* Food Cost % Actual (read-only) */}
@@ -170,7 +164,7 @@ export default function SubRecipeCostingForm({ onNext, onBack, initialData }: Re
                 type="text"
                 readOnly
                 className="w-full p-3 border border-gray-300 rounded-lg bg-gray-100 pl-8"
-                value={foodCostActualPercent}
+                value={formData.foodCostActual}
               />
             </div>
           </div>
@@ -184,7 +178,7 @@ export default function SubRecipeCostingForm({ onNext, onBack, initialData }: Re
                 type="text"
                 readOnly
                 className="w-full p-3 border border-gray-300 rounded-lg bg-gray-100 pl-8"
-                value={idealSellingPrice}
+                value={formData.idealSellingPrice}
               />
             </div>
           </div>
@@ -200,7 +194,7 @@ export default function SubRecipeCostingForm({ onNext, onBack, initialData }: Re
                 type="text"
                 readOnly
                 className="w-full p-3 border border-gray-300 rounded-lg bg-gray-100 pl-8"
-                value={costPerPortion}
+                value={formData.costPerPortion}
               />
             </div>
           </div>
@@ -214,7 +208,7 @@ export default function SubRecipeCostingForm({ onNext, onBack, initialData }: Re
                 type="text"
                 readOnly
                 className="w-full p-3 border border-gray-300 rounded-lg bg-gray-100 pl-8"
-                value={costPerRecipe}
+                value={formData.costPerRecipe}
               />
             </div>
           </div>
@@ -228,7 +222,7 @@ export default function SubRecipeCostingForm({ onNext, onBack, initialData }: Re
                 type="text"
                 readOnly
                 className="w-full p-3 border border-gray-300 rounded-lg bg-gray-100 pl-8"
-                value={marginPerPortion}
+                value={formData.marginPerPortion}
               />
             </div>
           </div>

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Button from '@/components/common/button';
+import Modal from '@/components/common/Modal';
 
 interface EmployeeDutyScheduleFormProps {
   onNext: (data: { dutySchedulesDTO: any[] }) => void;
@@ -21,6 +22,8 @@ const formatTime = (timeString: string | null | undefined) => {
   }
   return timeString.substring(0, 5); // Extract HH:MM from HH:MM:SS
 };
+
+type SlotKey = 'Opening' | 'Break' | 'Closing';
 
 export default function EmployeeDutyScheduleForm({ onNext, onPrevious, initialData }: EmployeeDutyScheduleFormProps) {
   // Initialize schedule state from initialData if present
@@ -47,6 +50,19 @@ export default function EmployeeDutyScheduleForm({ onNext, onPrevious, initialDa
     return newSchedule;
   });
 
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [applyAll, setApplyAll] = useState<Record<SlotKey, boolean>>({
+    Opening: false,
+    Break: false,
+    Closing: false,
+  });
+  const [modalSelectedDays, setModalSelectedDays] = useState<string[]>([]);
+  const [modalTimes, setModalTimes] = useState<Record<SlotKey, string>>({
+    Opening: '',
+    Break: '',
+    Closing: '',
+  });
+
   const handleScheduleChange = (slot: string, day: string, value: string) => {
     setSchedule(prev => ({
       ...prev,
@@ -59,6 +75,31 @@ export default function EmployeeDutyScheduleForm({ onNext, onPrevious, initialDa
 
   const handleAddSchedule = () => {
     console.log("Add Schedule button clicked - Placeholder");
+  };
+
+  const handleModalDayToggle = (day: string) => {
+    setModalSelectedDays(prev =>
+      prev.includes(day) ? prev.filter(d => d !== day) : [...prev, day]
+    );
+  };
+
+  const handleModalTimeChange = (slot: SlotKey, value: string) => {
+    setModalTimes(prev => ({ ...prev, [slot]: value }));
+  };
+
+  const handleModalSave = () => {
+    setSchedule(prev => {
+      let updated = { ...prev };
+      (['Opening', 'Break', 'Closing'] as SlotKey[]).forEach(slot => {
+        if (applyAll[slot] && modalTimes[slot]) {
+          modalSelectedDays.forEach(day => {
+            updated[slot][day] = modalTimes[slot];
+          });
+        }
+      });
+      return { ...updated };
+    });
+    setIsModalOpen(false);
   };
 
   const handleNextClick = () => {
@@ -78,8 +119,7 @@ export default function EmployeeDutyScheduleForm({ onNext, onPrevious, initialDa
     <div className="space-y-6">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-semibold text-gray-800">Employee Duty Schedule</h2>
-        {/* <Button onClick={handleAddSchedule}>Add Schedule</Button> */}
-        {/* Commenting out Add Schedule button as functionality is unclear */}
+        <Button onClick={() => setIsModalOpen(true)}>Add Schedule</Button>
       </div>
       
       <div className="overflow-x-auto">
@@ -117,6 +157,46 @@ export default function EmployeeDutyScheduleForm({ onNext, onPrevious, initialDa
           </tbody>
         </table>
       </div>
+
+      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Add Employee Schedule" size="md">
+        <div className="space-y-4">
+          <div className="flex flex-wrap gap-2 mb-4">
+            {daysOfWeek.map(day => (
+              <button
+                key={day}
+                type="button"
+                className={`rounded px-3 py-1 font-medium border transition-colors ${modalSelectedDays.includes(day) ? 'bg-blue-500 text-white border-blue-600' : 'bg-blue-100 text-blue-900 border-blue-200'}`}
+                onClick={() => handleModalDayToggle(day)}
+              >
+                {day}
+              </button>
+            ))}
+          </div>
+          <div className="space-y-6">
+            {(timeSlots as SlotKey[]).map(slot => (
+              <div key={slot} className="flex items-center gap-4">
+                <span className="w-32 font-medium">{slot} Shift</span>
+                <input
+                  type="time"
+                  value={modalTimes[slot]}
+                  onChange={e => handleModalTimeChange(slot, e.target.value)}
+                  className="border rounded px-2 py-1"
+                />
+                <input
+                  type="checkbox"
+                  checked={applyAll[slot]}
+                  onChange={e => setApplyAll(prev => ({ ...prev, [slot]: e.target.checked }))}
+                  className="h-4 w-4 text-[#00997B] focus:ring-[#00997B] border-gray-300 rounded"
+                />
+                <label className="text-sm text-gray-700">Apply to all selected days</label>
+              </div>
+            ))}
+          </div>
+          <div className="flex justify-end mt-6">
+            <Button onClick={handleModalSave} className="bg-[#05A49D] text-white hover:bg-[#048c86] px-6">Save</Button>
+          </div>
+        </div>
+      </Modal>
 
       {/* Action Buttons */}
       <div className="flex justify-between pt-4">

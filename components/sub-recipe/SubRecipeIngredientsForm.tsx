@@ -30,6 +30,7 @@ interface RecipeIngredientsFormProps {
 }
 
 export default function RecipeIngredientsForm({ onNext, onBack, initialData }: RecipeIngredientsFormProps) {
+  const dispatch = useDispatch<AppDispatch>();
   const [ingredients, setIngredients] = useState<Ingredient[]>(initialData.ingredients || []);
   const [selectedIngredientIndex, setSelectedIngredientIndex] = useState<number | null>(null);
   const [showForm, setShowForm] = useState(false);
@@ -46,7 +47,6 @@ export default function RecipeIngredientsForm({ onNext, onBack, initialData }: R
   const [availableUnits, setAvailableUnits] = useState<any[]>([]);
 
   const { units } = useUnits();
-  const dispatch = useDispatch<AppDispatch>();
 
   useEffect(() => {
     dispatch(fetchAllItems({}))
@@ -293,7 +293,7 @@ export default function RecipeIngredientsForm({ onNext, onBack, initialData }: R
               <label className="block text-gray-700 font-medium mb-2">Unit</label>
               <Select
                 label=""
-                options={availableUnits.map((unit) => ({
+                options={availableUnits.map((unit: any) => ({
                   label: `${unit.unitName} - ${unit.unitDescription}`,
                   value: unit.unitOfMeasurementId.toString()
                 }))}

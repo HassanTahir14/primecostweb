@@ -44,7 +44,6 @@ const positionOptions = [
   { value: 'CHEF', label: formatPositionName('CHEF') },
   { value: 'HEAD_CHEF', label: formatPositionName('HEAD_CHEF') },
   { value: 'MANAGER', label: formatPositionName('MANAGER') },
-  { value: 'ASSISTANT', label: formatPositionName('ASSISTANT') },
   // Add other valid roles if needed, remove invalid ones like 'waiter', 'admin', 'sous_chef'
 ];
 

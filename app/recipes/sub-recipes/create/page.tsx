@@ -20,17 +20,35 @@ const steps = [
 
 export default function CreateRecipePage() {
   const [activeStep, setActiveStep] = useState('details');
-  const [recipeData, setRecipeData] = useState({});
+  const [recipeData, setRecipeData] = useState({
+    existingImages: [],
+    newImages: [],
+    imageIdsToRemove: []
+  });
+  const [isValid, setIsValid] = useState(false);
 
   const handleNext = (data: any) => {
-    setRecipeData(prev => ({ ...prev, ...data }));
+    // Log the data being received from the current step
+    console.log(`Data from ${activeStep} step:`, data);
+    
+    // Merge the new data with the existing recipe data, preserving image data
+    const updatedRecipeData = { 
+      ...recipeData,
+      ...data,
+      // Preserve image data if it exists in the current data
+      existingImages: data.existingImages || recipeData.existingImages,
+      newImages: data.newImages || recipeData.newImages,
+      imageIdsToRemove: data.imageIdsToRemove || recipeData.imageIdsToRemove
+    };
+    
+    setRecipeData(updatedRecipeData);
+    
+    // Log the updated recipe data
+    console.log('Updated recipe data:', updatedRecipeData);
+    
     const currentIndex = steps.findIndex(step => step.id === activeStep);
     if (currentIndex < steps.length - 1) {
       setActiveStep(steps[currentIndex + 1].id);
-    } else {
-      // Handle final submission
-      console.log('Final Recipe Data:', recipeData);
-      // Potentially navigate away or show success message
     }
   };
 
@@ -38,6 +56,16 @@ export default function CreateRecipePage() {
     const currentIndex = steps.findIndex(step => step.id === activeStep);
     if (currentIndex > 0) {
       setActiveStep(steps[currentIndex - 1].id);
+    }
+  };
+
+  const handleTabClick = (stepId: string) => {
+    const currentIndex = steps.findIndex(step => step.id === activeStep);
+    const targetIndex = steps.findIndex(step => step.id === stepId);
+    
+    // Only allow moving to previous steps or the next step if current step is valid
+    if (targetIndex < currentIndex || isValid) {
+      setActiveStep(stepId);
     }
   };
 
@@ -70,7 +98,7 @@ export default function CreateRecipePage() {
         {steps.map(step => (
           <button
             key={step.id}
-            onClick={() => setActiveStep(step.id)}
+            onClick={() => handleTabClick(step.id)}
             className={`py-3 px-4 sm:px-6 text-center rounded-t-lg text-sm flex-1 ${
               activeStep === step.id
                 ? 'bg-[#00997B] text-white'

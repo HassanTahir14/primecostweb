@@ -82,6 +82,23 @@ export default function RecipeProcedureForm({ onNext, onBack, initialData, isEdi
     return isValid;
   };
 
+  const handleSubmit = () => {
+    if (!validateSteps()) {
+      setErrorMessage('Please fix the validation errors before proceeding');
+      setShowErrorModal(true);
+      return;
+    }
+
+    const dataToSubmit = {
+      procedureStep: steps.map(step => ({
+        ...step,
+        stepDescription: step.stepDescription.trim()
+      }))
+    };
+
+    onNext(dataToSubmit);
+  };
+
   const handleFinalSubmit = async () => {
     try {
       if (!validateSteps()) {
