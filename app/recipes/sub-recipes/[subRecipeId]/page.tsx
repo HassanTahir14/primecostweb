@@ -310,22 +310,59 @@ export default function SubRecipeDetailPage() {
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ingredient</th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Unit</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Volume</th>
+                  {subRecipe.ingredients?.length === 1 ? (
+                    subRecipe.ingredients[0].itemName.includes('@Solid Item') ? (
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Weight</th>
+                    ) : (
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Volume</th>
+                    )
+                  ) : (
+                    <>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Weight</th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Volume</th>
+                    </>
+                  )}
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Yield %</th>
                   {isAdmin && <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Recipe Cost</th>}
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {subRecipe.ingredients?.map((ing: any, index: number) => (
-                  <tr key={ing.id || index}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{ing.itemName.split('@')[0]}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{ing.quantity}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{ing.unit}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{ing.volume ?? '-'}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{ing.yieldPercentage}%</td>
-                    {isAdmin && <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${ing.recipeCost?.toFixed(2) ?? '0.00'}</td>}
-                  </tr>
-                ))}
+                {subRecipe.ingredients?.map((ing: any, index: number) => {
+                  const isSolidItem = ing.itemName.includes('@Solid Item');
+                  const isLiquidItem = ing.itemName.includes('@Liquid Item');
+                  const itemName = ing.itemName.split('@')[0];
+                  const isSingleIngredient = subRecipe.ingredients?.length === 1;
+                  
+                  return (
+                    <tr key={ing.id || index}>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{itemName}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{ing.quantity}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{ing.unit}</td>
+                      {isSingleIngredient ? (
+                        isSolidItem ? (
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                           ${ing.weight}`
+                          </td>
+                        ) : (
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {`${ing.volume}`}
+                          </td>
+                        )
+                      ) : (
+                        <>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {isSolidItem ? `${ing.weight}` : '-'}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {isLiquidItem ? `${ing.volume}` : '-'}
+                          </td>
+                        </>
+                      )}
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{ing.yieldPercentage}%</td>
+                      {isAdmin && <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${ing.recipeCost?.toFixed(2) ?? '0.00'}</td>}
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

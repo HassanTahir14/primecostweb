@@ -159,9 +159,9 @@ export default function RecipeProcedureForm({ onNext, onBack, initialData, isEdi
             formData.append('images', file);
           }
         });
-      } else if (initialData.existingImages && initialData.existingImages.length > 0) {
+      } else if (initialData.images && initialData.images.length > 0) {
         // Append existing images that haven't been removed
-        initialData.existingImages.forEach((image: RecipeImage) => {
+        initialData.images.forEach((image: RecipeImage) => {
           if (image.path) {
             // For existing images, we need to fetch them and add them to FormData
             fetch(image.path)
@@ -178,7 +178,7 @@ export default function RecipeProcedureForm({ onNext, onBack, initialData, isEdi
           }
         });
       } else {
-        setErrorMessage('At least one image is required');
+        setErrorMessage('At least one image is required. Please either keep existing images or upload new ones.');
         setShowErrorModal(true);
         return;
       }

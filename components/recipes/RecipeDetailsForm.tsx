@@ -116,7 +116,12 @@ export default function RecipeDetailsForm({ onNext, initialData, isEditMode = fa
   const validateForm = () => {
     const newErrors: any = {};
 
-    if (!formData.name) newErrors.name = 'Name is required';
+    if (!formData.name.trim()) {
+      newErrors.name = 'Name is required';
+    } else if (formData.name.trim().length < 3) {
+      newErrors.name = 'Name must be at least 3 characters long';
+    }
+
     if (!formData.category) newErrors.category = 'Category is required';
     if (!formData.portions || isNaN(Number(formData.portions)) || Number(formData.portions) <= 0)
       newErrors.portions = 'Portions must be a positive number';
