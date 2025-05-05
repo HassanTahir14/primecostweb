@@ -25,6 +25,17 @@ const formatTime = (timeString: string | null | undefined) => {
 
 type SlotKey = 'Opening' | 'Break' | 'Closing';
 
+function timeStringToObject(time: string | undefined): { hour: number, minute: number, second: number, nano: number } | null {
+  if (!time) return null;
+  const [hour, minute] = time.split(':').map(Number);
+  return {
+    hour: hour || 0,
+    minute: minute || 0,
+    second: 0,
+    nano: 0
+  };
+}
+
 export default function EmployeeDutyScheduleForm({ onNext, onPrevious, initialData }: EmployeeDutyScheduleFormProps) {
   // Initialize schedule state from initialData if present
   const [schedule, setSchedule] = useState(() => {
@@ -104,15 +115,15 @@ export default function EmployeeDutyScheduleForm({ onNext, onPrevious, initialDa
 
   const handleNextClick = () => {
     // Transform the state into the API-expected format
-    const dutySchedulesDTO = daysOfWeek.map(day => ({
+    const dutySchedules = daysOfWeek.map(day => ({
       day: day,
-      openingShift: formatTime(schedule.Opening?.[day]),
-      breakTime: formatTime(schedule.Break?.[day]),
-      closingShift: formatTime(schedule.Closing?.[day])
+      openingShift: timeStringToObject(schedule.Opening?.[day]),
+      breakTime: timeStringToObject(schedule.Break?.[day]),
+      closingShift: timeStringToObject(schedule.Closing?.[day])
     }));
-    
-    console.log("Duty Schedule DTO:", dutySchedulesDTO);
-    onNext({ dutySchedulesDTO }); // Pass the formatted data
+
+    console.log("Duty Schedules (API format):", dutySchedules);
+    onNext({ dutySchedulesDTO: dutySchedules }); // Pass the formatted data
   };
 
   return (
