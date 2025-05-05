@@ -111,7 +111,13 @@ export default function SubRecipeCostingForm({ onNext, onBack, initialData }: Re
       return;
     }
 
-    onNext(formData);
+    onNext({
+      ...formData,
+      recipeCode: initialData.recipeCode,
+      images: initialData.images,
+      newImages: initialData.newImages,
+      imageIdsToRemove: initialData.imageIdsToRemove
+    });
   };
 
   const inputClasses = "w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00997B]";

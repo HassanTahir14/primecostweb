@@ -203,7 +203,13 @@ export default function RecipeIngredientsForm({ onNext, onBack, initialData }: R
   };
 
   const handleNextClick = () => {
-    onNext({ ingredients });
+    onNext({ 
+      ingredients,
+      recipeCode: initialData.recipeCode,
+      images: initialData.images,
+      newImages: initialData.newImages,
+      imageIdsToRemove: initialData.imageIdsToRemove
+    });
   };
 
   return (

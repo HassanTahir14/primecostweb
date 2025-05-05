@@ -36,6 +36,7 @@ export default function SubRecipeDetailsForm({ onNext, initialData, isEditMode =
     selectedRecipe: initialData.selectedRecipe || '',
     portions: initialData.portions || '',
     servingSize: initialData.servingSize || '',
+    recipeCode: initialData.recipeCode || '',
     images: initialData.images || [],
     newImages: initialData.newImages || [],
     imageIdsToRemove: initialData.imageIdsToRemove || []
@@ -86,7 +87,11 @@ export default function SubRecipeDetailsForm({ onNext, initialData, isEditMode =
             (recipe: any) => recipe.recipeCode === initialData.recipeCode
           );
           if (matchedRecipe) {
-            setFormData(prev => ({ ...prev, selectedRecipe: matchedRecipe.id }));
+            setFormData(prev => ({ 
+              ...prev, 
+              selectedRecipe: matchedRecipe.id,
+              recipeCode: matchedRecipe.recipeCode 
+            }));
           }
         }
       })
@@ -124,6 +129,17 @@ export default function SubRecipeDetailsForm({ onNext, initialData, isEditMode =
     setNewImages(prev => prev.filter((_, i) => i !== index));
   };
 
+  const handleRecipeSelect = (recipeId: string) => {
+    const selectedRecipe = recipeList.find(recipe => recipe.id === Number(recipeId));
+    if (selectedRecipe) {
+      setFormData(prev => ({
+        ...prev,
+        selectedRecipe: Number(recipeId),
+        recipeCode: selectedRecipe.recipeCode
+      }));
+    }
+  };
+
   const validateForm = () => {
     const newErrors: { [key: string]: string } = {};
 
@@ -149,13 +165,64 @@ export default function SubRecipeDetailsForm({ onNext, initialData, isEditMode =
       newErrors.servingSize = 'Serving size is required';
     }
 
+    if (!formData.recipeCode) {
+      newErrors.recipeCode = 'Recipe code is required';
+    } else if (formData.recipeCode.length < 3 || formData.recipeCode.length > 100) {
+      newErrors.recipeCode = 'Recipe code must be between 3 and 100 characters';
+    }
+
+    // Detailed image validation
+    if (isEditMode) {
+      if (existingImages.length === 0 && newImages.length === 0) {
+        newErrors.images = 'At least one image is required. Please either keep existing images or upload new ones.';
+        setErrorMessage('You must have at least one image. Either keep some existing images or upload new ones.');
+        setIsErrorModalOpen(true);
+      }
+    } else {
+      if (newImages.length === 0) {
+        newErrors.images = 'Please upload at least one image for the sub recipe';
+        setErrorMessage('You must upload at least one image to create a sub recipe.');
+        setIsErrorModalOpen(true);
+      }
+    }
+
+    // Validate new image file types and sizes
+    if (newImages.length > 0) {
+      const validImageTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+      const maxFileSize = 5 * 1024 * 1024; // 5MB
+
+      for (let i = 0; i < newImages.length; i++) {
+        const file = newImages[i];
+        
+        if (!validImageTypes.includes(file.type)) {
+          newErrors.images = `Image ${i + 1} has an invalid file type. Only JPEG, JPG, and PNG files are allowed.`;
+          setErrorMessage(`Image ${i + 1} has an invalid file type. Please upload only JPEG, JPG, or PNG files.`);
+          setIsErrorModalOpen(true);
+          break;
+        }
+
+        if (file.size > maxFileSize) {
+          newErrors.images = `Image ${i + 1} is too large. Maximum file size is 5MB.`;
+          setErrorMessage(`Image ${i + 1} is too large. Please upload images smaller than 5MB.`);
+          setIsErrorModalOpen(true);
+          break;
+        }
+      }
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = () => {
     if (!validateForm()) {
-      setErrorMessage('Please fix the validation errors before proceeding');
+      if (errors.images) {
+        setErrorMessage(errors.images);
+      } else if (errors.recipeCode) {
+        setErrorMessage(errors.recipeCode);
+      } else {
+        setErrorMessage('Please fix the validation errors before proceeding');
+      }
       setIsErrorModalOpen(true);
       return;
     }
@@ -164,7 +231,8 @@ export default function SubRecipeDetailsForm({ onNext, initialData, isEditMode =
       ...formData,
       images: existingImages,
       newImages,
-      imageIdsToRemove
+      imageIdsToRemove,
+      recipeCode: formData.recipeCode
     };
 
     onNext(dataToSubmit);
@@ -290,7 +358,7 @@ export default function SubRecipeDetailsForm({ onNext, initialData, isEditMode =
             value: recipe.id.toString()
           }))}
           value={formData.selectedRecipe === '' ? '' : String(formData.selectedRecipe)}
-          onChange={(e) => setFormData(prev => ({ ...prev, selectedRecipe: Number(e.target.value) }))}
+          onChange={(e) => handleRecipeSelect(e.target.value)}
         />
         {errors.selectedRecipe && <p className="text-red-500 text-sm">{errors.selectedRecipe}</p>}
       </div>

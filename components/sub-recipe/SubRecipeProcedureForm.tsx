@@ -93,7 +93,11 @@ export default function RecipeProcedureForm({ onNext, onBack, initialData, isEdi
       procedureStep: steps.map(step => ({
         ...step,
         stepDescription: step.stepDescription.trim()
-      }))
+      })),
+      recipeCode: initialData.recipeCode,
+      images: initialData.images,
+      newImages: initialData.newImages,
+      imageIdsToRemove: initialData.imageIdsToRemove
     };
 
     onNext(dataToSubmit);
@@ -285,7 +289,7 @@ export default function RecipeProcedureForm({ onNext, onBack, initialData, isEdi
           router.push('/recipes/sub-recipes');
         }}
         title="Success"
-        message="Sub Recipe updated successfully!"
+        message="Succesful!"
         isAlert={true}
         okText="OK"
       />
