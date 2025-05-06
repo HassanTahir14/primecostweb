@@ -109,7 +109,7 @@ export default function AssignOrder({ onClose }: AssignOrderProps) {
       if (order.orderType === 'RECIPE') {
         const result = await dispatch(fetchRecipes({
           page: 0,
-          size: 10,
+          size: 1000000,
           sortBy: "createdAt",
           direction: "asc"
         })).unwrap();
@@ -123,7 +123,7 @@ export default function AssignOrder({ onClose }: AssignOrderProps) {
       } else if (order.orderType === 'SUB_RECIPE') {
         const result = await dispatch(fetchSubRecipes({
           page: 0,
-          size: 10,
+          size: 1000000,
           sortBy: "createdAt",
           direction: "asc"
         })).unwrap();
