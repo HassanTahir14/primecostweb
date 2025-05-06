@@ -156,13 +156,15 @@ export const generateDetailPDF = async (
         
         // Function to load an image and return a promise
         const loadImage = (path: string): Promise<HTMLImageElement> => {
-          console.log('Loading image from:', path);
           return new Promise((resolve, reject) => {
             // Use the same image proxy as the rest of the application
-            const imageUrl = `/images-proxy/${path}`;
+            const imageUrl = `http://212.85.26.46:8082/api/v1/images/view/${path}`;
+            const authToken = localStorage.getItem('authToken');
             console.log('Fetching image from:', imageUrl);
             
-            fetch(imageUrl)
+            fetch(imageUrl, {
+              headers: authToken ? { Authorization: `Bearer ${authToken}` } : {},
+            })
             .then(response => {
               if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
