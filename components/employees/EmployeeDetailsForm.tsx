@@ -10,6 +10,8 @@ import { formatPositionName } from '@/utils/formatters';
 interface EmployeeDetailsFormProps {
   onNext: (data: any) => void;
   initialData: any; // Data from previous steps or initial state
+  onSave?: (data: any) => void;
+  errors?: Record<string, string>; // Add errors prop
 }
 
 // Interface for the form data state
@@ -47,7 +49,7 @@ const positionOptions = [
   // Add other valid roles if needed, remove invalid ones like 'waiter', 'admin', 'sous_chef'
 ];
 
-export default function EmployeeDetailsForm({ onNext, initialData }: EmployeeDetailsFormProps) {
+export default function EmployeeDetailsForm({ onNext, initialData, onSave, errors }: EmployeeDetailsFormProps) {
   const [formData, setFormData] = useState({
     firstname: initialData?.firstname || '',
     familyName: initialData?.familyName || '',
@@ -90,16 +92,29 @@ export default function EmployeeDetailsForm({ onNext, initialData }: EmployeeDet
       }));
   }, [initialData]);
 
-  // Add state for validation errors
-  const [errors, setErrors] = useState<Partial<Record<keyof FormDataState, string>>>({});
-
   const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData((prev: FormDataState) => ({ ...prev, [name]: value }));
-    // Clear error on change
-    if (errors[name]) {
-        setErrors(prev => ({ ...prev, [name]: undefined }));
+    // Save immediately
+    if (onSave) {
+      onSave({
+        ...formData,
+        [name]: value
+      });
     }
+  };
+
+  // Transform API error keys to form field names
+  const getFieldError = (fieldName: string): string | undefined => {
+    if (!errors) return undefined;
+    
+    // Handle duplicate email error
+    if (fieldName === 'loginId' && errors.error?.includes('Duplicate entry') && errors.error?.includes('email')) {
+      return 'This email is already registered. Please use a different email address.';
+    }
+    
+    const apiKey = `employeeDetailsRequestDTO.${fieldName}`;
+    return errors[apiKey];
   };
 
   // Add validation function
@@ -180,13 +195,12 @@ export default function EmployeeDetailsForm({ onNext, initialData }: EmployeeDet
         }
       }
 
-      setErrors(newErrors);
       return Object.keys(newErrors).length === 0;
   };
 
   const handleNextClick = () => {
     if (!validateForm()) {
-        console.warn("Validation failed:", errors);
+        console.warn("Validation failed:", getFieldError('firstname'));
         return; 
     }
     
@@ -214,19 +228,105 @@ export default function EmployeeDetailsForm({ onNext, initialData }: EmployeeDet
     <div className="space-y-6">
        <h2 className="text-2xl font-semibold text-gray-800 mb-6">Employee Details</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-        {/* Add error display to relevant fields */}
-        <Input label="Name" name="firstname" value={formData.firstname} onChange={handleChange} placeholder="Enter value" error={errors.firstname} />
-        <Input label="Family Name" name="familyName" value={formData.familyName} onChange={handleChange} placeholder="Enter value" />
-        <Select label="Nationality" name="nationality" value={formData.nationality} onChange={handleChange} options={nationalityOptions} />
-        <Input label="Mobile Number" name="mobileNumber" value={formData.mobileNumber} onChange={handleChange} placeholder="Enter value" type="tel" error={errors.mobileNumber} />
-        <Select label="Position" name="position" value={formData.position} onChange={handleChange} options={positionOptions} error={errors.position} />
-        <Input label="Health Card Number" name="healthCardNumber" value={formData.healthCardNumber} onChange={handleChange} placeholder="Health Card Num" />
-        <Input label="Iqama ID" name="iqamaId" value={formData.iqamaId} onChange={handleChange} placeholder="Enter value" error={errors.iqamaId} />
-        <Input label="Health Card Expiry" name="healthCardExpiry" value={formData.healthCardExpiry} onChange={handleChange} type="date" error={errors.healthCardExpiry} /> 
-        <Input label="Iqama ID Expiry Date" name="iqamaExpiryDate" value={formData.iqamaExpiryDate} onChange={handleChange} type="date" error={errors.iqamaExpiryDate} /> 
-        <Input label="Date of Birth" name="dateOfBirth" value={formData.dateOfBirth} onChange={handleChange} type="date" error={errors.dateOfBirth} /> 
-        <Input label="Email" name="loginId" value={formData.loginId} onChange={handleChange} placeholder="Enter value" type="email" />
-        <Input label="Password" name="password" value={formData.password} onChange={handleChange} placeholder="Enter value" type="password" />
+        <Input 
+          label="Name" 
+          name="firstname" 
+          value={formData.firstname} 
+          onChange={handleChange} 
+          placeholder="Enter value" 
+          error={getFieldError('firstname')} 
+        />
+        <Input 
+          label="Family Name" 
+          name="familyName" 
+          value={formData.familyName} 
+          onChange={handleChange} 
+          placeholder="Enter value" 
+          error={getFieldError('familyName')} 
+        />
+        <Select 
+          label="Nationality" 
+          name="nationality" 
+          value={formData.nationality} 
+          onChange={handleChange} 
+          options={nationalityOptions} 
+          error={getFieldError('nationality')} 
+        />
+        <Input 
+          label="Mobile Number" 
+          name="mobileNumber" 
+          value={formData.mobileNumber} 
+          onChange={handleChange} 
+          placeholder="Enter value" 
+          type="tel" 
+          error={getFieldError('mobileNumber')} 
+        />
+        <Select 
+          label="Position" 
+          name="position" 
+          value={formData.position} 
+          onChange={handleChange} 
+          options={positionOptions} 
+          error={getFieldError('position')} 
+        />
+        <Input 
+          label="Health Card Number" 
+          name="healthCardNumber" 
+          value={formData.healthCardNumber} 
+          onChange={handleChange} 
+          placeholder="Health Card Num" 
+          error={getFieldError('healthCardNumber')} 
+        />
+        <Input 
+          label="Iqama ID" 
+          name="iqamaId" 
+          value={formData.iqamaId} 
+          onChange={handleChange} 
+          placeholder="Enter value" 
+          error={getFieldError('iqamaId')} 
+        />
+        <Input 
+          label="Health Card Expiry" 
+          name="healthCardExpiry" 
+          value={formData.healthCardExpiry} 
+          onChange={handleChange} 
+          type="date" 
+          error={getFieldError('healthCardExpiry')} 
+        />
+        <Input 
+          label="Iqama ID Expiry Date" 
+          name="iqamaExpiryDate" 
+          value={formData.iqamaExpiryDate} 
+          onChange={handleChange} 
+          type="date" 
+          error={getFieldError('iqamaExpiryDate')} 
+        />
+        <Input 
+          label="Date of Birth" 
+          name="dateOfBirth" 
+          value={formData.dateOfBirth} 
+          onChange={handleChange} 
+          type="date" 
+          error={getFieldError('dateOfBirth')} 
+        />
+        <Input 
+          label="Email" 
+          name="loginId" 
+          value={formData.loginId} 
+          onChange={handleChange} 
+          placeholder="Enter value" 
+          type="email" 
+          error={getFieldError('loginId')} 
+        />
+        <Input 
+          label="Password" 
+          name="password" 
+          value={formData.password} 
+          onChange={handleChange} 
+          placeholder="Enter value" 
+          type="password" 
+          error={getFieldError('password')} 
+        />
       </div>
       
       {/* Action Button */}

@@ -28,7 +28,8 @@ export default function CreateEmployeePage() {
   const { loading: employeeLoading, error: employeeError } = useSelector((state: RootState) => state.employee);
 
   const [activeStep, setActiveStep] = useState<Step>('Details');
-  const [employeeData, setEmployeeData] = useState<any>({}); // Store data across steps
+  const [employeeData, setEmployeeData] = useState<any>({});
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
   
   // Modal state
   const [modalMessage, setModalMessage] = useState<string>('');
@@ -50,57 +51,80 @@ export default function CreateEmployeePage() {
       setActiveStep(steps[currentIndex - 1]);
     }
   };
-  
+
+  const handleSave = (data: any) => {
+    setEmployeeData((prev: any) => ({ ...prev, ...data }));
+  };
+
+  const handleTabClick = (step: Step) => {
+    setActiveStep(step);
+  };
+
   const handleSubmit = async (finalSalaryData: any) => {
     const completeData = { ...employeeData, ...finalSalaryData };
-    const images = completeData.newImages || []; // Correct key from EmployeeSalaryForm
-    delete completeData.newImages; // Ensure we delete the correct key
-    delete completeData.imageIdsToRemove; // Also remove this if present from SalaryForm
+    const images = completeData.newImages || [];
+    const imageIdsToRemove = completeData.imageIdsToRemove || [];
     
-    console.log("Submitting Employee Data:", completeData);
-    console.log("Submitting Images:", images); // This should now show files
+    delete completeData.newImages;
+    delete completeData.imageIdsToRemove;
     
-    // Clear previous errors
+    console.log("Creating Employee Data:", completeData);
+    console.log("New Images:", images);
+    console.log("Image IDs to Remove:", imageIdsToRemove);
+    
     dispatch(clearError());
     setIsSuccess(false);
+    setValidationErrors({}); // Clear previous validation errors
 
     try {
-        const resultAction = await dispatch(addEmployee({ employeeData: completeData, images }));
+        const resultAction = await dispatch(addEmployee({ 
+            employeeData: completeData, 
+            images, 
+            imageIdsToRemove 
+        }));
 
         if (addEmployee.fulfilled.match(resultAction)) {
             const successMsg = resultAction.payload?.description || 'Employee created successfully!';
             setModalMessage(successMsg);
-            setIsModalAlert(true); // Use alert style for success
             setIsModalOpen(true);
-            setIsSuccess(true); // Flag success
-            // Optionally reset form state here: setEmployeeData({}); setActiveStep('Details');
+            setIsSuccess(true); 
         } else {
-            // Error handled by rejected case, but grab message if available in payload
             const errorPayload = resultAction.payload as any;
-            const errorMsg = errorPayload?.description || errorPayload?.message || employeeError || 'Failed to create employee.';
-            setModalMessage(errorMsg);
-            setIsModalAlert(true);
-            setIsModalOpen(true);
-            setIsSuccess(false);
+            if (errorPayload?.errors) {
+                // Handle validation errors
+                setValidationErrors(errorPayload.errors);
+                // Show the first error in the modal
+                const firstErrorKey = Object.keys(errorPayload.errors)[0];
+                setModalMessage(errorPayload.errors[firstErrorKey]);
+                setIsModalOpen(true);
+                setIsSuccess(false);
+            } else if (errorPayload?.error) {
+                // Handle duplicate email error
+                setValidationErrors({ error: errorPayload.error });
+                setModalMessage('This email is already registered. Please use a different email address.');
+                setIsModalOpen(true);
+                setIsSuccess(false);
+            } else {
+                const errorMsg = errorPayload?.description || errorPayload?.message || employeeError || 'Failed to create employee.';
+                setModalMessage(errorMsg);
+                setIsModalOpen(true);
+                setIsSuccess(false);
+            }
         }
-    } catch (error: any) { // Catch unexpected errors
-         console.error("Submission error:", error);
-         setModalMessage(error.message || 'An unexpected error occurred during submission.');
-         setIsModalAlert(true);
+    } catch (error: any) { 
+         console.error("Create error:", error);
+         setModalMessage(error.message || 'An unexpected error occurred during creation.');
          setIsModalOpen(true);
          setIsSuccess(false);
     }
   };
 
-  // Close modal and redirect/reset if submission was successful
   const handleCloseModal = () => {
       setIsModalOpen(false);
       setModalMessage('');
       if (isSuccess) {
-          // Redirect to employees list after successful creation
-          router.push('/employees'); 
+          router.push('/employees');
       } else {
-          // Clear Redux error state if modal is closed after showing an error
           dispatch(clearError());
       }
   };
@@ -108,22 +132,32 @@ export default function CreateEmployeePage() {
   const renderStepContent = () => {
     switch (activeStep) {
       case 'Details':
-        return <EmployeeDetailsForm onNext={handleNext} initialData={employeeData} />;
+        return <EmployeeDetailsForm 
+          onNext={handleNext} 
+          initialData={employeeData} 
+          onSave={handleSave} 
+          errors={validationErrors}
+        />;
       case 'Duty Schedule':
-        return <EmployeeDutyScheduleForm onNext={handleNext} onPrevious={handlePrevious} initialData={employeeData} />;
+        return <EmployeeDutyScheduleForm 
+          onNext={handleNext} 
+          onPrevious={handlePrevious} 
+          initialData={employeeData} 
+          onSave={handleSave} 
+        />;
       case 'Salary':
-        // Pass employeeLoading state to disable submit button while loading
-        return <EmployeeSalaryForm onSubmit={handleSubmit} onPrevious={handlePrevious} initialData={employeeData} isLoading={employeeLoading} />;
+        return <EmployeeSalaryForm 
+          onSubmit={handleSubmit} 
+          onPrevious={handlePrevious} 
+          initialData={employeeData} 
+          isLoading={employeeLoading} 
+          onSave={handleSave}
+          errors={validationErrors}
+        />;
       default:
         return null;
     }
   };
-
-  // Update Submit button in EmployeeSalaryForm to show loading state
-  // Need to pass `employeeLoading` down or handle loading state here.
-  // For simplicity, let's modify EmployeeSalaryForm directly later if needed,
-  // or ideally, the submit button should be part of this parent component.
-  // For now, the loading state is available here.
 
   return (
     <PageLayout title="Create New Employee">
@@ -141,13 +175,12 @@ export default function CreateEmployeePage() {
           {steps.map((step) => (
             <button
               key={step}
-              // Remove onClick to disable tab switching
-              disabled={true}
+              onClick={() => handleTabClick(step)}
               className={`py-3 px-6 font-medium text-sm transition-colors duration-150 
                 ${activeStep === step 
                   ? 'border-b-2 border-[#00997B] text-[#00997B]' 
-                  : 'text-gray-500 opacity-70'
-              } cursor-not-allowed`}
+                  : 'text-gray-500 hover:text-gray-700'
+                }`}
             >
               {step}
             </button>
@@ -158,10 +191,6 @@ export default function CreateEmployeePage() {
         <div>
           {renderStepContent()} 
         </div>
-
-        {/* Render Submit button here maybe? Or pass loading state down */} 
-        {/* If kept in Salary form, need to pass `isLoading={employeeLoading}` prop */}
-
       </div>
       
       {/* Confirmation/Error Modal */}
@@ -170,7 +199,7 @@ export default function CreateEmployeePage() {
         onClose={handleCloseModal}
         title={isSuccess ? 'Success' : 'Error'}
         message={modalMessage}
-        isAlert={true} // Always use alert style for create feedback
+        isAlert={true}
         okText="OK"
       />
     </PageLayout>

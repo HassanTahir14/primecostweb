@@ -7,9 +7,10 @@ interface RecipeCostingFormProps {
   onNext: (data: any) => void;
   onBack: () => void;
   initialData: any;
+  onSave?: (data: any) => void;
 }
 
-export default function SubRecipeCostingForm({ onNext, onBack, initialData }: RecipeCostingFormProps) {
+export default function SubRecipeCostingForm({ onNext, onBack, initialData, onSave }: RecipeCostingFormProps) {
   const [formData, setFormData] = useState({
     menuPrice: initialData.menuPrice || '',
     foodCostBudget: initialData.foodCostBudget || '',
@@ -68,7 +69,18 @@ export default function SubRecipeCostingForm({ onNext, onBack, initialData }: Re
       const idealPrice = parseFloat(formData.costPerPortion) / (parseFloat(formData.foodCostBudget) / 100);
       setFormData(prev => ({ ...prev, idealSellingPrice: idealPrice.toFixed(2) }));
     }
-  }, [formData.menuPrice, formData.costPerPortion, formData.foodCostBudget, initialData.portions]);
+
+    // Save the updated form data
+    if (onSave) {
+      onSave({
+        ...formData,
+        recipeCode: initialData.recipeCode,
+        images: initialData.images,
+        newImages: initialData.newImages,
+        imageIdsToRemove: initialData.imageIdsToRemove
+      });
+    }
+  }, [formData.menuPrice, formData.costPerPortion, formData.foodCostBudget, initialData.portions, onSave]);
 
   // Calculate total cost from ingredients
   function calculateTotalIngredientsCost(ingredients: any[]) {
@@ -169,10 +181,11 @@ export default function SubRecipeCostingForm({ onNext, onBack, initialData }: Re
               <input
                 type="text"
                 readOnly
-                className="w-full p-3 border border-gray-300 rounded-lg bg-gray-100 pl-8"
+                className={`w-full p-3 border ${errors.foodCostActual ? 'border-red-500' : 'border-gray-300'} rounded-lg bg-gray-100 pl-8`}
                 value={formData.foodCostActual}
               />
             </div>
+            {errors.foodCostActual && <p className={errorClasses}>{errors.foodCostActual}</p>}
           </div>
 
           {/* Ideal Selling Price (read-only) */}
@@ -227,10 +240,11 @@ export default function SubRecipeCostingForm({ onNext, onBack, initialData }: Re
               <input
                 type="text"
                 readOnly
-                className="w-full p-3 border border-gray-300 rounded-lg bg-gray-100 pl-8"
+                className={`w-full p-3 border ${errors.marginPerPortion ? 'border-red-500' : 'border-gray-300'} rounded-lg bg-gray-100 pl-8`}
                 value={formData.marginPerPortion}
               />
             </div>
+            {errors.marginPerPortion && <p className={errorClasses}>{errors.marginPerPortion}</p>}
           </div>
         </div>
       </div>

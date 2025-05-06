@@ -8,6 +8,7 @@ interface EmployeeDutyScheduleFormProps {
   onNext: (data: { dutySchedulesDTO: any[] }) => void;
   onPrevious: () => void;
   initialData: any; // Data from previous steps
+  onSave?: (data: any) => void;
 }
 
 const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
@@ -36,7 +37,7 @@ function timeStringToObject(time: string | undefined): { hour: number, minute: n
   };
 }
 
-export default function EmployeeDutyScheduleForm({ onNext, onPrevious, initialData }: EmployeeDutyScheduleFormProps) {
+export default function EmployeeDutyScheduleForm({ onNext, onPrevious, initialData, onSave }: EmployeeDutyScheduleFormProps) {
   // Initialize schedule state from initialData if present
   const [schedule, setSchedule] = useState(() => {
     const initialDutySchedules = initialData.dutySchedulesDTO || [];
@@ -75,13 +76,26 @@ export default function EmployeeDutyScheduleForm({ onNext, onPrevious, initialDa
   });
 
   const handleScheduleChange = (slot: string, day: string, value: string) => {
-    setSchedule(prev => ({
-      ...prev,
-      [slot]: {
-        ...prev[slot],
-        [day]: value, // Store as HH:MM string
-      },
-    }));
+    setSchedule(prev => {
+      const updated = {
+        ...prev,
+        [slot]: {
+          ...prev[slot],
+          [day]: value,
+        },
+      };
+      // Save immediately
+      if (onSave) {
+        const dutySchedules = daysOfWeek.map(day => ({
+          day: day,
+          openingShift: timeStringToObject(updated.Opening?.[day]),
+          breakTime: timeStringToObject(updated.Break?.[day]),
+          closingShift: timeStringToObject(updated.Closing?.[day])
+        }));
+        onSave({ dutySchedulesDTO: dutySchedules });
+      }
+      return updated;
+    });
   };
 
   const handleAddSchedule = () => {
@@ -108,7 +122,17 @@ export default function EmployeeDutyScheduleForm({ onNext, onPrevious, initialDa
           });
         }
       });
-      return { ...updated };
+      // Save immediately
+      if (onSave) {
+        const dutySchedules = daysOfWeek.map(day => ({
+          day: day,
+          openingShift: timeStringToObject(updated.Opening?.[day]),
+          breakTime: timeStringToObject(updated.Break?.[day]),
+          closingShift: timeStringToObject(updated.Closing?.[day])
+        }));
+        onSave({ dutySchedulesDTO: dutySchedules });
+      }
+      return updated;
     });
     setIsModalOpen(false);
   };

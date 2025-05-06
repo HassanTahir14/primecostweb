@@ -7,9 +7,10 @@ interface RecipeCostingFormProps {
   onNext: (data: any) => void;
   onBack: () => void;
   initialData: any;
+  onSave?: (data: any) => void;
 }
 
-export default function RecipeCostingForm({ onNext, onBack, initialData }: RecipeCostingFormProps) {
+export default function RecipeCostingForm({ onNext, onBack, initialData, onSave }: RecipeCostingFormProps) {
   // Get total ingredients cost from previous step if available
   const totalIngredientsCost = calculateTotalIngredientsCost(initialData.ingredients || []);
   
@@ -67,7 +68,21 @@ export default function RecipeCostingForm({ onNext, onBack, initialData }: Recip
       const idealPrice = parseFloat(costPerPortion) / (parseFloat(foodCostBudgetPercent) / 100);
       setIdealSellingPrice(idealPrice.toString());
     }
-  }, [menuPrice, costPerPortion, foodCostBudgetPercent, initialData.portions]);
+
+    // Save the updated form data
+    if (onSave) {
+      onSave({
+        ...initialData,
+        menuPrice,
+        foodCostBudget: foodCostBudgetPercent,
+        foodCostActual: foodCostActualPercent,
+        idealSellingPrice,
+        costPerPortion,
+        costPerRecipe,
+        marginPerPortion
+      });
+    }
+  }, [menuPrice, costPerPortion, foodCostBudgetPercent, initialData.portions, onSave]);
 
   // Calculate total cost from ingredients
   function calculateTotalIngredientsCost(ingredients: any[]) {
@@ -170,10 +185,11 @@ export default function RecipeCostingForm({ onNext, onBack, initialData }: Recip
               <input
                 type="text"
                 readOnly
-                className="w-full p-3 border border-gray-300 rounded-lg bg-gray-100 pl-8"
+                className={`w-full p-3 border ${errors.foodCostActualPercent ? 'border-red-500' : 'border-gray-300'} rounded-lg bg-gray-100 pl-8`}
                 value={foodCostActualPercent}
               />
             </div>
+            {errors.foodCostActualPercent && <p className={errorClasses}>{errors.foodCostActualPercent}</p>}
           </div>
 
           {/* Ideal Selling Price (read-only) */}
@@ -232,7 +248,7 @@ export default function RecipeCostingForm({ onNext, onBack, initialData }: Recip
                 value={parseFloat(marginPerPortion).toFixed(2)}
               />
             </div>
-            {errors.marginPerPortion && <p className="text-red-500 text-sm mt-1">{errors.marginPerPortion}</p>}
+            {errors.marginPerPortion && <p className={errorClasses}>{errors.marginPerPortion}</p>}
           </div>
         </div>
       </div>

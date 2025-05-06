@@ -184,7 +184,7 @@ export default function EmployeesPage() {
                   <th className="py-4 px-6 font-medium text-sm text-gray-500">Iqama Expiry</th>
                   <th className="py-4 px-6 font-medium text-sm text-gray-500">Basic Salary</th>
                   <th className="py-4 px-6 font-medium text-sm text-gray-500">Status</th>
-                  <th className="py-4 px-6 font-medium text-sm text-gray-500 text-center">Actions</th>
+                  {/* <th className="py-4 px-6 font-medium text-sm text-gray-500 text-center">Actions</th> */}
                 </tr>
               </thead>
               <tbody>
@@ -219,7 +219,7 @@ export default function EmployeesPage() {
                       </td>
                       <td className="py-4 px-6 text-center">
                         <div className="flex items-center justify-center space-x-2 action-buttons">
-                          <Button 
+                          {/* <Button 
                             variant="default" 
                              size="sm" 
                             className="rounded-full bg-[#339A89] text-white text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-1.5"
@@ -251,7 +251,7 @@ export default function EmployeesPage() {
                             }}
                           >
                             Edit
-                          </Button>
+                          </Button> */}
                           {/* <Button 
                             variant="destructive" 
                              size="sm" 

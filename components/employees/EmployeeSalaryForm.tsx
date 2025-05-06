@@ -20,6 +20,8 @@ interface EmployeeSalaryFormProps {
   initialData: any; // Data from previous steps
   existingImages?: ExistingImage[]; // Optional array of existing images
   isLoading?: boolean; // Optional loading state for submit button
+  onSave?: (data: any) => void;
+  errors?: Record<string, string>; // Add errors prop
 }
 
 export default function EmployeeSalaryForm({ 
@@ -27,32 +29,42 @@ export default function EmployeeSalaryForm({
   onPrevious, 
   initialData, 
   existingImages = [], // Default to empty array
-  isLoading = false 
+  isLoading = false,
+  onSave,
+  errors
 }: EmployeeSalaryFormProps) {
   const [formData, setFormData] = useState({
-    basicSalary: '',
-    foodAllowance: '',
-    accommodationAllowance: '',
-    transportAllowance: '',
-    telephoneAllowance: '',
-    otherAllowance: '',
-    ...initialData, // Pre-fill with existing data
+    basicSalary: initialData?.basicSalary || '',
+    foodAllowance: initialData?.foodAllowance || '',
+    accommodationAllowance: initialData?.accommodationAllowance || '',
+    transportAllowance: initialData?.transportAllowance || '',
+    telephoneAllowance: initialData?.telephoneAllowance || '',
+    otherAllowance: initialData?.otherAllowance || '',
   });
   
-  const [newImages, setNewImages] = useState<File[]>([]); // State for newly added images
-  const [imageIdsToRemove, setImageIdsToRemove] = useState<number[]>([]); // State for IDs of existing images to remove
+  // Initialize state from initialData
+  const [newImages, setNewImages] = useState<File[]>(() => {
+    return initialData?.newImages || [];
+  });
+  const [imageIdsToRemove, setImageIdsToRemove] = useState<number[]>(() => {
+    return initialData?.imageIdsToRemove || [];
+  });
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Populate form data from initialData
+  // Update state when initialData changes
   useEffect(() => {
-    setFormData({
-      basicSalary: initialData.basicSalary || '',
-      foodAllowance: initialData.foodAllowance || '',
-      accommodationAllowance: initialData.accommodationAllowance || '',
-      transportAllowance: initialData.transportAllowance || '',
-      telephoneAllowance: initialData.telephoneAllowance || '', 
-      otherAllowance: initialData.otherAllowance || '',
-    });
+    if (initialData) {
+      setFormData({
+        basicSalary: initialData.basicSalary || '',
+        foodAllowance: initialData.foodAllowance || '',
+        accommodationAllowance: initialData.accommodationAllowance || '',
+        transportAllowance: initialData.transportAllowance || '',
+        telephoneAllowance: initialData.telephoneAllowance || '',
+        otherAllowance: initialData.otherAllowance || '',
+      });
+      setNewImages(initialData.newImages || []);
+      setImageIdsToRemove(initialData.imageIdsToRemove || []);
+    }
   }, [initialData]);
 
   // Calculate total salary (example calculation)
@@ -76,31 +88,74 @@ export default function EmployeeSalaryForm({
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev: any) => ({ ...prev, [name]: value }));
+    // Save immediately with all state
+    if (onSave) {
+      onSave({
+        ...formData,
+        [name]: value,
+        newImages,
+        imageIdsToRemove,
+        totalSalary: calculateTotalSalary()
+      });
+    }
   };
   
-  // Handle NEW image selection
   const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const files = Array.from(e.target.files);
-      setNewImages(prevImages => [...prevImages, ...files]);
+      setNewImages(prevImages => {
+        const updatedImages = [...prevImages, ...files];
+        // Save immediately with updated images
+        if (onSave) {
+          onSave({
+            ...formData,
+            newImages: updatedImages,
+            imageIdsToRemove,
+            totalSalary: calculateTotalSalary()
+          });
+        }
+        return updatedImages;
+      });
     }
-     if (fileInputRef.current) {
-       fileInputRef.current.value = '';
-     }
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   };
   
   const handleImageUploadClick = () => {
     fileInputRef.current?.click();
   };
 
-  // Remove a NEWLY ADDED image preview
   const handleRemoveNewImage = (index: number) => {
-      setNewImages(prevImages => prevImages.filter((_, i) => i !== index));
+    setNewImages(prevImages => {
+      const updatedImages = prevImages.filter((_, i) => i !== index);
+      // Save immediately with updated images
+      if (onSave) {
+        onSave({
+          ...formData,
+          newImages: updatedImages,
+          imageIdsToRemove,
+          totalSalary: calculateTotalSalary()
+        });
+      }
+      return updatedImages;
+    });
   };
   
-  // Mark an EXISTING image for removal
   const handleRemoveExistingImage = (imageId: number) => {
-      setImageIdsToRemove(prevIds => [...prevIds, imageId]);
+    setImageIdsToRemove(prevIds => {
+      const updatedIds = [...prevIds, imageId];
+      // Save immediately with updated image IDs to remove
+      if (onSave) {
+        onSave({
+          ...formData,
+          newImages,
+          imageIdsToRemove: updatedIds,
+          totalSalary: calculateTotalSalary()
+        });
+      }
+      return updatedIds;
+    });
   };
   
   // Check if an existing image is marked for removal
@@ -111,9 +166,9 @@ export default function EmployeeSalaryForm({
   const handleSubmitClick = () => {
     const finalData = { 
       ...formData, 
-      totalSalary, 
-      newImages: newImages, // Pass new images separately
-      imageIdsToRemove: imageIdsToRemove, // Pass IDs to remove
+      totalSalary: calculateTotalSalary(),
+      newImages,
+      imageIdsToRemove
     };
     console.log("Submitting Salary Data:", finalData);
     onSubmit(finalData);
@@ -121,6 +176,14 @@ export default function EmployeeSalaryForm({
 
   // Update the image base URL
   const imageBaseUrl = process.env.NEXT_PUBLIC_IMAGE_URL || 'http://212.85.26.46:8082/api/v1/images/view';
+
+  // Transform API error keys to form field names
+  const getFieldError = (fieldName: string): string | undefined => {
+    if (!errors) return undefined;
+    
+    const apiKey = `salaryRequestDTO.${fieldName}`;
+    return errors[apiKey];
+  };
 
   return (
     <div className="space-y-6">
@@ -136,11 +199,40 @@ export default function EmployeeSalaryForm({
             placeholder="Enter basic salary" 
             type="number" 
             prefix="USD" 
+            error={getFieldError('basicSalary')}
           />
-          <Input label="Food Allowance" name="foodAllowance" value={formData.foodAllowance} onChange={handleChange} placeholder="Enter food allowance" type="number" />
-          <Input label="Accommodation Allowance" name="accommodationAllowance" value={formData.accommodationAllowance} onChange={handleChange} placeholder="Enter accommodation allowance" type="number" />
-          <Input label="Transport Allowance" name="transportAllowance" value={formData.transportAllowance} onChange={handleChange} placeholder="Enter transport allowance" type="number" />
-          <Input label="Telephone or Mobile Allowance" name="telephoneAllowance" value={formData.telephoneAllowance} onChange={handleChange} placeholder="Enter telephone allowance" type="number" />
+          <Input 
+            label="Food Allowance" 
+            name="foodAllowance" 
+            value={formData.foodAllowance} 
+            onChange={handleChange} 
+            placeholder="Enter food allowance" 
+            type="number" 
+          />
+          <Input 
+            label="Accommodation Allowance" 
+            name="accommodationAllowance" 
+            value={formData.accommodationAllowance} 
+            onChange={handleChange} 
+            placeholder="Enter accommodation allowance" 
+            type="number" 
+          />
+          <Input 
+            label="Transport Allowance" 
+            name="transportAllowance" 
+            value={formData.transportAllowance} 
+            onChange={handleChange} 
+            placeholder="Enter transport allowance" 
+            type="number" 
+          />
+          <Input 
+            label="Telephone or Mobile Allowance" 
+            name="telephoneAllowance" 
+            value={formData.telephoneAllowance} 
+            onChange={handleChange} 
+            placeholder="Enter telephone allowance" 
+            type="number" 
+          />
         </div>
 
         {/* Right Column - Image Upload, Other Allowance, Total */}
@@ -211,8 +303,23 @@ export default function EmployeeSalaryForm({
                  </div>
              )}
           </div>
-          <Input label="Other Allowance" name="otherAllowance" value={formData.otherAllowance} onChange={handleChange} placeholder="Any other allowances" type="number" />
-          <Input label="Total Salary" name="totalSalary" value={totalSalary} readOnly placeholder="Calculated total" prefix="USD" />
+          <Input 
+            label="Other Allowance" 
+            name="otherAllowance" 
+            value={formData.otherAllowance} 
+            onChange={handleChange} 
+            placeholder="Any other allowances" 
+            type="number" 
+          />
+          <Input 
+            label="Total Salary" 
+            name="totalSalary" 
+            value={totalSalary} 
+            readOnly 
+            placeholder="Calculated total" 
+            prefix="USD" 
+            error={getFieldError('totalSalary')}
+          />
         </div>
       </div>
 

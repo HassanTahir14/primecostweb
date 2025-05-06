@@ -358,7 +358,7 @@ export default function SubRecipeDetailPage() {
                       {isSingleIngredient ? (
                         isSolidItem ? (
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                           ${ing.weight}`
+                           {ing.weight}
                           </td>
                         ) : (
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">

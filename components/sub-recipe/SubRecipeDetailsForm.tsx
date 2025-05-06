@@ -24,9 +24,10 @@ interface RecipeDetailsFormProps {
   onNext: (data: any) => void;
   initialData: any;
   isEditMode?: boolean;
+  onSave?: (data: any) => void;
 }
 
-export default function SubRecipeDetailsForm({ onNext, initialData, isEditMode = false }: RecipeDetailsFormProps) {
+export default function SubRecipeDetailsForm({ onNext, initialData, isEditMode = false, onSave }: RecipeDetailsFormProps) {
   const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
   const imageBaseUrl = process.env.NEXT_PUBLIC_IMAGE_URL || 'http://212.85.26.46:8082/api/v1/images/view';
@@ -84,20 +85,79 @@ export default function SubRecipeDetailsForm({ onNext, initialData, isEditMode =
     }
   }, [initialData]);
 
+  const handleInputChange = (field: string, value: string) => {
+    setFormData(prev => {
+      const newData = { ...prev, [field]: value };
+      if (onSave) {
+        onSave({
+          ...newData,
+          images: existingImages,
+          newImages,
+          imageIdsToRemove
+        });
+      }
+      return newData;
+    });
+  };
+
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files || []);
-    setNewImages(prev => [...prev, ...files]);
+    setNewImages(prev => {
+      const newImages = [...prev, ...files];
+      if (onSave) {
+        onSave({
+          ...formData,
+          images: existingImages,
+          newImages,
+          imageIdsToRemove
+        });
+      }
+      return newImages;
+    });
   };
 
   const handleRemoveExistingImage = (imageId: number | undefined) => {
     if (imageId) {
-      setImageIdsToRemove(prev => [...prev, imageId]);
-      setExistingImages(prev => prev.filter(img => img.id !== imageId));
+      setImageIdsToRemove(prev => {
+        const newIds = [...prev, imageId];
+        if (onSave) {
+          onSave({
+            ...formData,
+            images: existingImages.filter(img => img.id !== imageId),
+            newImages,
+            imageIdsToRemove: newIds
+          });
+        }
+        return newIds;
+      });
+      setExistingImages(prev => {
+        const newImages = prev.filter(img => img.id !== imageId);
+        if (onSave) {
+          onSave({
+            ...formData,
+            images: newImages,
+            newImages,
+            imageIdsToRemove
+          });
+        }
+        return newImages;
+      });
     }
   };
 
   const handleRemoveNewImage = (index: number) => {
-    setNewImages(prev => prev.filter((_, i) => i !== index));
+    setNewImages(prev => {
+      const newImages = prev.filter((_, i) => i !== index);
+      if (onSave) {
+        onSave({
+          ...formData,
+          images: existingImages,
+          newImages,
+          imageIdsToRemove
+        });
+      }
+      return newImages;
+    });
   };
 
   const validateForm = () => {
@@ -251,7 +311,7 @@ export default function SubRecipeDetailsForm({ onNext, initialData, isEditMode =
           placeholder="Enter value"
           className={`w-full p-3 border ${errors.name ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00997B]`}
           value={formData.name}
-          onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+          onChange={(e) => handleInputChange('name', e.target.value)}
         />
         {errors.name && <p className="text-red-500 text-sm">{errors.name}</p>}
       </div>
@@ -265,7 +325,7 @@ export default function SubRecipeDetailsForm({ onNext, initialData, isEditMode =
             value: cat.subRecipeCategoryId.toString()
           }))}
           value={formData.category}
-          onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
+          onChange={(e) => handleInputChange('category', e.target.value)}
         />
         {errors.category && <p className="text-red-500 text-sm">{errors.category}</p>}
       </div>
@@ -277,7 +337,7 @@ export default function SubRecipeDetailsForm({ onNext, initialData, isEditMode =
           placeholder="Enter value"
           className={`w-full p-3 border ${errors.portions ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00997B]`}
           value={formData.portions}
-          onChange={(e) => setFormData(prev => ({ ...prev, portions: e.target.value }))}
+          onChange={(e) => handleInputChange('portions', e.target.value)}
         />
         {errors.portions && <p className="text-red-500 text-sm">{errors.portions}</p>}
       </div>
@@ -291,7 +351,7 @@ export default function SubRecipeDetailsForm({ onNext, initialData, isEditMode =
             value: size.servingSizeId.toString()
           }))}
           value={formData.servingSize}
-          onChange={(e) => setFormData(prev => ({ ...prev, servingSize: e.target.value }))}
+          onChange={(e) => handleInputChange('servingSize', e.target.value)}
         />
         {errors.servingSize && <p className="text-red-500 text-sm">{errors.servingSize}</p>}
       </div>

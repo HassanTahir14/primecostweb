@@ -28,28 +28,14 @@ export default function CreateRecipePage() {
   const [isValid, setIsValid] = useState(false);
 
   const handleNext = (data: any) => {
-    // Log the data being received from the current step
-    console.log(`Data from ${activeStep} step:`, data);
-    
-    // Merge the new data with the existing recipe data, preserving image data
-    const updatedRecipeData = { 
-      ...recipeData,
+    setRecipeData(prev => ({
+      ...prev,
       ...data,
-      // Preserve image data if it exists in the current data
-      existingImages: data.existingImages || recipeData.existingImages,
-      newImages: data.newImages || recipeData.newImages,
-      imageIdsToRemove: data.imageIdsToRemove || recipeData.imageIdsToRemove
-    };
-    
-    setRecipeData(updatedRecipeData);
-    
-    // Log the updated recipe data
-    console.log('Updated recipe data:', updatedRecipeData);
-    
-    const currentIndex = steps.findIndex(step => step.id === activeStep);
-    if (currentIndex < steps.length - 1) {
-      setActiveStep(steps[currentIndex + 1].id);
-    }
+      images: data.images || prev.images,
+      newImages: data.newImages || prev.newImages,
+      imageIdsToRemove: data.imageIdsToRemove || prev.imageIdsToRemove
+    }));
+    setActiveStep(prev => prev === 'details' ? 'ingredients' : prev === 'ingredients' ? 'costing' : prev === 'costing' ? 'procedure' : 'details');
   };
 
   const handleBack = () => {
@@ -60,25 +46,29 @@ export default function CreateRecipePage() {
   };
 
   const handleTabClick = (stepId: string) => {
-    const currentIndex = steps.findIndex(step => step.id === activeStep);
-    const targetIndex = steps.findIndex(step => step.id === stepId);
-    
-    // Only allow moving to previous steps or the next step if current step is valid
-    if (targetIndex < currentIndex || isValid) {
-      setActiveStep(stepId);
-    }
+    setActiveStep(stepId);
+  };
+
+  const handleSave = (data: any) => {
+    setRecipeData(prev => ({
+      ...prev,
+      ...data,
+      existingImages: data.images || prev.existingImages,
+      newImages: data.newImages || prev.newImages,
+      imageIdsToRemove: data.imageIdsToRemove || prev.imageIdsToRemove
+    }));
   };
 
   const renderStepContent = () => {
     switch (activeStep) {
       case 'details':
-        return <SubRecipeDetailsForm onNext={handleNext} initialData={recipeData} />;
+        return <SubRecipeDetailsForm onNext={handleNext} initialData={recipeData} onSave={handleSave} />;
       case 'ingredients':
-        return <SubRecipeIngredientsForm onNext={handleNext} onBack={handleBack} initialData={recipeData} />;
+        return <SubRecipeIngredientsForm onNext={handleNext} onBack={handleBack} initialData={recipeData} onSave={handleSave} />;
       case 'costing':
-        return <SubRecipeCostingForm onNext={handleNext} onBack={handleBack} initialData={recipeData} />;
+        return <SubRecipeCostingForm onNext={handleNext} onBack={handleBack} initialData={recipeData} onSave={handleSave} />;
       case 'procedure':
-        return <SubRecipeProcedureForm onNext={handleNext} onBack={handleBack} initialData={recipeData} isEditMode={false} />;
+        return <SubRecipeProcedureForm onNext={handleNext} onBack={handleBack} initialData={recipeData} isEditMode={false} onSave={handleSave} />;
       default:
         return null;
     }

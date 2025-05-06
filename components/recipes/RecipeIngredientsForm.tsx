@@ -27,9 +27,10 @@ interface RecipeIngredientsFormProps {
   onNext: (data: any) => void;
   onBack: () => void;
   initialData: any;
+  onSave?: (data: any) => void;
 }
 
-export default function RecipeIngredientsForm({ onNext, onBack, initialData }: RecipeIngredientsFormProps) {
+export default function RecipeIngredientsForm({ onNext, onBack, initialData, onSave }: RecipeIngredientsFormProps) {
   const [ingredients, setIngredients] = useState<Ingredient[]>(initialData.ingredients || []);
   const [selectedIngredientIndex, setSelectedIngredientIndex] = useState<number | null>(null);
   const [showForm, setShowForm] = useState(false);
@@ -195,14 +196,25 @@ export default function RecipeIngredientsForm({ onNext, onBack, initialData }: R
       unitId: selectedUnitId
     };
 
+    let updatedIngredients;
     if (selectedIngredientIndex !== null) {
       // Update existing ingredient
-      setIngredients(ingredients.map((ing, index) => 
+      updatedIngredients = ingredients.map((ing, index) => 
         index === selectedIngredientIndex ? updatedIngredient : ing
-      ));
+      );
     } else {
       // Add new ingredient
-      setIngredients([...ingredients, updatedIngredient]);
+      updatedIngredients = [...ingredients, updatedIngredient];
+    }
+
+    setIngredients(updatedIngredients);
+    
+    // Save the updated ingredients without navigation
+    if (onSave) {
+      onSave({ 
+        ...initialData, // Preserve all previous data
+        ingredients: updatedIngredients
+      });
     }
 
     resetForm();

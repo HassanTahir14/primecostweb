@@ -150,7 +150,15 @@ export default function EditEmployeePage() {
       setActiveStep(steps[currentIndex - 1]);
     }
   };
-  
+
+  const handleSave = (data: any) => {
+    setEmployeeData((prev: any) => ({ ...prev, ...data }));
+  };
+
+  const handleTabClick = (step: Step) => {
+    setActiveStep(step);
+  };
+
   const handleSubmit = async (finalSalaryData: any) => {
     const completeData = { ...employeeData, ...finalSalaryData };
     const images = completeData.newImages || [];
@@ -205,50 +213,51 @@ export default function EditEmployeePage() {
   };
 
   const renderStepContent = () => {
-      if (isLoading || employeeLoading) {
-          return (
-            <div className="flex items-center justify-center min-h-[400px]">
-              <div className="text-center">
-                <div className="w-16 h-16 border-4 border-[#00997B] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                <p className="text-gray-600">Loading employee data...</p>
-              </div>
-            </div>
-          );
-      }
+    if (isLoading || employeeLoading) {
+      return (
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <div className="w-16 h-16 border-4 border-[#00997B] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading employee data...</p>
+          </div>
+        </div>
+      );
+    }
 
-      if (employeeError) {
-          return (
-            <div className="text-center p-10 text-red-500">
-              Failed to load employee data. {employeeError}
-            </div>
-          );
-      }
+    if (employeeError) {
+      return (
+        <div className="text-center p-10 text-red-500">
+          Failed to load employee data. {employeeError}
+        </div>
+      );
+    }
 
-      if (!selectedEmployee) {
-          return (
-            <div className="text-center p-10 text-orange-500">
-              Employee data not found. Please select an employee from the list.
-            </div>
-          );
-      }
+    if (!selectedEmployee) {
+      return (
+        <div className="text-center p-10 text-orange-500">
+          Employee data not found. Please select an employee from the list.
+        </div>
+      );
+    }
 
-      switch (activeStep) {
-          case 'Details':
-              return <EmployeeDetailsForm onNext={handleNext} initialData={employeeData} />;
-          case 'Duty Schedule':
-              return <EmployeeDutyScheduleForm onNext={handleNext} onPrevious={handlePrevious} initialData={employeeData} />;
-          case 'Salary':
-              const existingImages = selectedEmployee?.images || [];
-              return <EmployeeSalaryForm 
-                        onSubmit={handleSubmit} 
-                        onPrevious={handlePrevious} 
-                        initialData={employeeData} 
-                        existingImages={existingImages} 
-                        isLoading={employeeLoading}
-                     />;
-          default:
-              return null;
-      }
+    switch (activeStep) {
+      case 'Details':
+        return <EmployeeDetailsForm onNext={handleNext} initialData={employeeData} onSave={handleSave} />;
+      case 'Duty Schedule':
+        return <EmployeeDutyScheduleForm onNext={handleNext} onPrevious={handlePrevious} initialData={employeeData} onSave={handleSave} />;
+      case 'Salary':
+        const existingImages = selectedEmployee?.images || [];
+        return <EmployeeSalaryForm 
+          onSubmit={handleSubmit} 
+          onPrevious={handlePrevious} 
+          initialData={employeeData} 
+          existingImages={existingImages} 
+          isLoading={employeeLoading}
+          onSave={handleSave}
+        />;
+      default:
+        return null;
+    }
   };
 
   // Clear selected employee when component unmounts
@@ -292,11 +301,12 @@ export default function EditEmployeePage() {
           {steps.map((step) => (
             <button
               key={step}
-              onClick={() => setActiveStep(step)}
+              onClick={() => handleTabClick(step)}
               className={`py-3 px-6 font-medium text-sm transition-colors duration-150 
                 ${activeStep === step 
                   ? 'border-b-2 border-[#00997B] text-[#00997B]' 
-                  : 'text-gray-500 hover:text-gray-700'}`}
+                  : 'text-gray-500 hover:text-gray-700'
+                }`}
             >
               {step}
             </button>

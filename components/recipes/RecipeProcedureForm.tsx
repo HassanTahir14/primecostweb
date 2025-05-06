@@ -14,6 +14,7 @@ interface RecipeProcedureFormProps {
   onBack: () => void;
   initialData: any;
   isEditMode?: boolean;
+  onSave?: (data: any) => void;
 }
 
 interface RecipeImage {
@@ -27,7 +28,7 @@ interface ProcedureStep {
   criticalPoint: string;
 }
 
-export default function RecipeProcedureForm({ onNext, onBack, initialData, isEditMode = false }: RecipeProcedureFormProps) {
+export default function RecipeProcedureForm({ onNext, onBack, initialData, isEditMode = false, onSave }: RecipeProcedureFormProps) {
   const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
   const [steps, setSteps] = useState<ProcedureStep[]>(
@@ -42,7 +43,17 @@ export default function RecipeProcedureForm({ onNext, onBack, initialData, isEdi
   const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const handleAddStep = () => {
-    setSteps([...steps, { stepDescription: '', criticalPoint: 'CP' }]);
+    const newSteps = [...steps, { stepDescription: '', criticalPoint: 'CP' }];
+    setSteps(newSteps);
+    if (onSave) {
+      onSave({
+        procedureStep: newSteps,
+        recipeCode: initialData.recipeCode,
+        images: initialData.images,
+        newImages: initialData.newImages,
+        imageIdsToRemove: initialData.imageIdsToRemove
+      });
+    }
   };
 
   const handleStepChange = (index: number, field: keyof ProcedureStep, value: string) => {
@@ -59,10 +70,31 @@ export default function RecipeProcedureForm({ onNext, onBack, initialData, isEdi
         return newErrors;
       });
     }
+
+    // Save the updated steps
+    if (onSave) {
+      onSave({
+        procedureStep: newSteps,
+        recipeCode: initialData.recipeCode,
+        images: initialData.images,
+        newImages: initialData.newImages,
+        imageIdsToRemove: initialData.imageIdsToRemove
+      });
+    }
   };
 
   const handleDeleteStep = (index: number) => {
-    setSteps(steps.filter((_, i) => i !== index));
+    const newSteps = steps.filter((_, i) => i !== index);
+    setSteps(newSteps);
+    if (onSave) {
+      onSave({
+        procedureStep: newSteps,
+        recipeCode: initialData.recipeCode,
+        images: initialData.images,
+        newImages: initialData.newImages,
+        imageIdsToRemove: initialData.imageIdsToRemove
+      });
+    }
   };
 
   const validateForm = () => {
