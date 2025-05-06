@@ -116,7 +116,8 @@ export default function AssignOrder({ onClose }: AssignOrderProps) {
         
         const recipe = result.recipeList.find((r: any) => r.id === order.recipeId);
         if (recipe) {
-          router.push(`/recipes/${order.recipeId}?mode=preparation&orderId=${order.orderId}`);
+          const unit = recipe.ingredientsItems?.[0]?.unit || '';
+          router.push(`/recipes/${order.recipeId}?mode=preparation&orderId=${order.orderId}&unit=${unit}`);
         } else {
           toast.error('Recipe not found');
         }
@@ -130,7 +131,8 @@ export default function AssignOrder({ onClose }: AssignOrderProps) {
         
         const subRecipe = result.subRecipeList.find((sr: any) => sr.id === order.subRecipeId);
         if (subRecipe) {
-          router.push(`/recipes/sub-recipes/${order.subRecipeId}?mode=preparation&orderId=${order.orderId}`);
+          const unit = subRecipe.ingredients?.[0]?.unit || '';
+          router.push(`/recipes/sub-recipes/${order.subRecipeId}?mode=preparation&orderId=${order.orderId}&unit=${unit}`);
         } else {
           toast.error('Sub-recipe not found');
         }

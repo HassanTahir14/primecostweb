@@ -21,6 +21,7 @@ export default function PreparationFields({ type, id, branchId }: PreparationFie
   const dispatch = useDispatch<AppDispatch>();
   const searchParams = useSearchParams();
   const orderId = searchParams.get('orderId');
+  const unitFromUrl = searchParams.get('unit') || '';
   const [quantity, setQuantity] = useState<string>('');
   const [expiryDate, setExpiryDate] = useState<string>('');
   const [selectedStorageLocation, setSelectedStorageLocation] = useState<string>('');
@@ -49,7 +50,7 @@ export default function PreparationFields({ type, id, branchId }: PreparationFie
   const firstIngredient = currentItem?.ingredientsItems?.[0] || currentItem?.ingredients?.[0];
   console.log('First Ingredient:', firstIngredient);
   
-  const unit = firstIngredient?.unit || '';
+  const unit = unitFromUrl || (firstIngredient?.unit || '');
   const firstIngredientQuantity = firstIngredient?.quantity || '';
 
   console.log('First Ingredient Quantity:', firstIngredientQuantity);
