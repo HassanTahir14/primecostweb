@@ -56,17 +56,34 @@ export default function SubRecipeDetailPage() {
   }, []);
 
   useEffect(() => {
-    if (subRecipes) {
-      const foundRecipe = subRecipes.find(r => r.id.toString() === subRecipeId);
-      if (foundRecipe) {
-        setSubRecipe(foundRecipe);
-        setError(null);
-      } else {
-        setError('Sub-recipe not found');
+    const fetchSubRecipe = async () => {
+      try {
+        if (subRecipes) {
+          const foundSubRecipe = subRecipes.find(r => r.id.toString() === subRecipeId);
+          if (foundSubRecipe) {
+            setSubRecipe(foundSubRecipe);
+            setError(null);
+          } else {
+            // If sub-recipe not found in store, fetch it directly
+            const response = await api.get(`/sub-recipe/${subRecipeId}`);
+            if (response.data && response.data.responseCode === "0000") {
+              setSubRecipe(response.data.subRecipe);
+              setError(null);
+            } else {
+              setError('Sub-recipe not found');
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching sub-recipe:', error);
+        setError('Failed to load sub-recipe');
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
-    }
-  }, [subRecipes, subRecipeId]);
+    };
+
+    fetchSubRecipe();
+  }, [subRecipes, subRecipeId, setSubRecipe, setError, setLoading]);
 
   useEffect(() => {
     // Fetch order details to get branchId if in preparation mode

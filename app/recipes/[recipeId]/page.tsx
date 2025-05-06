@@ -56,17 +56,34 @@ export default function RecipeDetailPage() {
   }, []);
 
   useEffect(() => {
-    if (recipes) {
-      const foundRecipe = recipes.find(r => r.id.toString() === recipeId);
-      if (foundRecipe) {
-        setRecipe(foundRecipe);
-        setError(null);
-      } else {
-        setError('Recipe not found');
+    const fetchRecipe = async () => {
+      try {
+        if (recipes) {
+          const foundRecipe = recipes.find(r => r.id.toString() === recipeId);
+          if (foundRecipe) {
+            setRecipe(foundRecipe);
+            setError(null);
+          } else {
+            // If recipe not found in store, fetch it directly
+            const response = await api.get(`/recipe/${recipeId}`);
+            if (response.data && response.data.responseCode === "0000") {
+              setRecipe(response.data.recipe);
+              setError(null);
+            } else {
+              setError('Recipe not found');
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching recipe:', error);
+        setError('Failed to load recipe');
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
-    }
-  }, [recipes, recipeId]);
+    };
+
+    fetchRecipe();
+  }, [recipes, recipeId, setRecipe, setError, setLoading]);
 
   useEffect(() => {
     // Fetch order details to get branchId if in preparation mode
