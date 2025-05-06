@@ -158,7 +158,7 @@ export const generateDetailPDF = async (
         const loadImage = (path: string): Promise<HTMLImageElement> => {
           return new Promise((resolve, reject) => {
             // Use the same image proxy as the rest of the application
-            const imageUrl = `http://212.85.26.46:8082/api/v1/images/view/${path}`;
+            const imageUrl = getImageUrlWithAuth(path);
             const authToken = localStorage.getItem('authToken');
             console.log('Fetching image from:', imageUrl);
             
