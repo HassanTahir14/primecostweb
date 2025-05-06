@@ -158,7 +158,7 @@ export default function EmployeeSalaryForm({
                                      <AuthImage 
                                         src={getImageUrlWithAuth(image.path, imageBaseUrl)}
                                         alt={`existing image ${image.imageId}`} 
-                                        className="w-full h-20 object-cover rounded-md border border-gray-200"
+                                        className="w-full h-32 object-contain rounded-md border border-gray-200 bg-gray-50"
                                         fallbackSrc="/placeholder-image.svg"
                                      />
                                      <button
@@ -197,7 +197,7 @@ export default function EmployeeSalaryForm({
                              <img 
                                 src={URL.createObjectURL(image)} 
                                 alt={`new preview ${index}`} 
-                                className="w-full h-20 object-cover rounded-md border border-gray-200"
+                                className="w-full h-32 object-contain rounded-md border border-gray-200 bg-gray-50"
                              />
                              <button
                                  onClick={() => handleRemoveNewImage(index)}

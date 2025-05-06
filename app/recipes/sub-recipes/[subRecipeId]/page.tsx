@@ -153,7 +153,7 @@ export default function SubRecipeDetailPage() {
             fieldConfig,
             '/assets/images/logo.png',
             'images',
-            imageBaseUrl,
+            undefined, // Remove imageBaseUrl since we're using the proxy
             undefined, // branchDetails
             undefined, // purchaseOrders
             subRecipe.ingredients ?? [],

@@ -303,11 +303,7 @@ export default function ItemDetailPage() {
       }
     ] : []),
     { key: 'countryOrigin', label: 'Country of Origin' },
-    
   ];
-
-  // Define imageBaseUrl (same as before)
-  const imageBaseUrl = 'http://212.85.26.46:8082/api/v1/images/view'; // Replace with actual base URL
 
   // Show loading if item list or units are loading, or if item is being searched
   const combinedLoading = loading || itemsStatus === 'loading' || itemsStatus === 'idle' || unitsLoading;
@@ -415,9 +411,8 @@ export default function ItemDetailPage() {
         fieldConfig={extendedFieldConfig}
         onBack={() => router.back()}
         isLoading={combinedLoading}
-        error={error} // Show main error if item not found or list failed
+        error={error}
         imageKey="images"
-        imageBaseUrl={imageBaseUrl}
         branchDetails={branchDetailsForPDF}
         purchaseOrders={purchaseOrders}
       />

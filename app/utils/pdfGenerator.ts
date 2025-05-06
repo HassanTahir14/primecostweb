@@ -130,7 +130,7 @@ export const generateDetailPDF = async (
     let yPos = hasLogo ? 60 : 40; // Increased spacing when logo is present
     
     // Try to add product images if available
-    if (hasImages && imageBaseUrl) {
+    if (hasImages) {
       const images = data[imageKey];
       
       // Skip image section if we can't show images
@@ -156,16 +156,13 @@ export const generateDetailPDF = async (
         
         // Function to load an image and return a promise
         const loadImage = (path: string): Promise<HTMLImageElement> => {
+          console.log('Loading image from:', path);
           return new Promise((resolve, reject) => {
-            // First fetch the image with proper headers
-            const imageUrl = imageBaseUrl + '/' + path;
+            // Use the same image proxy as the rest of the application
+            const imageUrl = `/images-proxy/${path}`;
             console.log('Fetching image from:', imageUrl);
             
-            fetch(imageUrl, {
-              headers: {
-                'Authorization': `Bearer ${authToken}`
-              }
-            })
+            fetch(imageUrl)
             .then(response => {
               if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
