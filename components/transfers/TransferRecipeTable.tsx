@@ -9,14 +9,24 @@ import { useUnits } from '@/hooks/useUnits';
 
 // Assuming Recipe structure from a potential recipeSlice
 interface Recipe {
-    id: number;
-    name: string;
+    preparedMainRecipeId: number;
+    preparedByUserId: number;
+    uom: string;
+    expirationDate: string;
+    preparedDate: string;
+    preparedMainRecipeStatus: string;
+    inventoryLocations: Array<{
+        inventoryId: number;
+        storageLocation: number;
+        branchLocation: number;
+        storageLocationWithCode: string;
+        quantity: number;
+        lastUpdated: string;
+    }>;
+    totalQuantityAcrossLocations: number;
     recipeCode: string;
-    costPerPortion?: number;
-    ingredientsItems: {
-        unit: string;
-    }[];
-    tokenStatus: string;  // Changed from status to tokenStatus
+    mainRecipeBatchNumber: string;
+    mainRecipeNameAndDescription: string;
 }
 
 interface TransferRecipeTableProps {
@@ -43,41 +53,30 @@ export default function TransferRecipeTable({
 
   // Prepare options for Select component
   const recipeOptions = useMemo(() => {
-      if (sourceBranchId === targetBranchId && sourceBranchId !== '') {
-        return [{ 
-          value: '', 
-          label: 'Select a recipe', 
-          disabled: true 
-        }];
-      }
+    // Check if source and target branches are the same
+    if (sourceBranchId === targetBranchId && sourceBranchId !== '') {
+      return [{ 
+        value: '', 
+        label: 'Select a recipe', 
+        disabled: true 
+      }];
+    }
 
-      const options = allRecipes
-        .filter(recipe => recipe.tokenStatus === 'APPROVED')
-        .map(recipe => ({
-          value: String(recipe.id),
-          label: `${recipe.name} (${recipe.recipeCode})`
-        }));
-      return [ ...options];
-  }, [allRecipes, sourceBranchId, targetBranchId]);
-
-  // Get unique units from recipe ingredients
-  const getUnitOptions = (selectedRecipeId: string) => {
-    const selectedRecipe = allRecipes.find(recipe => String(recipe.id) === selectedRecipeId);
-    if (!selectedRecipe) return [];
-
-    // Get unique unit names from recipe ingredients
-    const recipeUnitNames = Array.from(new Set(selectedRecipe.ingredientsItems.map(item => item.unit)));
+    // Filter recipes based on selected branch
+    const filteredRecipes = allRecipes.filter(recipe => 
+      recipe.inventoryLocations.some(loc => 
+        loc.branchLocation === parseInt(sourceBranchId) && 
+        loc.quantity > 0
+      )
+    );
     
-    // Find matching units from the units list
-    const recipeUnits = units
-      .filter(unit => recipeUnitNames.includes(unit.unitName))
-      .map(unit => ({
-        value: unit.unitName,
-        label: unit.unitName
-      }));
-
-    return [...recipeUnits];
-  };
+    const options = filteredRecipes.map(recipe => ({ 
+        value: String(recipe.preparedMainRecipeId),
+        label: `${recipe.mainRecipeNameAndDescription} (${recipe.recipeCode})`,
+        disabled: false
+    }));
+    return [ ...options];
+  }, [allRecipes, sourceBranchId, targetBranchId]);
 
   const handleItemChange = (index: number, field: string, value: any) => {
     const newItems = [...items];
@@ -85,38 +84,46 @@ export default function TransferRecipeTable({
 
     // Auto-populate fields when recipe is selected
     if (field === 'recipeId') {
-        const selectedRecipeData = allRecipes.find(opt => String(opt.id) === value);
+        const selectedRecipeData = allRecipes.find(opt => String(opt.preparedMainRecipeId) === value);
         if (selectedRecipeData) {
-            currentItem.recipeId = selectedRecipeData.id;
+            currentItem.recipeId = selectedRecipeData.preparedMainRecipeId;
             currentItem.recipeCode = selectedRecipeData.recipeCode;
-            
-            // Get available units for this recipe
-            const availableUnits = getUnitOptions(value);
-            
-            // Set first available unit as default if exists
-            if (availableUnits.length > 0) {
-                currentItem.uom = availableUnits[0].value;
-            } else {
-                currentItem.uom = '';
+            // Get available quantity for selected branch
+            const branchLocation = selectedRecipeData.inventoryLocations.find(
+              loc => loc.branchLocation === parseInt(sourceBranchId)
+            );
+            currentItem.availableQuantity = branchLocation?.quantity || 0;
+            // Always set uom to '37' and display 'KG'
+            currentItem.uom = '37';
+            // Parse cost from uom string (format: '37@recipecost5725.4112')
+            let cost = 0;
+            if (selectedRecipeData.uom && selectedRecipeData.uom.includes('@recipecost')) {
+                const parts = selectedRecipeData.uom.split('@recipecost');
+                if (parts.length === 2) {
+                    cost = parseFloat(parts[1]);
+                }
             }
-            
-            // Store the base cost (cost per unit/portion)
-            currentItem.baseCost = selectedRecipeData.costPerPortion || 0;
-            currentItem.cost = currentItem.baseCost * (currentItem.quantity || 1);
+            currentItem.baseCost = cost;
+            currentItem.cost = cost;
         } else {
             currentItem.recipeCode = '';
-            currentItem.uom = '';
+            currentItem.uom = '37';
             currentItem.baseCost = 0;
             currentItem.cost = 0;
+            currentItem.availableQuantity = 0;
         }
     }
 
     // Update cost when quantity changes
     if (field === 'quantity') {
         const quantity = parseFloat(value) || 0;
-        currentItem.quantity = quantity;
-        // Calculate new cost based on base cost and quantity
-        currentItem.cost = (currentItem.baseCost || 0) * quantity;
+        if (quantity > currentItem.availableQuantity) {
+            currentItem.quantity = currentItem.availableQuantity;
+        } else {
+            currentItem.quantity = quantity;
+        }
+        // Set cost as unit cost only (do not multiply by quantity)
+        currentItem.cost = (currentItem.baseCost || 0);
     }
 
     newItems[index] = currentItem;
@@ -143,7 +150,13 @@ export default function TransferRecipeTable({
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-sm">
+    <div className="bg-white rounded-lg shadow-sm relative">
+      {/* Show available quantity in the top right, outside the table, as in the screenshot */}
+      {items && items[0] && items[0].availableQuantity !== undefined && (
+        <div className="absolute right-4 top-2 text-base font-semibold text-black">
+          Available Quantity: <span className="font-bold">{items[0].availableQuantity}</span>
+        </div>
+      )}
       <h3 className="text-lg font-semibold p-4 border-b">Recipes</h3>
       {sourceBranchId === targetBranchId && sourceBranchId !== '' && (
         <div className="px-4 py-2 text-red-600 text-sm font-medium">
@@ -156,6 +169,7 @@ export default function TransferRecipeTable({
                 <tr>
                     <th className="p-3 text-left text-sm font-semibold">Recipe</th>
                     <th className="p-3 text-left text-sm font-semibold w-24">Code</th>
+                    <th className="p-3 text-left text-sm font-semibold w-24">Available</th>
                     <th className="p-3 text-left text-sm font-semibold w-24">Quantity</th>
                     <th className="p-3 text-left text-sm font-semibold w-32">UOM</th>
                     <th className="p-3 text-left text-sm font-semibold w-24">Cost</th>
@@ -183,28 +197,42 @@ export default function TransferRecipeTable({
                     </td>
                     <td className="p-2 align-top">
                         <Input
+                            value={item.availableQuantity || 0}
+                            readOnly
+                            className="bg-gray-100"
+                            placeholder="Available"
+                        />
+                    </td>
+                    <td className="p-2 align-top">
+                        {/* Show available quantity above the input */}
+                        {/* {item.availableQuantity !== undefined && (
+                            <div className="text-xs text-gray-500 mb-1">
+                                Available: <span className="font-semibold">{item.availableQuantity}</span>
+                            </div>
+                        )} */}
+                        <Input
                             type="number"
                             value={item.quantity}
                             onChange={(e) => handleItemChange(index, 'quantity', e.target.value)}
                             placeholder="Qty"
-                            min="0"
+                            min="1"
+                            max={item.availableQuantity || 0}
                             step="any"
                         />
                     </td>
                     <td className="p-2 align-top">
-                         <Select
-                            value={item.uom}
-                            onChange={(e) => handleItemChange(index, 'uom', e.target.value)}
-                            options={getUnitOptions(String(item.recipeId))}
-                            className="w-full"
-                            disabled={!item.recipeId || getUnitOptions(String(item.recipeId)).length === 0}
-                        />
+                         {/* UOM: Always show KG, disabled */}
+                         <Input
+                            value="KG"
+                            readOnly
+                            className="bg-gray-100"
+                            disabled
+                         />
                     </td>
                     <td className="p-2 align-top">
                         <Input
                             type="number"
-                            value={item.cost}
-                            onChange={(e) => handleItemChange(index, 'cost', e.target.value)}
+                            value={item.cost * item.quantity || 0}
                             placeholder="Cost"
                             readOnly
                             className="bg-gray-100"

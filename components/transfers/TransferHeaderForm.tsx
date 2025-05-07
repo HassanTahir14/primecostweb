@@ -16,9 +16,9 @@ export default function TransferHeaderForm({ formData, handleChange, branchOptio
         <Input 
           label="Transfer Type" 
           name="transferType" 
-          value={formData.transferType} 
-          readOnly 
-          placeholder="Transfer Type" 
+          value={formData.transferType}
+          onChange={handleChange}
+          placeholder="Enter transfer type" 
         />
         <Input 
           label="Transfer Date" 

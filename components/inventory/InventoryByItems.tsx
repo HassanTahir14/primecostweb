@@ -12,7 +12,7 @@ export default function InventoryByItems() {
   useEffect(() => {
     const fetchInventoryItems = async () => {
       try {
-        const response = await api.post('/inventory/view/items', {});
+        const response = await api.post('/inventory/view/items', {page: 0, size: 200000});
         const items = response?.data?.inventorylist || [];
 
         // Group items by itemId

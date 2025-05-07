@@ -54,7 +54,7 @@ export default function InventoryByRecipe() {
       try {
         const responseEmployees = await dispatch(fetchAllEmployees());
         setEmployees(responseEmployees.payload);  
-        const response = await api.post('/inventory/view/prepared-main-recipe', {page: 0, size: 1000, sortBy: 'preparedDate', direction: 'asc'});
+        const response = await api.post('/inventory/view/prepared-main-recipe', {page: 0, size: 100000, sortBy: 'preparedDate', direction: 'asc'});
         const list = response?.data?.preparedMainRecipeList || [];
 
         const mapped = list.map((item: any) => {

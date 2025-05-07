@@ -40,35 +40,61 @@ interface Branch {
   }>;
 }
 
-interface Item {
+interface InventoryItem {
   itemId: number;
-  name: string;
-  code: string;
-  categoryId: number;
+  itemName: string;
+  itemCode: string;
+  storageLocationId: number;
+  storageLocation: string;
+  branchId: number;
+  totalQuantity: number;
   primaryUnitId: number;
+  primaryUnitValue: number;
   secondaryUnitId: number;
-  tokenStatus: string;
-  branchDetails: Array<{
-    branchId: number;
-    branchName: string;
-    storageLocationId: number;
-    storageLocationName: string;
+  secondaryUnitValue: number;
+  branchLocation: string;
+}
+
+interface PreparedMainRecipe {
+  preparedMainRecipeId: number;
+  preparedByUserId: number;
+  uom: string;
+  expirationDate: string;
+  preparedDate: string;
+  preparedMainRecipeStatus: string;
+  inventoryLocations: Array<{
+    inventoryId: number;
+    storageLocation: number;
+    branchLocation: number;
+    storageLocationWithCode: string;
     quantity: number;
+    lastUpdated: string;
   }>;
-}
-
-interface Recipe {
-  id: number;
-  name: string;
+  totalQuantityAcrossLocations: number;
   recipeCode: string;
-  tokenStatus: string;
+  mainRecipeBatchNumber: string;
+  mainRecipeNameAndDescription: string;
 }
 
-interface SubRecipe {
-  id: number;
-  name: string;
-  subRecipeCode: string;
-  tokenStatus: string;
+interface PreparedSubRecipe {
+  preParedSubRecipeId: number;
+  preparedByUserId: number;
+  subeRecipeCode: string;
+  uom: string;
+  expirationDate: string;
+  preparedDate: string;
+  preparedSubRecipeStatus: string;
+  inventoryLocations: Array<{
+    inventoryId: number;
+    storageLocation: number;
+    branchLocation: number;
+    storageLocationWithCode: string;
+    quantity: number;
+    lastUpdated: string;
+  }>;
+  totalQuantityAcrossLocations: number;
+  subRecipeBatchNumber: string;
+  subRecipeNameAndDescription: string;
 }
 
 function CreateTransferContent() {
@@ -79,6 +105,15 @@ function CreateTransferContent() {
 
   // Get auth user from localStorage
   const [authUser, setAuthUser] = useState<any>(null);
+  const [inventoryItems, setInventoryItems] = useState<InventoryItem[]>([]);
+  const [preparedMainRecipes, setPreparedMainRecipes] = useState<PreparedMainRecipe[]>([]);
+  const [preparedSubRecipes, setPreparedSubRecipes] = useState<PreparedSubRecipe[]>([]);
+  const [loading, setLoading] = useState({
+    inventory: false,
+    mainRecipes: false,
+    subRecipes: false
+  });
+  const [allItems, setAllItems] = useState<any[]>([]);
 
   useEffect(() => {
     const storedAuthUser = localStorage.getItem('authUser');
@@ -129,7 +164,7 @@ function CreateTransferContent() {
   // Update formData when authUser is loaded
   useEffect(() => {
     if (authUser?.username) {
-      setFormData(prev => ({
+      setFormData((prev: any) => ({
         ...prev,
         transferBy: authUser.username
       }));
@@ -146,10 +181,39 @@ function CreateTransferContent() {
   // --- Fetch Initial Data ---
   useEffect(() => {
     dispatch(fetchAllBranches());
-    dispatch(fetchAllItems({}));
-    dispatch(fetchRecipes({}));
-    dispatch(fetchSubRecipes({}));
   }, [dispatch]);
+
+  // Fetch inventory data when source branch changes
+  useEffect(() => {
+    if (formData.sourceBranchId) {
+      switch (transferTypeParam) {
+        case 'inventory':
+          fetchInventoryData();
+          break;
+        case 'recipe':
+          fetchMainRecipes();
+          break;
+        case 'sub-recipe':
+          fetchSubRecipes();
+          break;
+      }
+    }
+  }, [formData.sourceBranchId, transferTypeParam]);
+
+  // Fetch all items for cost info
+  useEffect(() => {
+    const fetchAllItemsData = async () => {
+      try {
+        const response = await api.post('/items/all', { page: 0, size: 200000 });
+        if (response.data && response.data.itemList) {
+          setAllItems(response.data.itemList);
+        }
+      } catch (error) {
+        console.error('Error fetching all items:', error);
+      }
+    };
+    fetchAllItemsData();
+  }, []);
 
   // --- Prepare Branch Options with default --- 
   const branchOptionsWithDefault = useMemo(() => {
@@ -178,12 +242,24 @@ function CreateTransferContent() {
   // --- Calculate Total Item Cost ---
   const totalItemCost = useMemo(() => {
     return formData.items.reduce((sum: number, item: any) => {
-        // Assuming 'cost' is populated correctly in handleItemsChange
+        // cost is now unit cost, so multiply by quantity
         const quantity = parseFloat(item.quantity || '0');
         const cost = parseFloat(item.cost || '0');
         return sum + (quantity * cost);
     }, 0);
   }, [formData.items]);
+
+  // --- Calculate Grand Total (including taxes) ---
+  const totalTransferTaxes = useMemo(() => {
+    const storage = totalItemCost * (parseFloat(formData.costs.storageCostPercent || '0') / 100);
+    const shipping = totalItemCost * (parseFloat(formData.costs.shippingCostPercent || '0') / 100);
+    const other = totalItemCost * (parseFloat(formData.costs.otherLogisticsPercent || '0') / 100);
+    return storage + shipping + other;
+  }, [totalItemCost, formData.costs]);
+
+  const grandTotal = useMemo(() => {
+    return totalItemCost + totalTransferTaxes;
+  }, [totalItemCost, totalTransferTaxes]);
 
   // Function to show modal
   const showModal = (title: string, message: string, isSuccess: boolean = false) => {
@@ -269,39 +345,64 @@ function CreateTransferContent() {
       switch (transferTypeParam) {
         case 'inventory':
           endpoint = '/transfer/items';
-          requestBody.itemTransferList = formData.items.map((item: any) => ({
-            quantity: parseInt(item.quantity || '0'), 
-            uom: item.uom || '',
-            cost: parseFloat(item.cost || '0'),
-            sourceItemId: parseInt(item.itemId), // Source item ID
-            targetItemId: parseInt(item.targetItemId || item.itemId), // Target item ID (fallback to source if not selected)
-            sourceBranchId: parseInt(formData.sourceBranchId),
-            targetBranchId: parseInt(formData.targetBranchId),
-          }));
+          requestBody.itemTransferList = formData.items.map((item: any) => {
+            const quantity = parseFloat(item.quantity || '0');
+            const unitCost = parseFloat(item.cost || '0');
+            const rowTotal = quantity * unitCost;
+            const rowShare = totalItemCost > 0 ? rowTotal / totalItemCost : 0;
+            const rowCostWithTaxes = parseFloat((rowShare * grandTotal).toFixed(2));
+            return {
+              quantity,
+              uom: (() => {
+                // Find the unit name for the selected uom id
+                const unit = units.find(u => String(u.unitOfMeasurementId) === String(item.uom));
+                return unit ? unit.unitName : '';
+              })(),
+              cost: rowCostWithTaxes,
+              sourceItemId: parseInt(item.itemId), // Source item ID
+              targetItemId: parseInt(item.targetItemId || item.itemId), // Target item ID (fallback to source if not selected)
+              sourceBranchId: parseInt(formData.sourceBranchId),
+              targetBranchId: parseInt(formData.targetBranchId),
+            };
+          });
           break;
         case 'recipe':
           endpoint = '/transfer/main-recipe';
-          requestBody.preparedMainRecipeTransferRequestList = formData.items.map((item: any) => ({
-            quantity: parseInt(item.quantity || '0'),
-            uom: item.uom || '',
-            cost: parseFloat(item.cost || '0'),
-            sourcePreparedMainRecipeId: parseInt(item.recipeId), // Source recipe ID
-            targetPreparedMainRecipeId: parseInt(item.targetRecipeId || item.recipeId), // +++ Add Target recipe ID +++
-            sourceBranchId: parseInt(formData.sourceBranchId),
-            targetBranchId: parseInt(formData.targetBranchId),
-          }));
+          requestBody.preparedMainRecipeTransferRequestList = formData.items.map((item: any) => {
+            const quantity = parseFloat(item.quantity || '0');
+            const unitCost = parseFloat(item.cost || '0');
+            const rowTotal = quantity * unitCost;
+            const rowShare = totalItemCost > 0 ? rowTotal / totalItemCost : 0;
+            const rowCostWithTaxes = parseFloat((rowShare * grandTotal).toFixed(2));
+            return {
+              quantity,
+              uom: 'KG',
+              cost: rowCostWithTaxes,
+              sourcePreparedMainRecipeId: parseInt(item.recipeId), // Source recipe ID
+              targetPreparedMainRecipeId: parseInt(item.targetRecipeId || item.recipeId), // +++ Add Target recipe ID +++
+              sourceBranchId: parseInt(formData.sourceBranchId),
+              targetBranchId: parseInt(formData.targetBranchId),
+            };
+          });
           break;
         case 'sub-recipe':
           endpoint = '/transfer/prepared-sub-recipe'; // Endpoint from image 3
-          requestBody.preparedSubRecipeTransferRequestList = formData.items.map((item: any) => ({
-            quantity: parseInt(item.quantity || '0'),
-            uom: item.uom || '',
-            cost: parseFloat(item.cost || '0'),
-            sourcePreparedSubRecipeId: parseInt(item.subRecipeId), // Source sub-recipe ID
-            targetPreparedSubRecipeId: parseInt(item.targetSubRecipeId || item.subRecipeId), // +++ Add Target sub-recipe ID +++
-            sourceBranchId: parseInt(formData.sourceBranchId),
-            targetBranchId: parseInt(formData.targetBranchId),
-          }));
+          requestBody.preparedSubRecipeTransferRequestList = formData.items.map((item: any) => {
+            const quantity = parseFloat(item.quantity || '0');
+            const unitCost = parseFloat(item.cost || '0');
+            const rowTotal = quantity * unitCost;
+            const rowShare = totalItemCost > 0 ? rowTotal / totalItemCost : 0;
+            const rowCostWithTaxes = parseFloat((rowShare * grandTotal).toFixed(2));
+            return {
+              quantity,
+              uom: 'KG',
+              cost: rowCostWithTaxes,
+              sourcePreparedSubRecipeId: parseInt(item.subRecipeId), // Source sub-recipe ID
+              targetPreparedSubRecipeId: parseInt(item.targetSubRecipeId || item.subRecipeId), // +++ Add Target sub-recipe ID +++
+              sourceBranchId: parseInt(formData.sourceBranchId),
+              targetBranchId: parseInt(formData.targetBranchId),
+            };
+          });
           break;
         default:
           showModal("Error", "Invalid transfer type for submission.");
@@ -333,70 +434,112 @@ function CreateTransferContent() {
     }
   };
 
-  // Filter items based on source branch and token status
-  const filteredItems = useMemo(() => {
-    if (!itemsData || !formData.sourceBranchId) return [];
-    
-    return itemsData.filter((item: Item) => {
-      // Check if item has the selected source branch
-      const hasSourceBranch = item.branchDetails.some(detail => 
-        String(detail.branchId) === formData.sourceBranchId
-      );
-      
-      // For inventory items, we want to show all items that exist in the source branch
-      return hasSourceBranch;
-    });
-  }, [itemsData, formData.sourceBranchId]);
+  const fetchInventoryData = async () => {
+    try {
+      setLoading(prev => ({ ...prev, inventory: true }));
+      const response = await api.post('/inventory/view/items', {});
+      if (response.data?.inventorylist) {
+        // Filter items for the selected branch and with quantity > 0
+        const filteredItems = response.data.inventorylist.filter(
+          (item: InventoryItem) => 
+            item.branchId === parseInt(formData.sourceBranchId) && 
+            item.totalQuantity > 0
+        );
+        setInventoryItems(filteredItems);
+      }
+    } catch (error) {
+      console.error('Error fetching inventory items:', error);
+    } finally {
+      setLoading(prev => ({ ...prev, inventory: false }));
+    }
+  };
 
-  // Filter recipes based on token status
-  const filteredRecipes = useMemo(() => {
-    if (!recipesData) return [];
-    
-    return recipesData.filter((recipe: Recipe) => 
-      recipe.tokenStatus === 'APPROVED'
-    );
-  }, [recipesData]);
+  const fetchMainRecipes = async () => {
+    try {
+      setLoading(prev => ({ ...prev, mainRecipes: true }));
+      const response = await api.post('/inventory/view/prepared-main-recipe', {
+        page: 0,
+        size: 1000,
+        sortBy: 'preparedDate',
+        direction: 'asc'
+      });
+      if (response.data?.preparedMainRecipeList) {
+        // Filter recipes for the selected branch and with quantity > 0
+        const filteredRecipes = response.data.preparedMainRecipeList.filter(
+          (recipe: PreparedMainRecipe) => 
+            recipe.inventoryLocations.some(loc => 
+              loc.branchLocation === parseInt(formData.sourceBranchId) && 
+              loc.quantity > 0
+            )
+        );
+        setPreparedMainRecipes(filteredRecipes);
+      }
+    } catch (error) {
+      console.error('Error fetching main recipes:', error);
+    } finally {
+      setLoading(prev => ({ ...prev, mainRecipes: false }));
+    }
+  };
 
-  // Filter sub-recipes based on token status
-  const filteredSubRecipes = useMemo(() => {
-    if (!subRecipesData) return [];
-    
-    return subRecipesData.filter((subRecipe: SubRecipe) => 
-      subRecipe.tokenStatus === 'APPROVED'
-    );
-  }, [subRecipesData]);
+  const fetchSubRecipes = async () => {
+    try {
+      setLoading(prev => ({ ...prev, subRecipes: true }));
+      const response = await api.post('/inventory/view/prepared-sub-recipe', {
+        page: 0,
+        size: 1000,
+        sortBy: 'preparedDate',
+        direction: 'asc'
+      });
+      if (response.data?.preparedSubRecipeList) {
+        // Filter sub-recipes for the selected branch and with quantity > 0
+        const filteredSubRecipes = response.data.preparedSubRecipeList.filter(
+          (subRecipe: PreparedSubRecipe) => 
+            subRecipe.inventoryLocations.some(loc => 
+              loc.branchLocation === parseInt(formData.sourceBranchId) && 
+              loc.quantity > 0
+            )
+        );
+        setPreparedSubRecipes(filteredSubRecipes);
+      }
+    } catch (error) {
+      console.error('Error fetching sub recipes:', error);
+    } finally {
+      setLoading(prev => ({ ...prev, subRecipes: false }));
+    }
+  };
 
   const renderItemTable = () => {
     switch (transferTypeParam) {
       case 'inventory':
         return <TransferInventoryItemsTable 
           items={formData.items} 
-          allItems={filteredItems || []} 
+          allItems={inventoryItems} 
+          allItemsWithCost={allItems}
           onChange={handleItemsChange} 
-          sourceBranchId={formData.sourceBranchId} // Pass source branch ID
-          selectedBranchId={formData.sourceBranchId} // Pass selected branch ID
-          targetBranchId={formData.targetBranchId} // Pass target branch ID
-          units={units} // Pass units for display
+          sourceBranchId={formData.sourceBranchId}
+          selectedBranchId={formData.sourceBranchId}
+          targetBranchId={formData.targetBranchId}
+          units={units}
         />;
       case 'recipe':
         return <TransferRecipeTable 
           items={formData.items} 
-          allRecipes={filteredRecipes || []} 
+          allRecipes={preparedMainRecipes} 
           onChange={handleItemsChange} 
-          selectedBranchId={formData.sourceBranchId} // Pass selected branch ID
-          sourceBranchId={formData.sourceBranchId} // Pass source branch ID
-          targetBranchId={formData.targetBranchId} // Pass target branch ID
-          units={units} // Pass units for display
+          selectedBranchId={formData.sourceBranchId}
+          sourceBranchId={formData.sourceBranchId}
+          targetBranchId={formData.targetBranchId}
+          units={units}
         />;
       case 'sub-recipe':
         return <TransferSubRecipeTable 
-          selectedBranchId={formData.sourceBranchId} // Pass selected branch ID
-          sourceBranchId={formData.sourceBranchId} // Pass source branch ID
-          targetBranchId={formData.targetBranchId} // Pass target branch ID
+          selectedBranchId={formData.sourceBranchId}
+          sourceBranchId={formData.sourceBranchId}
+          targetBranchId={formData.targetBranchId}
           items={formData.items} 
-          allSubRecipes={filteredSubRecipes || []} 
+          allSubRecipes={preparedSubRecipes} 
           onChange={handleItemsChange} 
-          units={units} // Pass units for display
+          units={units}
         />;
       default:
         return <p className="text-red-500">Invalid transfer type.</p>;

@@ -15,27 +15,24 @@ interface UnitOfMeasurement {
 
 interface Item {
   itemId: number;
-  name: string;
-  code: string;
-  primaryUnitId?: number;
-  secondaryUnitId?: number;
-  primaryUnitValue?: number;
-  secondaryUnitValue?: number;
-  purchaseCostWithVat?: number;
-  purchaseCostWithoutVat?: number;
-  cost?: number;
-  branchDetails: {
-    branchId: number;
-    branchName: string;
-    storageLocationId: number;
-    storageLocationName: string;
-    quantity: number;
-  }[];
+  itemName: string;
+  itemCode: string;
+  storageLocationId: number;
+  storageLocation: string;
+  branchId: number;
+  totalQuantity: number;
+  primaryUnitId: number;
+  primaryUnitValue: number;
+  secondaryUnitId: number;
+  secondaryUnitValue: number;
+  branchLocation: string;
+  primaryUnitName?: string;
 }
 
 interface TransferInventoryItemsTableProps {
   items: any[];
   allItems: Item[];
+  allItemsWithCost: any[];
   onChange: (items: any[]) => void;
   selectedBranchId: string;
   sourceBranchId: string;
@@ -46,6 +43,7 @@ interface TransferInventoryItemsTableProps {
 export default function TransferInventoryItemsTable({ 
   items, 
   allItems, 
+  allItemsWithCost,
   onChange, 
   selectedBranchId,
   sourceBranchId,
@@ -66,12 +64,12 @@ export default function TransferInventoryItemsTable({
 
     // Filter items based on selected branch
     const filteredItems = allItems.filter(item => 
-      item.branchDetails.some(branch => String(branch.branchId) === sourceBranchId)
+      item.branchId === parseInt(sourceBranchId)
     );
     
     const options = filteredItems.map(item => ({ 
         value: String(item.itemId),
-        label: `${item.name.split('@')[0]} (${item.code})`,
+        label: `${item.itemName.split('@')[0]} (${item.itemCode})`,
         disabled: false
     }));
     return [ ...options];
@@ -106,6 +104,12 @@ export default function TransferInventoryItemsTable({
     return unitOptions;
   };
 
+  // Helper to get primary unit name by id
+  const getPrimaryUnitName = (primaryUnitId: number) => {
+    const unit = units.find(u => u.unitOfMeasurementId === primaryUnitId);
+    return unit ? unit.unitName : '';
+  };
+
   const handleItemChange = (index: number, field: string, value: any) => {
     const newItems = [...items];
     const currentItem = { ...newItems[index], [field]: value };
@@ -113,21 +117,26 @@ export default function TransferInventoryItemsTable({
     // Auto-populate fields when item is selected
     if (field === 'itemId') {
         const selectedItemData = allItems.find(opt => String(opt.itemId) === value);
+        const selectedItemCostData = allItemsWithCost.find(opt => String(opt.itemId) === value);
         if (selectedItemData) {
             currentItem.itemId = selectedItemData.itemId;
-            currentItem.itemCode = selectedItemData.code;
+            currentItem.itemCode = selectedItemData.itemCode;
+            // Calculate available quantity in primary unit
+            const availableQty = selectedItemData.secondaryUnitValue > 0
+              ? selectedItemData.totalQuantity / selectedItemData.secondaryUnitValue
+              : selectedItemData.totalQuantity;
+            currentItem.availableQuantity = availableQty;
+            currentItem.primaryUnitName = getPrimaryUnitName(selectedItemData.primaryUnitId);
             // Set primary unit as default
             currentItem.uom = selectedItemData.primaryUnitId?.toString() || '';
-            
             // Store the base cost and unit values
-            currentItem.baseCost = selectedItemData.purchaseCostWithVat || 0;
+            currentItem.baseCost = selectedItemCostData?.purchaseCostWithVat || 0;
             currentItem.primaryUnitValue = selectedItemData.primaryUnitValue || 1;
             currentItem.secondaryUnitValue = selectedItemData.secondaryUnitValue || 1;
             currentItem.primaryUnitId = selectedItemData.primaryUnitId;
             currentItem.secondaryUnitId = selectedItemData.secondaryUnitId;
-            
-            // Calculate initial cost based on primary unit
-            currentItem.cost = currentItem.baseCost * (currentItem.quantity || 1);
+            // Set cost as unit cost (not multiplied by quantity)
+            currentItem.cost = currentItem.baseCost;
         } else {
             currentItem.itemCode = '';
             currentItem.uom = '';
@@ -135,6 +144,8 @@ export default function TransferInventoryItemsTable({
             currentItem.cost = 0;
             currentItem.primaryUnitValue = 1;
             currentItem.secondaryUnitValue = 1;
+            currentItem.availableQuantity = 0;
+            currentItem.primaryUnitName = '';
         }
     }
     
@@ -142,15 +153,24 @@ export default function TransferInventoryItemsTable({
     if (field === 'quantity' || field === 'uom') {
         const quantity = parseFloat(currentItem.quantity) || 0;
         const selectedUnitId = parseInt(currentItem.uom);
-        
-        // Calculate cost based on selected unit
+        // Validate quantity against available quantity (in primary unit)
+        if (quantity > currentItem.availableQuantity) {
+            currentItem.quantity = currentItem.availableQuantity;
+        } else {
+            currentItem.quantity = quantity;
+        }
+        // Get cost from allItemsWithCost
+        const selectedItemCostData = allItemsWithCost.find(opt => String(opt.itemId) === String(currentItem.itemId));
+        const baseCost = selectedItemCostData?.purchaseCostWithVat || 0;
+        currentItem.baseCost = baseCost;
+        // Calculate unit cost based on selected unit
         if (selectedUnitId === currentItem.primaryUnitId) {
             // If primary unit is selected, use base cost directly
-            currentItem.cost = currentItem.baseCost * quantity;
+            currentItem.cost = baseCost;
         } else if (selectedUnitId === currentItem.secondaryUnitId) {
             // If secondary unit is selected, adjust cost based on unit value ratio
             const unitRatio = currentItem.secondaryUnitValue / currentItem.primaryUnitValue;
-            currentItem.cost = (currentItem.baseCost / unitRatio) * quantity;
+            currentItem.cost = baseCost / unitRatio;
         }
     }
     
@@ -174,7 +194,13 @@ export default function TransferInventoryItemsTable({
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-sm">
+    <div className="bg-white rounded-lg shadow-sm relative">
+      {/* Show available quantity in the top right, outside the table, as in the screenshot */}
+      {items && items[0] && items[0].availableQuantity !== undefined && (
+        <div className="absolute right-4 top-2 text-base font-semibold text-black">
+          Available Quantity: <span className="font-bold">{items[0].availableQuantity}</span> {items[0].primaryUnitName}
+        </div>
+      )}
       <h3 className="text-lg font-semibold p-4 border-b">Inventory Items</h3>
       {sourceBranchId === targetBranchId && sourceBranchId !== '' && (
         <div className="px-4 py-2 text-red-600 text-sm font-medium">
@@ -182,11 +208,12 @@ export default function TransferInventoryItemsTable({
         </div>
       )}
       <div className="w-full">
-        <table className="w-full"> 
+        <table className="w-full">
             <thead className="bg-[#00997B] text-white">
                 <tr>
                     <th className="p-3 text-left text-sm font-semibold">Item</th>
                     <th className="p-3 text-left text-sm font-semibold w-24">Code</th>
+                    <th className="p-3 text-left text-sm font-semibold w-24">Available</th>
                     <th className="p-3 text-left text-sm font-semibold w-24">Quantity</th>
                     <th className="p-3 text-left text-sm font-semibold w-32">UOM</th>
                     <th className="p-3 text-left text-sm font-semibold w-24">Cost</th>
@@ -214,11 +241,20 @@ export default function TransferInventoryItemsTable({
                     </td>
                     <td className="p-2 align-top">
                         <Input 
+                            value={`${item.availableQuantity || 0} ${item.primaryUnitName || ''}`}
+                            readOnly 
+                            className="bg-gray-100"
+                            placeholder="Available"
+                        />
+                    </td>
+                    <td className="p-2 align-top">
+                        <Input 
                             type="number"
                             value={item.quantity}
                             onChange={(e) => handleItemChange(index, 'quantity', e.target.value)}
                             placeholder="Qty"
-                            min="0"
+                            min="1"
+                            max={item.availableQuantity || 0}
                             step="any"
                         />
                     </td>
@@ -234,8 +270,7 @@ export default function TransferInventoryItemsTable({
                     <td className="p-2 align-top">
                         <Input 
                             type="number"
-                            value={item.cost}
-                            onChange={(e) => handleItemChange(index, 'cost', e.target.value)}
+                            value={(item.cost * item.quantity || 0).toFixed(2)}
                             placeholder="Cost" 
                             className="bg-gray-100"
                             readOnly
