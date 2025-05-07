@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useRouter } from 'next/navigation'; // Import useRouter for redirection
 import PageLayout from '@/components/PageLayout';
@@ -36,6 +36,13 @@ export default function CreateEmployeePage() {
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [isModalAlert, setIsModalAlert] = useState<boolean>(false);
   const [isSuccess, setIsSuccess] = useState<boolean>(false); // To track if submit was successful for modal logic
+
+  // Clear local storage when component unmounts
+  useEffect(() => {
+    return () => {
+      localStorage.removeItem('employeeDutySchedule');
+    };
+  }, []);
 
   const handleNext = (data: any) => {
     setEmployeeData((prev: any) => ({ ...prev, ...data }));

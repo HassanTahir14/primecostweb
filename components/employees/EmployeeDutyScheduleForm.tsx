@@ -40,6 +40,13 @@ function timeStringToObject(time: string | undefined): { hour: number, minute: n
 export default function EmployeeDutyScheduleForm({ onNext, onPrevious, initialData, onSave }: EmployeeDutyScheduleFormProps) {
   // Initialize schedule state from initialData if present
   const [schedule, setSchedule] = useState(() => {
+    // Try to get data from localStorage first
+    const storedData = localStorage.getItem('employeeDutySchedule');
+    if (storedData) {
+      return JSON.parse(storedData);
+    }
+    
+    // If no stored data, use initialData
     const initialDutySchedules = initialData.dutySchedulesDTO || [];
     const newSchedule: { [key: string]: { [key: string]: string } } = {};
     
@@ -58,7 +65,6 @@ export default function EmployeeDutyScheduleForm({ onNext, onPrevious, initialDa
         newSchedule[slot][day] = timeValue;
       });
     });
-    console.log("Initialized Schedule State:", newSchedule); // Log the state being set
     return newSchedule;
   });
 
@@ -76,7 +82,7 @@ export default function EmployeeDutyScheduleForm({ onNext, onPrevious, initialDa
   });
 
   const handleScheduleChange = (slot: string, day: string, value: string) => {
-    setSchedule(prev => {
+    setSchedule((prev: { [key: string]: { [key: string]: string } }) => {
       const updated = {
         ...prev,
         [slot]: {
@@ -84,7 +90,9 @@ export default function EmployeeDutyScheduleForm({ onNext, onPrevious, initialDa
           [day]: value,
         },
       };
-      // Save immediately
+      // Save to localStorage
+      localStorage.setItem('employeeDutySchedule', JSON.stringify(updated));
+      // Save to parent component
       if (onSave) {
         const dutySchedules = daysOfWeek.map(day => ({
           day: day,
@@ -113,7 +121,7 @@ export default function EmployeeDutyScheduleForm({ onNext, onPrevious, initialDa
   };
 
   const handleModalSave = () => {
-    setSchedule(prev => {
+    setSchedule((prev: { [key: string]: { [key: string]: string } }) => {
       let updated = { ...prev };
       (['Opening', 'Break', 'Closing'] as SlotKey[]).forEach(slot => {
         if (applyAll[slot] && modalTimes[slot]) {
@@ -122,7 +130,9 @@ export default function EmployeeDutyScheduleForm({ onNext, onPrevious, initialDa
           });
         }
       });
-      // Save immediately
+      // Save to localStorage
+      localStorage.setItem('employeeDutySchedule', JSON.stringify(updated));
+      // Save to parent component
       if (onSave) {
         const dutySchedules = daysOfWeek.map(day => ({
           day: day,

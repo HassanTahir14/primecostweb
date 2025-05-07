@@ -70,6 +70,9 @@ export default function EmployeeDetailsForm({ onNext, initialData, onSave, error
     { value: '', label: 'Select country', disabled: true }
   ]);
 
+  // Add state for validation errors
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+
   // Fetch countries on component mount
   useEffect(() => {
     const loadCountries = async () => {
@@ -106,6 +109,12 @@ export default function EmployeeDetailsForm({ onNext, initialData, onSave, error
 
   // Transform API error keys to form field names
   const getFieldError = (fieldName: string): string | undefined => {
+    // Check validation errors first
+    if (validationErrors[fieldName]) {
+      return validationErrors[fieldName];
+    }
+    
+    // Then check API errors
     if (!errors) return undefined;
     
     // Handle duplicate email error
@@ -199,13 +208,89 @@ export default function EmployeeDetailsForm({ onNext, initialData, onSave, error
   };
 
   const handleNextClick = () => {
-    if (!validateForm()) {
-        console.warn("Validation failed:", getFieldError('firstname'));
-        return; 
-    }
+    const newErrors: Record<string, string> = {};
     
-    // Transform the data to match the API format
-    const transformedData = {
+    // First name validation
+    if (!formData.firstname.trim()) {
+      newErrors.firstname = 'First name is required';
+    } else if (formData.firstname.length > 50) {
+      newErrors.firstname = 'First name must be between 1 and 50 characters';
+    }
+
+    // Email validation
+    if (!formData.loginId.trim()) {
+      newErrors.loginId = 'Email is required';
+    } else if (formData.loginId.length < 5 || formData.loginId.length > 50) {
+      newErrors.loginId = 'Email must be between 5 and 50 characters';
+    }
+
+    // Iqama expiry date validation
+    if (!formData.iqamaExpiryDate) {
+      newErrors.iqamaExpiryDate = 'Iqama expiry date is required';
+    }
+
+    // Position validation
+    if (!formData.position) {
+      newErrors.position = 'Position is required';
+    }
+
+    // Mobile number validation
+    if (!formData.mobileNumber.trim()) {
+      newErrors.mobileNumber = 'Mobile number is required';
+    }
+
+    // Iqama ID validation
+    if (!formData.iqamaId.trim()) {
+      newErrors.iqamaId = 'Iqama ID is required';
+    }
+
+    // Helper to parse yyyy-mm-dd
+    const parseDate = (str: string) => {
+      if (!str) return null;
+      const [yyyy, mm, dd] = str.split('-');
+      if (!yyyy || !mm || !dd) return null;
+      return new Date(Number(yyyy), Number(mm) - 1, Number(dd));
+    };
+    const today = new Date();
+    today.setHours(0,0,0,0);
+
+    // Health Card Expiry
+    if (formData.healthCardExpiry) {
+      const expiry = parseDate(formData.healthCardExpiry);
+      if (!expiry || isNaN(expiry.getTime())) {
+        newErrors.healthCardExpiry = 'Invalid date format';
+      } else if (expiry < today) {
+        newErrors.healthCardExpiry = 'Health card expiry cannot be in the past';
+      }
+    }
+
+    // Iqama Expiry
+    if (formData.iqamaExpiryDate) {
+      const expiry = parseDate(formData.iqamaExpiryDate);
+      if (!expiry || isNaN(expiry.getTime())) {
+        newErrors.iqamaExpiryDate = 'Invalid date format';
+      } else if (expiry < today) {
+        newErrors.iqamaExpiryDate = 'Iqama expiry cannot be in the past';
+      }
+    }
+
+    // Date of Birth
+    if (formData.dateOfBirth) {
+      const dob = parseDate(formData.dateOfBirth);
+      if (!dob || isNaN(dob.getTime())) {
+        newErrors.dateOfBirth = 'Invalid date format';
+      } else if (dob > today) {
+        newErrors.dateOfBirth = 'Date of birth cannot be in the future';
+      }
+    }
+
+    // Update validation errors state
+    setValidationErrors(newErrors);
+
+    // If there are no errors, proceed with next step
+    if (Object.keys(newErrors).length === 0) {
+      // Transform the data to match the API format
+      const transformedData = {
         firstname: formData.firstname,
         familyName: formData.familyName,
         nationality: formData.nationality,
@@ -218,10 +303,11 @@ export default function EmployeeDetailsForm({ onNext, initialData, onSave, error
         dateOfBirth: formData.dateOfBirth,
         email: formData.loginId, // Map loginId to email
         password: formData.password
-    };
-    
-    console.log("Details Data:", transformedData);
-    onNext(transformedData);
+      };
+      
+      console.log("Details Data:", transformedData);
+      onNext(transformedData);
+    }
   };
 
   return (

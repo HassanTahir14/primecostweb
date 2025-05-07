@@ -43,7 +43,7 @@ export default function RecipeCostingForm({ onNext, onBack, initialData, onSave 
     // Food cost % actual
     if (menuPrice && costPerPortion) {
       const actualPercent = (parseFloat(costPerPortion) / parseFloat(menuPrice)) * 100;
-      setFoodCostActualPercent(actualPercent.toString());
+      setFoodCostActualPercent(actualPercent.toFixed(2));
     }
 
     // Margin per portion
@@ -66,7 +66,7 @@ export default function RecipeCostingForm({ onNext, onBack, initialData, onSave 
     // Ideal selling price
     if (foodCostBudgetPercent && costPerPortion) {
       const idealPrice = parseFloat(costPerPortion) / (parseFloat(foodCostBudgetPercent) / 100);
-      setIdealSellingPrice(idealPrice.toString());
+      setIdealSellingPrice(idealPrice.toFixed(2));
     }
 
     // Save the updated form data

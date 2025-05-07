@@ -7,7 +7,7 @@ import ReportIndexPage from '@/components/reports/ReportIndexPage';
 const purchaseReportLinks = [
   { name: 'Rejected Purchase Orders', path: '/reports/purchase/rejected-po' },
   { name: 'Item Expiry Report', path: '/reports/purchase/item-expiry' },
-  { name: 'Items Purchased by Supplier', path: '/reports/purchase/item-by-supplier' },
+  { name: 'Items Purchased', path: '/reports/purchase/item-by-supplier' },
   { name: 'Purchase by Category', path: '/reports/purchase/by-category' },
   // Add more purchase reports here as needed
 ];

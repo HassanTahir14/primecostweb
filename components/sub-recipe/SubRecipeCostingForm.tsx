@@ -44,7 +44,7 @@ export default function SubRecipeCostingForm({ onNext, onBack, initialData, onSa
     // Food cost % actual
     if (formData.menuPrice && formData.costPerPortion) {
       const actualPercent = (parseFloat(formData.costPerPortion) / parseFloat(formData.menuPrice)) * 100;
-      setFormData(prev => ({ ...prev, foodCostActual: actualPercent.toFixed(2) }));
+      setFormData(prev => ({ ...prev, foodCostActual: Number(actualPercent).toFixed(2) }));
     }
 
     // Margin per portion
@@ -67,7 +67,7 @@ export default function SubRecipeCostingForm({ onNext, onBack, initialData, onSa
     // Ideal selling price
     if (formData.foodCostBudget && formData.costPerPortion) {
       const idealPrice = parseFloat(formData.costPerPortion) / (parseFloat(formData.foodCostBudget) / 100);
-      setFormData(prev => ({ ...prev, idealSellingPrice: idealPrice.toFixed(2) }));
+      setFormData(prev => ({ ...prev, idealSellingPrice: Number(idealPrice).toFixed(2) }));
     }
 
     // Save the updated form data

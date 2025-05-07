@@ -67,10 +67,10 @@ export default function ItemsBySupplierReportPage() {
     };
 
     // Construct dynamic title including totals
-    const tableTitle = `Items Purchased by Supplier (Total Items: ${totalItems ?? 0}, Total Cost: ${totalCost?.toFixed(2) ?? '0.00'})`;
+    const tableTitle = `Items Purchased (Total Items: ${totalItems ?? 0}, Total Cost: ${totalCost?.toFixed(2) ?? '0.00'})`;
 
     return (
-        <PageLayout title="Items Purchased by Supplier Report">
+        <PageLayout title="Items Purchased">
              <div className="mb-4">
                 <Link href="/reports/purchase" className="text-gray-500 hover:text-gray-700 flex items-center gap-2 w-fit">
                     <ArrowLeft size={20} />
