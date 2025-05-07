@@ -94,7 +94,7 @@ export default function FinishedOrdersPage() {
         preparedBy: currentUser?.username || 'Unknown User',
         itemName: recipe.mainRecipeNameAndDescription,
         batchNumber: recipe.mainRecipeBatchNumber,
-        quantity: `${recipe.totalQuantityAcrossLocations}`,
+        quantity: `${recipe.totalQuantityAcrossLocations} ${recipe.uom.split('@')[0]}`,
         producedOn: new Date(recipe.preparedDate).toLocaleString(),
         bestBefore: new Date(recipe.expirationDate).toLocaleString(),
       };
