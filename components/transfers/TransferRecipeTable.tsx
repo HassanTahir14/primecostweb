@@ -169,7 +169,7 @@ export default function TransferRecipeTable({
                 <tr>
                     <th className="p-3 text-left text-sm font-semibold">Recipe</th>
                     <th className="p-3 text-left text-sm font-semibold w-24">Code</th>
-                    <th className="p-3 text-left text-sm font-semibold w-24">Available</th>
+                    {/* <th className="p-3 text-left text-sm font-semibold w-24">Available</th> */}
                     <th className="p-3 text-left text-sm font-semibold w-24">Quantity</th>
                     <th className="p-3 text-left text-sm font-semibold w-32">UOM</th>
                     <th className="p-3 text-left text-sm font-semibold w-24">Cost</th>
@@ -195,14 +195,14 @@ export default function TransferRecipeTable({
                             placeholder="Code"
                         />
                     </td>
-                    <td className="p-2 align-top">
+                    {/* <td className="p-2 align-top">
                         <Input
                             value={item.availableQuantity || 0}
                             readOnly
                             className="bg-gray-100"
                             placeholder="Available"
                         />
-                    </td>
+                    </td> */}
                     <td className="p-2 align-top">
                         {/* Show available quantity above the input */}
                         {/* {item.availableQuantity !== undefined && (

@@ -26,12 +26,19 @@ const preparedItemsColumns: ColumnDefinition<any>[] = [
     { header: 'Category', accessorKey: 'category' },
     { header: 'Batch Number', accessorKey: 'batchNumber' },
     { 
-        header: 'Quantity Prepared', 
+        header: 'Quantity (Unit)',
         accessorKey: 'quantityPrepared',
         cellClassName: 'text-right',
-        cell: (v) => v.toFixed(2)
+        cell: (v, row) => {
+            let unit = '';
+            if (row.unitOfMeasurement && typeof row.unitOfMeasurement === 'string') {
+                if (row.unitOfMeasurement.startsWith('37@recipecost')) {
+                    unit = 'KG';
+                }
+            }
+            return `${parseFloat(v).toFixed(2)}${unit ? ' ' + unit : ''}`;
+        }
     },
-    { header: 'Unit', accessorKey: 'unitOfMeasurement' },
     { 
         header: 'Item Cost', 
         accessorKey: 'itemCost',
@@ -110,7 +117,7 @@ export default function PreparedItemsReportPage() {
             {/* Report Table Section */}
             <ReportTypeTable
                 title="Prepared Items Details"
-                data={Array.isArray(data) ? data : data?.details || []}
+                data={Array.isArray(data) ? data : (data && typeof data === 'object' && 'details' in data ? (data as any).details : [])}
                 columns={preparedItemsColumns}
                 isLoading={loading}
             />

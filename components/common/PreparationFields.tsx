@@ -56,6 +56,9 @@ export default function PreparationFields({ type, id, branchId }: PreparationFie
   console.log('First Ingredient Quantity:', firstIngredientQuantity);
   console.log('Unit:', unit);
 
+  // Calculate sum of all ingredient recipeCost values
+  const sumOfIngredientRecipeCost = currentItem?.ingredientsItems?.reduce((sum: number, ing: any) => sum + (parseFloat(ing.recipeCost) || 0), 0) || 0;
+
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
@@ -116,7 +119,7 @@ export default function PreparationFields({ type, id, branchId }: PreparationFie
         quantity: parseFloat(quantity),
         expiryDate,
         storageLocationId: parseInt(selectedStorageLocation),
-        unitOfMeasurement: unit
+        unitOfMeasurement: `37@recipecost${sumOfIngredientRecipeCost.toFixed(4)}`
       });
       setModalMessage('Order finished successfully');
       setIsSuccess(true);

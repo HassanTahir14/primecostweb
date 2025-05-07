@@ -213,7 +213,7 @@ export default function TransferInventoryItemsTable({
                 <tr>
                     <th className="p-3 text-left text-sm font-semibold">Item</th>
                     <th className="p-3 text-left text-sm font-semibold w-24">Code</th>
-                    <th className="p-3 text-left text-sm font-semibold w-24">Available</th>
+                    {/* <th className="p-3 text-left text-sm font-semibold w-24">Available</th> */}
                     <th className="p-3 text-left text-sm font-semibold w-24">Quantity</th>
                     <th className="p-3 text-left text-sm font-semibold w-32">UOM</th>
                     <th className="p-3 text-left text-sm font-semibold w-24">Cost</th>
@@ -239,14 +239,14 @@ export default function TransferInventoryItemsTable({
                             placeholder="Code"
                         />
                     </td>
-                    <td className="p-2 align-top">
+                    {/* <td className="p-2 align-top">
                         <Input 
                             value={`${item.availableQuantity || 0} ${item.primaryUnitName || ''}`}
                             readOnly 
                             className="bg-gray-100"
                             placeholder="Available"
                         />
-                    </td>
+                    </td> */}
                     <td className="p-2 align-top">
                         <Input 
                             type="number"
