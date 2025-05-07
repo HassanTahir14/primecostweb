@@ -132,10 +132,10 @@ export default function EmployeesPage() {
 
   // Calculate totals based on fetched data
   const totalEmployeesCount = employees.length;
-  // Assuming salaryDTO structure and basicSalary exist, adjust if needed
+  // Calculate total payroll using totalSalary instead of basicSalary
   const totalPayrollSum = employees.reduce((sum, emp) => {
     // Access nested salary details safely
-    const salary = emp.salaryDTO?.basicSalary || 0;
+    const salary = emp.salaryDTO?.totalSalary || 0;
     return sum + salary;
   }, 0);
 
@@ -182,7 +182,7 @@ export default function EmployeesPage() {
                   <th className="py-4 px-6 font-medium text-sm text-gray-500">Position</th>
                   <th className="py-4 px-6 font-medium text-sm text-gray-500">Iqama ID</th>
                   <th className="py-4 px-6 font-medium text-sm text-gray-500">Iqama Expiry</th>
-                  <th className="py-4 px-6 font-medium text-sm text-gray-500">Basic Salary</th>
+                  <th className="py-4 px-6 font-medium text-sm text-gray-500">Total Salary</th>
                   <th className="py-4 px-6 font-medium text-sm text-gray-500">Status</th>
                   {/* <th className="py-4 px-6 font-medium text-sm text-gray-500 text-center">Actions</th> */}
                 </tr>
@@ -206,7 +206,7 @@ export default function EmployeesPage() {
                       <td className="py-4 px-6 text-sm">{employee.employeeDetailsDTO?.iqamaId || 'N/A'}</td>
                       <td className="py-4 px-6 text-sm">{employee.employeeDetailsDTO?.iqamaExpiryDate || 'N/A'}</td>
                       <td className="py-4 px-6 text-sm">
-                        USD {employee.salaryDTO?.basicSalary?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || '0.00'}
+                        USD {employee.salaryDTO?.totalSalary?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || '0.00'}
                       </td>
                       <td className="py-4 px-6 text-sm">
                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${
