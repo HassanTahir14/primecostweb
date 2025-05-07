@@ -36,6 +36,54 @@ const extractTextContent = (value: any): string => {
   return 'N/A';
 };
 
+// Add this helper function at the top with other helpers
+const splitTextIntoLines = (text: string, maxWidth: number, doc: jsPDF): string[] => {
+  const words = text.split(' ');
+  const lines: string[] = [];
+  let currentLine = '';
+
+  words.forEach(word => {
+    const testLine = currentLine ? `${currentLine} ${word}` : word;
+    const testWidth = doc.getTextWidth(testLine);
+    
+    if (testWidth > maxWidth) {
+      if (currentLine) {
+        lines.push(currentLine);
+        currentLine = word;
+      } else {
+        // If a single word is too long, split it
+        const chars = word.split('');
+        let tempLine = '';
+        chars.forEach(char => {
+          const testCharLine = tempLine + char;
+          if (doc.getTextWidth(testCharLine) > maxWidth) {
+            lines.push(tempLine);
+            tempLine = char;
+          } else {
+            tempLine += char;
+          }
+        });
+        currentLine = tempLine;
+      }
+    } else {
+      currentLine = testLine;
+    }
+  });
+
+  if (currentLine) {
+    lines.push(currentLine);
+  }
+
+  return lines;
+};
+
+// Add this helper function near the top, after extractTextContent and splitTextIntoLines
+const sanitize = (str: any) =>
+  String(str || '')
+    .replace(/[\r\n]+/g, ' ') // Remove line breaks
+    .replace(/[^\x20-\x7E]+/g, '') // Remove non-printable characters
+    .trim();
+
 export const generateDetailPDF = async (
   title: string,
   data: any,
@@ -291,7 +339,9 @@ export const generateDetailPDF = async (
     // Add the details in a 2-column grid layout
     const leftColumnX = 14;
     const rightColumnX = Math.floor(pageWidth / 2) + 5;
+    const columnWidth = (pageWidth - 38) / 2; // Width for each column (accounting for margins)
     const lineHeight = 12;
+    let maxYPos = yPos; // Track the maximum Y position for both columns
     
     for (let i = 0; i < totalFields; i++) {
       // Determine if we're in the left or right column
@@ -299,7 +349,7 @@ export const generateDetailPDF = async (
       const x = isLeftColumn ? leftColumnX : rightColumnX;
       
       // Adjust y position for right column fields
-      const columnYPos = isLeftColumn 
+      let currentYPos = isLeftColumn 
         ? yPos + (i * lineHeight) 
         : yPos + ((i - fieldsPerColumn) * lineHeight);
       
@@ -307,18 +357,37 @@ export const generateDetailPDF = async (
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(10);
       doc.setTextColor(100, 100, 100);
-      doc.text(processedFields[i].label, x, columnYPos);
+      doc.text(processedFields[i].label, x, currentYPos);
       
-      // Add value
+      // Add value with text wrapping
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(10);
       doc.setTextColor(33, 33, 33);
-      doc.text(processedFields[i].value, x, columnYPos + 5);
+      
+      // Split text into lines that fit within column width
+      const valueLines = splitTextIntoLines(processedFields[i].value, columnWidth - 5, doc);
+      
+      // Add each line of the value
+      valueLines.forEach((line, lineIndex) => {
+        // Check if we need a new page
+        if (currentYPos + 5 + (lineIndex * lineHeight) > pageHeight - 20) {
+          doc.addPage();
+          currentYPos = 20;
+          // If we're in the right column, we need to adjust the x position
+          if (!isLeftColumn) {
+            currentYPos = yPos + ((i - fieldsPerColumn) * lineHeight);
+          }
+        }
+        doc.text(line, x, currentYPos + 5 + (lineIndex * lineHeight));
+      });
+      
+      // Update maxYPos if this field extends further down
+      const fieldEndY = currentYPos + 5 + (valueLines.length * lineHeight);
+      maxYPos = Math.max(maxYPos, fieldEndY);
     }
     
-    // Move y position past the details section
-    const detailsHeight = Math.ceil(totalFields / 2) * lineHeight;
-    yPos += detailsHeight + 15;
+    // Move y position past the details section using the maximum Y position
+    yPos = maxYPos + 15;
     
     // Add Branch Details section if available (use branchDetails prop if provided)
     const branchArr = branchDetails && branchDetails.length > 0 ? branchDetails : (data && data.branchDetails ? data.branchDetails : []);
@@ -458,18 +527,18 @@ export const generateDetailPDF = async (
               : '0.00')
           : undefined;
         return {
-          ingredient: ing.itemName?.split('@')[0] || ing.itemName || 'N/A',
-          quantity: ing.quantity ?? 'N/A',
-          unit: ing.unit ?? 'N/A',
-          yield: (ing.yieldPercentage ?? 'N/A') + '%',
-          ...(isAdmin ? { cost } : {}),
+          ingredient: sanitize(ing.itemName?.split('@')[0] || ing.itemName || 'N/A'),
+          quantity: sanitize(ing.quantity ?? 'N/A'),
+          unit: sanitize(ing.unit ?? 'N/A'),
+          yield: sanitize((ing.yieldPercentage ?? 'N/A') + '%'),
+          ...(isAdmin ? { cost: sanitize(cost) } : {}),
         };
       });
       // Use autoTable for better formatting
       autoTable(doc, {
         startY: yPos,
         head: [columns.map(col => col.header)],
-        body: rows.map(row => columns.map(col => row[col.dataKey as keyof typeof row])),
+        body: rows.map(row => columns.map(col => row[col.dataKey as keyof typeof row] ?? '')),
         styles: { fontSize: 10 },
         headStyles: { fillColor: [240, 240, 240], textColor: 33, fontStyle: 'bold' },
         margin: { left: 14, right: 14 },
