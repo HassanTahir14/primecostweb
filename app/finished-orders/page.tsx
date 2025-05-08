@@ -179,68 +179,72 @@ export default function FinishedOrdersPage() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {/* Main Recipes */}
-                  {mainRecipes.map((recipe) => (
-                    <tr key={`main-${recipe.preparedMainRecipeId}`}>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        {recipe.mainRecipeNameAndDescription}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {recipe.mainRecipeBatchNumber}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {recipe.totalQuantityAcrossLocations} {recipe.uom.split('@')[0]}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {recipe.inventoryLocations.map((loc: InventoryLocation) => loc.storageLocationWithCode).join(', ') || 'N/A'}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {new Date(recipe.preparedDate).toLocaleString()}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        <Button 
-                          variant="default" 
-                          size="sm" 
-                          className="rounded-full bg-[#339A89] text-white text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-1.5"
-                          onClick={() => handlePrintLabel(recipe)}
-                        >
-                          <Printer size={16} className="mr-1" />
-                          Print Label
-                        </Button>
-                      </td>
-                    </tr>
-                  ))}
-                  {/* Sub Recipes */}
-                  {subRecipes.map((recipe) => (
-                    <tr key={`sub-${recipe.preParedSubRecipeId}`}>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        {recipe.subRecipeNameAndDescription}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {recipe.subRecipeBatchNumber}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {recipe.totalQuantityAcrossLocations} {recipe.uom.split('@')[0]}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {recipe.inventoryLocations.map((loc: InventoryLocation) => loc.storageLocationWithCode).join(', ') || 'N/A'}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {new Date(recipe.preparedDate).toLocaleString()}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        <Button 
-                          variant="default" 
-                          size="sm" 
-                          className="rounded-full bg-[#339A89] text-white text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-1.5"
-                          onClick={() => handlePrintLabel(recipe)}
-                        >
-                          <Printer size={16} className="mr-1" />
-                          Print Label
-                        </Button>
-                      </td>
-                    </tr>
-                  ))}
+                  {/* Main Recipes - flatten by inventory location */}
+                  {mainRecipes.flatMap((recipe) =>
+                    recipe.inventoryLocations.map((loc: InventoryLocation) => (
+                      <tr key={`main-${recipe.preparedMainRecipeId}-loc-${loc.inventoryId}`}>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                          {recipe.mainRecipeNameAndDescription}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {recipe.mainRecipeBatchNumber}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {loc.quantity} {recipe.uom.split('@')[0]}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {loc.storageLocationWithCode}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {new Date(recipe.preparedDate).toLocaleString()}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          <Button 
+                            variant="default" 
+                            size="sm" 
+                            className="rounded-full bg-[#339A89] text-white text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-1.5"
+                            onClick={() => handlePrintLabel(recipe)}
+                          >
+                            <Printer size={16} className="mr-1" />
+                            Print Label
+                          </Button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                  {/* Sub Recipes - flatten by inventory location */}
+                  {subRecipes.flatMap((recipe) =>
+                    recipe.inventoryLocations.map((loc: InventoryLocation) => (
+                      <tr key={`sub-${recipe.preParedSubRecipeId}-loc-${loc.inventoryId}`}>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                          {recipe.subRecipeNameAndDescription}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {recipe.subRecipeBatchNumber}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {loc.quantity} {recipe.uom.split('@')[0]}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {loc.storageLocationWithCode}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {new Date(recipe.preparedDate).toLocaleString()}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          <Button 
+                            variant="default" 
+                            size="sm" 
+                            className="rounded-full bg-[#339A89] text-white text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-1.5"
+                            onClick={() => handlePrintLabel(recipe)}
+                          >
+                            <Printer size={16} className="mr-1" />
+                            Print Label
+                          </Button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>
