@@ -17,20 +17,13 @@ import ConfirmationModal from '@/components/common/ConfirmationModal';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { getDefaultDateRange } from '@/utils/dateUtils';
-
-// --- !!! PLACEHOLDER COLUMN DEFINITION !!! ---
-// --- Update this based on the actual API response for Food Cost ---
-const foodCostColumns: ColumnDefinition<any>[] = [
-    { header: 'Recipe Name', accessorKey: 'recipeName' },
-    { header: 'Budget Food Cost', accessorKey: 'foodCostBudget' },
-    { header: 'Actual Food Cost', accessorKey: 'foodCostActual' },
-    { header: 'Ideal Selling Price', accessorKey: 'idealSellingPrice', cell: (v) => parseFloat(v).toLocaleString('en-US', { style: 'currency', currency: 'USD' }) }
-];
-// --- !!! END PLACEHOLDER !!! ---
-
+import { useCurrency } from '@/context/CurrencyContext';
+import { formatCurrencyValue } from '@/utils/currencyUtils';
 
 export default function FoodCostReportPage() {
     const dispatch = useDispatch<AppDispatch>();
+    const { currency } = useCurrency();
+    const [formattedCosts, setFormattedCosts] = useState<any>({});
     const { startDate: defaultStartDate, endDate: defaultEndDate } = getDefaultDateRange();
     const [startDate, setStartDate] = useState(defaultStartDate);
     const [endDate, setEndDate] = useState(defaultEndDate);
@@ -43,6 +36,27 @@ export default function FoodCostReportPage() {
         dispatch(fetchFoodCost({ startDate, endDate, sortBy: "preparedDate" }));
     }, []); // Empty dependency array means this runs once on mount
 
+    useEffect(() => {
+        if (data && currency) {
+            const formatCosts = async () => {
+                try {
+                    const costs: {[key: string]: string} = {};
+                    const details = Array.isArray(data) ? data : (data && typeof data === 'object' && 'details' in data ? data.details : []);
+                    
+                    for (const record of details) {
+                        const key = `${record.recipeName}`;
+                        costs[key] = await formatCurrencyValue(parseFloat(record.idealSellingPrice) || 0, currency);
+                    }
+                    setFormattedCosts(costs);
+                } catch (error) {
+                    console.error('Error formatting costs:', error);
+                    setFormattedCosts({});
+                }
+            };
+            formatCosts();
+        }
+    }, [data, currency]);
+
     const handleFetchReport = () => {
         if (!startDate || !endDate) {
             setValidationError('Please select both a Start Date and End Date.');
@@ -53,9 +67,29 @@ export default function FoodCostReportPage() {
         dispatch(fetchFoodCost({ startDate, endDate, sortBy: "preparedDate" }));
     };
 
-     const handleCloseErrorModal = () => {
+    const handleCloseErrorModal = () => {
         dispatch(clearRecipeReportError('foodCost'));
     };
+
+    // Column definitions moved inside component to access formattedCosts
+    const foodCostColumns: ColumnDefinition<any>[] = [
+        { header: 'Recipe Name', accessorKey: 'recipeName' },
+        { 
+            header: 'Budget Food Cost', 
+            accessorKey: 'foodCostBudget',
+            cell: (v) => v // Keep as is since it's already a percentage
+        },
+        { 
+            header: 'Actual Food Cost', 
+            accessorKey: 'foodCostActual',
+            cell: (v) => v // Keep as is since it's already a percentage
+        },
+        { 
+            header: 'Ideal Selling Price', 
+            accessorKey: 'idealSellingPrice',
+            cell: (value, record) => formattedCosts[record.recipeName] || 'N/A'
+        }
+    ];
 
     return (
         <PageLayout title="Food Cost Report">
@@ -85,7 +119,7 @@ export default function FoodCostReportPage() {
             {/* Report Table Section */}
             <ReportTypeTable
                 title="Food Cost Details"
-                data={Array.isArray(data) ? data : (data && typeof data === 'object' && 'details' in data ? (data as any).details : [])}
+                data={Array.isArray(data) ? data : (data && typeof data === 'object' && 'details' in data ? data.details : [])}
                 columns={foodCostColumns}
                 isLoading={loading}
             />

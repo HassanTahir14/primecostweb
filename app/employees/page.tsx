@@ -58,10 +58,17 @@ export default function EmployeesPage() {
       const formatSalaries = async () => {
         try {
           const salaries: {[key: string]: string} = {};
+          let totalSum = 0;
+          
+          // Format individual salaries and calculate total
           for (const emp of employees) {
             const salary = emp.salaryDTO?.totalSalary || 0;
             salaries[emp.employeeId] = await formatCurrencyValue(salary, currency);
+            totalSum += salary;
           }
+          
+          // Format and store the total sum
+          salaries['total'] = await formatCurrencyValue(totalSum, currency);
           setFormattedSalaries(salaries);
         } catch (error) {
           console.error('Error formatting salaries:', error);

@@ -17,6 +17,8 @@ import ConfirmationModal from '@/components/common/ConfirmationModal';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { getDefaultDateRange } from '@/utils/dateUtils';
+import { useCurrency } from '@/context/CurrencyContext';
+import { formatCurrencyValue } from '@/utils/currencyUtils';
 
 // --- !!! PLACEHOLDER COLUMN DEFINITION !!! ---
 // --- Update this based on the actual API response for Profit Margin ---
@@ -43,6 +45,8 @@ const profitMarginColumns: ColumnDefinition<any>[] = [
 
 export default function ProfitMarginReportPage() {
     const dispatch = useDispatch<AppDispatch>();
+    const { currency } = useCurrency();
+    const [formattedCosts, setFormattedCosts] = useState<any>({});
     const { startDate: defaultStartDate, endDate: defaultEndDate } = getDefaultDateRange();
     const [startDate, setStartDate] = useState(defaultStartDate);
     const [endDate, setEndDate] = useState(defaultEndDate);
@@ -54,6 +58,29 @@ export default function ProfitMarginReportPage() {
         dispatch(clearRecipeReportError('profitMargin'));
         dispatch(fetchProfitMargin({ startDate, endDate, sortBy: "preparedDate" }));
     }, []); // Empty dependency array means this runs once on mount
+
+    useEffect(() => {
+        if (data && currency) {
+            const formatCosts = async () => {
+                try {
+                    const costs: {[key: string]: string} = {};
+                    const details = Array.isArray(data) ? data : (data && typeof data === 'object' && 'details' in data ? data.details : []);
+                    
+                    for (const record of details) {
+                        const key = `${record.recipeName}-${record.preparedDate}`;
+                        costs[`${key}-recipe`] = await formatCurrencyValue(record.costPerRecipe || 0, currency);
+                        costs[`${key}-portion`] = await formatCurrencyValue(record.costPerPortion || 0, currency);
+                        costs[`${key}-profit`] = await formatCurrencyValue(record.profitMarginPerPortion || 0, currency);
+                    }
+                    setFormattedCosts(costs);
+                } catch (error) {
+                    console.error('Error formatting costs:', error);
+                    setFormattedCosts({});
+                }
+            };
+            formatCosts();
+        }
+    }, [data, currency]);
 
     const handleFetchReport = () => {
         if (!startDate || !endDate) {
@@ -68,6 +95,26 @@ export default function ProfitMarginReportPage() {
      const handleCloseErrorModal = () => {
         dispatch(clearRecipeReportError('profitMargin'));
     };
+
+    // Column definitions moved inside component to access formattedCosts
+    const profitMarginColumns: ColumnDefinition<any>[] = [
+        { header: 'Recipe Name', accessorKey: 'recipeName' },
+        { 
+            header: 'Cost Per Recipe', 
+            accessorKey: 'costPerRecipe',
+            cell: (value, record) => formattedCosts[`${record.recipeName}-${record.preparedDate}-recipe`] || 'N/A'
+        },
+        { 
+            header: 'Cost Per Portion', 
+            accessorKey: 'costPerPortion',
+            cell: (value, record) => formattedCosts[`${record.recipeName}-${record.preparedDate}-portion`] || 'N/A'
+        },
+        { 
+            header: 'Profit Margin Per Portion', 
+            accessorKey: 'profitMarginPerPortion',
+            cell: (value, record) => formattedCosts[`${record.recipeName}-${record.preparedDate}-profit`] || 'N/A'
+        }
+    ];
 
     return (
         <PageLayout title="Profit Margin Report">
@@ -97,7 +144,7 @@ export default function ProfitMarginReportPage() {
             {/* Report Table Section */}
             <ReportTypeTable
                 title="Profit Margin Details"
-                data={Array.isArray(data) ? data : (data && typeof data === 'object' && 'details' in data ? (data as any).details : [])}
+                data={Array.isArray(data) ? data : (data && typeof data === 'object' && 'details' in data ? data.details : [])}
                 columns={profitMarginColumns}
                 isLoading={loading}
             />

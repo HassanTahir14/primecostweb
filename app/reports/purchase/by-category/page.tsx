@@ -18,26 +18,13 @@ import ConfirmationModal from '@/components/common/ConfirmationModal';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { getDefaultDateRange } from '@/utils/dateUtils';
-
-// Column Definitions for Purchase by Category
-const purchaseByCategoryColumns: ColumnDefinition<PurchaseByCategoryDetail>[] = [
-    { 
-        header: 'Item Name', 
-        accessorKey: 'itemName',
-        cell: (value) => {
-            const itemName = value as string;
-            return itemName.split('@')[0];
-        }
-    },
-    { header: 'Quantity', accessorKey: 'quantity' },
-    { header: 'Unit', accessorKey: 'unit' },
-    { header: 'Date', accessorKey: 'date' },
-    { header: 'Amount', accessorKey: 'amount', cell: (value) => value?.toFixed(2) ?? 'N/A' },
-    { header: 'Supplier', accessorKey: 'supplierName' },
-];
+import { useCurrency } from '@/context/CurrencyContext';
+import { formatCurrencyValue } from '@/utils/currencyUtils';
 
 export default function PurchaseByCategoryReportPage() {
     const dispatch = useDispatch<AppDispatch>();
+    const { currency } = useCurrency();
+    const [formattedAmounts, setFormattedAmounts] = useState<any>({});
 
     // State for filters
     const { startDate: defaultStartDate, endDate: defaultEndDate } = getDefaultDateRange();
@@ -68,6 +55,25 @@ export default function PurchaseByCategoryReportPage() {
             }));
         }
     }, [selectedCategory]); // Only run when category changes
+
+    useEffect(() => {
+        if (data && currency) {
+            const formatAmounts = async () => {
+                try {
+                    const amounts: {[key: string]: string} = {};
+                    for (const record of data) {
+                        const key = `${record.itemName}-${record.date}`;
+                        amounts[key] = await formatCurrencyValue(record.amount || 0, currency);
+                    }
+                    setFormattedAmounts(amounts);
+                } catch (error) {
+                    console.error('Error formatting amounts:', error);
+                    setFormattedAmounts({});
+                }
+            };
+            formatAmounts();
+        }
+    }, [data, currency]);
 
     // Update options to use category name as value
     const categoryOptions = [
@@ -101,6 +107,27 @@ export default function PurchaseByCategoryReportPage() {
     const handleCloseErrorModal = () => {
         dispatch(clearReportError('purchaseByCategory'));
     };
+
+    // Column definitions moved inside component to access formattedAmounts
+    const purchaseByCategoryColumns: ColumnDefinition<PurchaseByCategoryDetail>[] = [
+        { 
+            header: 'Item Name', 
+            accessorKey: 'itemName',
+            cell: (value) => {
+                const itemName = value as string;
+                return itemName.split('@')[0];
+            }
+        },
+        { header: 'Quantity', accessorKey: 'quantity' },
+        { header: 'Unit', accessorKey: 'unit' },
+        { header: 'Date', accessorKey: 'date' },
+        { 
+            header: 'Amount', 
+            accessorKey: 'amount',
+            cell: (value, record) => formattedAmounts[`${record.itemName}-${record.date}`] || 'N/A'
+        },
+        { header: 'Supplier', accessorKey: 'supplierName' },
+    ];
 
     return (
         <PageLayout title="Purchase by Category Report">

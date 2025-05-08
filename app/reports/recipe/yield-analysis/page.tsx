@@ -17,34 +17,13 @@ import ConfirmationModal from '@/components/common/ConfirmationModal';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { getDefaultDateRange } from '@/utils/dateUtils';
-
-// --- !!! PLACEHOLDER COLUMN DEFINITION !!! ---
-// --- Update this based on the actual API response for Yield Analysis ---
-const yieldAnalysisColumns: ColumnDefinition<any>[] = [
-    { header: 'Item Name', accessorKey: 'itemName' },
-    { header: 'Quantity Used', accessorKey: 'quantityUsed' },
-    { header: 'Yield %', accessorKey: 'percentageYield' },
-    { header: 'Waste %', accessorKey: 'wastePercentage' },
-    { header: 'Yield Quantity', accessorKey: 'yieldQuantity' },
-    { 
-        header: 'Yield Cost', 
-        accessorKey: 'yieldCost',
-        cellClassName: 'text-right',
-        cell: (v) => parseFloat(v).toLocaleString('en-US', { style: 'currency', currency: 'USD' })
-    },
-    { header: 'Waste Quantity', accessorKey: 'wasteQuantity' },
-    { 
-        header: 'Waste Cost', 
-        accessorKey: 'wasteCost',
-        cellClassName: 'text-right',
-        cell: (v) => parseFloat(v).toLocaleString('en-US', { style: 'currency', currency: 'USD' })
-    }
-];
-// --- !!! END PLACEHOLDER !!! ---
-
+import { useCurrency } from '@/context/CurrencyContext';
+import { formatCurrencyValue } from '@/utils/currencyUtils';
 
 export default function YieldAnalysisReportPage() {
     const dispatch = useDispatch<AppDispatch>();
+    const { currency } = useCurrency();
+    const [formattedCosts, setFormattedCosts] = useState<any>({});
     const { startDate: defaultStartDate, endDate: defaultEndDate } = getDefaultDateRange();
     const [startDate, setStartDate] = useState(defaultStartDate);
     const [endDate, setEndDate] = useState(defaultEndDate);
@@ -56,6 +35,28 @@ export default function YieldAnalysisReportPage() {
         dispatch(clearRecipeReportError('yieldAnalysis'));
         dispatch(fetchYieldAnalysis({ startDate, endDate, sortBy: "preparedDate" }));
     }, []); // Empty dependency array means this runs once on mount
+
+    useEffect(() => {
+        if (data && currency) {
+            const formatCosts = async () => {
+                try {
+                    const costs: {[key: string]: string} = {};
+                    const details = Array.isArray(data) ? data : (data && typeof data === 'object' && 'details' in data ? data.details : []);
+                    
+                    for (const record of details) {
+                        const key = `${record.itemName}-${record.preparedDate}`;
+                        costs[`${key}-yield`] = await formatCurrencyValue(record.yieldCost || 0, currency);
+                        costs[`${key}-waste`] = await formatCurrencyValue(record.wasteCost || 0, currency);
+                    }
+                    setFormattedCosts(costs);
+                } catch (error) {
+                    console.error('Error formatting costs:', error);
+                    setFormattedCosts({});
+                }
+            };
+            formatCosts();
+        }
+    }, [data, currency]);
 
     const handleFetchReport = () => {
         if (!startDate || !endDate) {
@@ -70,6 +71,28 @@ export default function YieldAnalysisReportPage() {
     const handleCloseErrorModal = () => {
         dispatch(clearRecipeReportError('yieldAnalysis'));
     };
+
+    // Column definitions moved inside component to access formattedCosts
+    const yieldAnalysisColumns: ColumnDefinition<any>[] = [
+        { header: 'Item Name', accessorKey: 'itemName' },
+        { header: 'Quantity Used', accessorKey: 'quantityUsed' },
+        { header: 'Yield %', accessorKey: 'percentageYield' },
+        { header: 'Waste %', accessorKey: 'wastePercentage' },
+        { header: 'Yield Quantity', accessorKey: 'yieldQuantity' },
+        { 
+            header: 'Yield Cost', 
+            accessorKey: 'yieldCost',
+            cellClassName: 'text-right',
+            cell: (value, record) => formattedCosts[`${record.itemName}-${record.preparedDate}-yield`] || 'N/A'
+        },
+        { header: 'Waste Quantity', accessorKey: 'wasteQuantity' },
+        { 
+            header: 'Waste Cost', 
+            accessorKey: 'wasteCost',
+            cellClassName: 'text-right',
+            cell: (value, record) => formattedCosts[`${record.itemName}-${record.preparedDate}-waste`] || 'N/A'
+        }
+    ];
 
     return (
         <PageLayout title="Yield Analysis Report">
@@ -99,7 +122,7 @@ export default function YieldAnalysisReportPage() {
             {/* Report Table Section */}
             <ReportTypeTable
                 title="Yield Analysis"
-                data={data?.details || []}
+                data={Array.isArray(data) ? data : (data && typeof data === 'object' && 'details' in data ? data.details : [])}
                 columns={yieldAnalysisColumns}
                 isLoading={loading}
             />

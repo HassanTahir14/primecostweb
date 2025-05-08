@@ -12,6 +12,8 @@ import ConfirmationModal from '@/components/common/ConfirmationModal';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { getDefaultDateRange } from '@/utils/dateUtils';
+import { useCurrency } from '@/context/CurrencyContext';
+import { formatCurrencyValue } from '@/utils/currencyUtils';
 
 // Updated data structure based on API response
 interface SalaryBreakdownRecord {
@@ -25,20 +27,11 @@ interface SalaryBreakdownRecord {
   // Removed: basicSalary, allowances, totalSalary, employeeId
 }
 
-// Updated Column Definitions based on API response
-const salaryBreakdownColumns: ColumnDefinition<SalaryBreakdownRecord>[] = [
-    { header: 'Employee Name', accessorKey: 'employeeName' },
-    { header: 'Position', accessorKey: 'position' },
-    { header: 'Iqama ID', accessorKey: 'iqamaId' },
-    { header: 'Iqama Expiry', accessorKey: 'iqamaExpiry' },
-    { header: 'Health Card ID', accessorKey: 'healthCardId' },
-    { header: 'Health Card Expiry', accessorKey: 'healthCardExpiry' },
-    { header: 'Total Payroll', accessorKey: 'totalPayroll', cell: (value) => parseFloat(value || '0').toFixed(2) }, // Format as number
-];
-
 const SalaryBreakdownReportPage: React.FC = () => {
   const dispatch: AppDispatch = useDispatch();
   const { data: salaryBreakdownData, loading, error } = useSelector((state: RootState) => state.employeeReports.salaryBreakdown);
+  const { currency } = useCurrency();
+  const [formattedPayrolls, setFormattedPayrolls] = useState<any>({});
 
   const { startDate: defaultStartDate, endDate: defaultEndDate } = getDefaultDateRange();
 
@@ -52,6 +45,25 @@ const SalaryBreakdownReportPage: React.FC = () => {
     const payload = { startDate, endDate, sortBy: "createdAt", page: 0, size: 1000, direction: "asc" };
     dispatch(fetchSalaryBreakdown(payload));
   }, []); // Empty dependency array means this runs once on mount
+
+  useEffect(() => {
+    if (salaryBreakdownData?.salaryDetails && currency) {
+      const formatPayrolls = async () => {
+        try {
+          const payrolls: {[key: string]: string} = {};
+          for (const record of salaryBreakdownData.salaryDetails) {
+            const payroll = parseFloat(record.totalPayroll || '0');
+            payrolls[record.employeeName] = await formatCurrencyValue(payroll, currency);
+          }
+          setFormattedPayrolls(payrolls);
+        } catch (error) {
+          console.error('Error formatting payrolls:', error);
+          setFormattedPayrolls({});
+        }
+      };
+      formatPayrolls();
+    }
+  }, [salaryBreakdownData, currency]);
 
   const handleFetchReport = () => {
     if (!startDate || !endDate) {
@@ -69,6 +81,21 @@ const SalaryBreakdownReportPage: React.FC = () => {
   };
 
   const tableTitle = "Salary Breakdown Report Results";
+
+  // Update the column definition to use formatted values
+  const salaryBreakdownColumns: ColumnDefinition<SalaryBreakdownRecord>[] = [
+    { header: 'Employee Name', accessorKey: 'employeeName' },
+    { header: 'Position', accessorKey: 'position' },
+    { header: 'Iqama ID', accessorKey: 'iqamaId' },
+    { header: 'Iqama Expiry', accessorKey: 'iqamaExpiry' },
+    { header: 'Health Card ID', accessorKey: 'healthCardId' },
+    { header: 'Health Card Expiry', accessorKey: 'healthCardExpiry' },
+    { 
+      header: 'Total Payroll', 
+      accessorKey: 'totalPayroll',
+      cell: (value, record) => formattedPayrolls[record.employeeName] || 'N/A'
+    },
+  ];
 
   return (
     <PageLayout title="Salary Breakdown Report">

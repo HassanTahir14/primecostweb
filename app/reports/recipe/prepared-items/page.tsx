@@ -17,50 +17,13 @@ import ConfirmationModal from '@/components/common/ConfirmationModal';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { getDefaultDateRange } from '@/utils/dateUtils';
-
-// --- !!! PLACEHOLDER COLUMN DEFINITION !!! ---
-// --- Update this based on the actual API response for Prepared Items ---
-const preparedItemsColumns: ColumnDefinition<any>[] = [
-    { header: 'Employee Name', accessorKey: 'employeeName' },
-    { header: 'Item Name', accessorKey: 'itemName' },
-    { header: 'Category', accessorKey: 'category' },
-    { header: 'Batch Number', accessorKey: 'batchNumber' },
-    { 
-        header: 'Quantity (Unit)',
-        accessorKey: 'quantityPrepared',
-        cell: (v, row) => {
-            let unit = '';
-            if (row.unitOfMeasurement && typeof row.unitOfMeasurement === 'string') {
-                if (row.unitOfMeasurement.startsWith('37@recipecost')) {
-                    unit = 'KG';
-                }
-            }
-            return `${parseFloat(v).toFixed(2)}${unit ? ' ' + unit : ''}`;
-        }
-    },
-    { 
-        header: 'Item Cost', 
-        accessorKey: 'itemCost',
-        cell: (v) => parseFloat(v).toLocaleString('en-US', { style: 'currency', currency: 'USD' })
-    },
-    { header: 'Storage Location', accessorKey: 'storageLocation' },
-    { header: 'Branch', accessorKey: 'branch' },
-    { 
-        header: 'Prepared Date', 
-        accessorKey: 'preparedDate',
-        cell: (v) => new Date(v).toLocaleDateString()
-    },
-    { 
-        header: 'Expiration Date', 
-        accessorKey: 'expirationDate',
-        cell: (v) => new Date(v).toLocaleDateString()
-    },
-    { header: 'Status', accessorKey: 'preparationStatus' }
-];
-// --- !!! END PLACEHOLDER !!! ---
+import { useCurrency } from '@/context/CurrencyContext';
+import { formatCurrencyValue } from '@/utils/currencyUtils';
 
 export default function PreparedItemsReportPage() {
     const dispatch = useDispatch<AppDispatch>();
+    const { currency } = useCurrency();
+    const [formattedCosts, setFormattedCosts] = useState<any>({});
     const { startDate: defaultStartDate, endDate: defaultEndDate } = getDefaultDateRange();
     const [startDate, setStartDate] = useState(defaultStartDate);
     const [endDate, setEndDate] = useState(defaultEndDate);
@@ -72,6 +35,27 @@ export default function PreparedItemsReportPage() {
         dispatch(clearRecipeReportError('preparedItems'));
         dispatch(fetchPreparedItems({ startDate, endDate, sortBy: "preparedDate" }));
     }, []); // Empty dependency array means this runs once on mount
+
+    useEffect(() => {
+        if (data && currency) {
+            const formatCosts = async () => {
+                try {
+                    const costs: {[key: string]: string} = {};
+                    const details = Array.isArray(data) ? data : (data && typeof data === 'object' && 'details' in data ? data.details : []);
+                    
+                    for (const record of details) {
+                        const key = `${record.itemName}-${record.preparedDate}`;
+                        costs[key] = await formatCurrencyValue(record.itemCost || 0, currency);
+                    }
+                    setFormattedCosts(costs);
+                } catch (error) {
+                    console.error('Error formatting costs:', error);
+                    setFormattedCosts({});
+                }
+            };
+            formatCosts();
+        }
+    }, [data, currency]);
 
     const handleFetchReport = () => {
         if (!startDate || !endDate) {
@@ -86,6 +70,45 @@ export default function PreparedItemsReportPage() {
     const handleCloseErrorModal = () => {
         dispatch(clearRecipeReportError('preparedItems'));
     };
+
+    // Column definitions moved inside component to access formattedCosts
+    const preparedItemsColumns: ColumnDefinition<any>[] = [
+        { header: 'Employee Name', accessorKey: 'employeeName' },
+        { header: 'Item Name', accessorKey: 'itemName' },
+        { header: 'Category', accessorKey: 'category' },
+        { header: 'Batch Number', accessorKey: 'batchNumber' },
+        { 
+            header: 'Quantity (Unit)',
+            accessorKey: 'quantityPrepared',
+            cell: (v, row) => {
+                let unit = '';
+                if (row.unitOfMeasurement && typeof row.unitOfMeasurement === 'string') {
+                    if (row.unitOfMeasurement.startsWith('37@recipecost')) {
+                        unit = 'KG';
+                    }
+                }
+                return `${parseFloat(v).toFixed(2)}${unit ? ' ' + unit : ''}`;
+            }
+        },
+        { 
+            header: 'Item Cost', 
+            accessorKey: 'itemCost',
+            cell: (value, record) => formattedCosts[`${record.itemName}-${record.preparedDate}`] || 'N/A'
+        },
+        { header: 'Storage Location', accessorKey: 'storageLocation' },
+        { header: 'Branch', accessorKey: 'branch' },
+        { 
+            header: 'Prepared Date', 
+            accessorKey: 'preparedDate',
+            cell: (v) => new Date(v).toLocaleDateString()
+        },
+        { 
+            header: 'Expiration Date', 
+            accessorKey: 'expirationDate',
+            cell: (v) => new Date(v).toLocaleDateString()
+        },
+        { header: 'Status', accessorKey: 'preparationStatus' }
+    ];
 
     return (
         <PageLayout title="Prepared Items Report">
@@ -115,7 +138,7 @@ export default function PreparedItemsReportPage() {
             {/* Report Table Section */}
             <ReportTypeTable
                 title="Prepared Items Details"
-                data={Array.isArray(data) ? data : (data && typeof data === 'object' && 'details' in data ? (data as any).details : [])}
+                data={Array.isArray(data) ? data : (data && typeof data === 'object' && 'details' in data ? data.details : [])}
                 columns={preparedItemsColumns}
                 isLoading={loading}
             />

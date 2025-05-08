@@ -12,6 +12,8 @@ import ConfirmationModal from '@/components/common/ConfirmationModal';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { getDefaultDateRange } from '@/utils/dateUtils';
+import { useCurrency } from '@/context/CurrencyContext';
+import { formatCurrencyValue } from '@/utils/currencyUtils';
 
 // Updated data structure based on API response
 interface GeneralEmployeeRecord {
@@ -28,29 +30,39 @@ interface GeneralEmployeeRecord {
   // Removed: employeeId, position, department, nationality, mobileNumber, totalAllowances, hireDate, status
 }
 
-// Updated Column Definitions based on API response
-const generalColumns: ColumnDefinition<GeneralEmployeeRecord>[] = [
-    { header: 'Name', accessorKey: 'employeeName' },
-    { header: 'DOB', accessorKey: 'dob', cellClassName: 'text-center' },
-    { header: 'Iqama ID', accessorKey: 'iqamaId' },
-    { header: 'Iqama Expiry', accessorKey: 'iqamaExpiry' },
-    { header: 'Health Card #', accessorKey: 'healthCardNumber' },
-    { header: 'Health Card Expiry', accessorKey: 'healthCardExpiry' },
-    { header: 'Basic Salary', accessorKey: 'basicSalary', cell: (value) => value?.toFixed(2) ?? 'N/A' },
-    { header: 'Other Allowances', accessorKey: 'otherAllowances', cell: (value) => value?.toFixed(2) ?? 'N/A' },
-    { header: 'Items Prepared', accessorKey: 'totalItemsPrepared' },
-    // Removed: Employee ID, Position, Department, Nationality, Mobile, Hire Date, Status
-    // Note: Images are not typically displayed directly in a table column
-];
-
 const GeneralEmployeeReportPage: React.FC = () => {
   const dispatch: AppDispatch = useDispatch();
   const { data: generalReportData, loading, error } = useSelector((state: RootState) => state.employeeReports.general);
+  const { currency } = useCurrency();
+  const [formattedSalaries, setFormattedSalaries] = useState<any>({});
 
   const { startDate: defaultStartDate, endDate: defaultEndDate } = getDefaultDateRange();
   const [startDate, setStartDate] = useState<string>(defaultStartDate);
   const [endDate, setEndDate] = useState<string>(defaultEndDate);
   const [validationError, setValidationError] = useState<string | null>(null);
+
+  // Column definitions moved inside component to access formattedSalaries
+  const generalColumns: ColumnDefinition<GeneralEmployeeRecord>[] = [
+    { header: 'Name', accessorKey: 'employeeName' },
+    { header: 'DOB', accessorKey: 'dob' },
+    { header: 'Iqama ID', accessorKey: 'iqamaId' },
+    { header: 'Iqama Expiry', accessorKey: 'iqamaExpiry' },
+    { header: 'Health Card #', accessorKey: 'healthCardNumber' },
+    { header: 'Health Card Expiry', accessorKey: 'healthCardExpiry' },
+    { 
+      header: 'Basic Salary', 
+      accessorKey: 'basicSalary',
+      cell: (value, record) => formattedSalaries[record.employeeName]?.basic || 'N/A'
+    },
+    { 
+      header: 'Other Allowances', 
+      accessorKey: 'otherAllowances',
+      cell: (value, record) => formattedSalaries[record.employeeName]?.allowances || 'N/A'
+    },
+    { header: 'Items Prepared', accessorKey: 'totalItemsPrepared' },
+    // Removed: Employee ID, Position, Department, Nationality, Mobile, Hire Date, Status
+    // Note: Images are not typically displayed directly in a table column
+  ];
 
   // Fetch data on first load
   useEffect(() => {
@@ -58,6 +70,27 @@ const GeneralEmployeeReportPage: React.FC = () => {
     const payload = { startDate, endDate, sortBy: "createdAt", page: 0, size: 1000, direction: "asc"};
     dispatch(fetchGeneralEmployeeReport(payload));
   }, []); // Empty dependency array means this runs once on mount
+
+  useEffect(() => {
+    if (generalReportData?.employees && currency) {
+      const formatSalaries = async () => {
+        try {
+          const salaries: {[key: string]: { basic: string, allowances: string }} = {};
+          for (const record of generalReportData.employees) {
+            salaries[record.employeeName] = {
+              basic: await formatCurrencyValue(record.basicSalary || 0, currency),
+              allowances: await formatCurrencyValue(record.otherAllowances || 0, currency)
+            };
+          }
+          setFormattedSalaries(salaries);
+        } catch (error) {
+          console.error('Error formatting salaries:', error);
+          setFormattedSalaries({});
+        }
+      };
+      formatSalaries();
+    }
+  }, [generalReportData, currency]);
 
   const handleFetchReport = () => {
     if (!startDate || !endDate) {
