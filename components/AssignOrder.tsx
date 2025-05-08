@@ -15,6 +15,7 @@ import { fetchRecipes, selectAllRecipes } from '@/store/recipeSlice';
 import { fetchSubRecipes, selectAllSubRecipes } from '@/store/subRecipeSlice';
 import { AppDispatch } from '@/store/store';
 import { formatPositionName } from '@/utils/formatters';
+import ConfirmationModal from './common/ConfirmationModal';
 
 interface AdminOrder {
   orderId: number;
@@ -69,6 +70,7 @@ export default function AssignOrder({ onClose }: AssignOrderProps) {
   const [userError, setUserError] = useState('');
   const [orderTypeError, setOrderTypeError] = useState('');
   const [orders, setOrders] = useState<AdminOrder[] | ChefOrder[]>([]);
+  const [errorModal, setErrorModal] = useState({ isOpen: false, message: '' });
   const currentUser = useSelector(selectCurrentUser);
   const isAdmin = currentUser?.role === 'Admin';
   const isChef = currentUser?.role === 'CHEF' || currentUser?.role === 'HEAD_CHEF';
@@ -157,7 +159,8 @@ export default function AssignOrder({ onClose }: AssignOrderProps) {
       fetchOrders();
     } catch (error: any) {
       console.error('Error starting order:', error);
-      toast.error(error.response?.data?.description || 'Failed to start order');
+      const errorMessage = error.response?.data?.description || 'Failed to start order';
+      setErrorModal({ isOpen: true, message: errorMessage });
     }
   };
 
@@ -458,6 +461,15 @@ export default function AssignOrder({ onClose }: AssignOrderProps) {
           </div>
         </form>
       </Modal>
+
+      <ConfirmationModal
+        isOpen={errorModal.isOpen}
+        onClose={() => setErrorModal({ isOpen: false, message: '' })}
+        title="Error"
+        message={errorModal.message}
+        isAlert={true}
+        okText="OK"
+      />
     </div>
   );
 } 
