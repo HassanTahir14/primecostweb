@@ -26,8 +26,8 @@ interface IqamaExpiryRecord {
 const iqamaExpiryColumns: ColumnDefinition<IqamaExpiryRecord>[] = [
     { header: 'Employee Name', accessorKey: 'employeeName' },
     { header: 'Iqama ID', accessorKey: 'iqamaId' },
-    { header: 'Iqama Expiry', accessorKey: 'iqamaExpiry', cellClassName: 'text-center' },
-    { header: 'Status', accessorKey: 'status', cellClassName: 'text-center' }, // Added status
+    { header: 'Iqama Expiry', accessorKey: 'iqamaExpiry' },
+    { header: 'Status', accessorKey: 'status' }, // Added status
 ];
 
 const IqamaExpiryReportPage: React.FC = () => {

@@ -79,7 +79,7 @@ function ReportTypeTable<T extends { [key: string]: any }>({
         {showExportButton && safeData.length > 0 && (
           <Button onClick={handleExport} variant="outline" size="sm">
             <Download size={16} className="mr-2" />
-            Export to CSV
+            Export to PDF
           </Button>
         )}
       </div>

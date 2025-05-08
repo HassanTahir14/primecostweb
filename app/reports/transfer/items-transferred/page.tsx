@@ -16,15 +16,15 @@ import { getDefaultDateRange } from '@/utils/dateUtils';
 
 // Column Definitions
 const itemColumns: ColumnDefinition<ItemTransferRecord>[] = [
-    { header: 'Transfer Date', accessorKey: 'transferDate', cellClassName: 'text-center' },
-    { header: 'Transfer Code', accessorKey: 'transferCode', cellClassName: 'text-center' },
+    { header: 'Transfer Date', accessorKey: 'transferDate' },
+    { header: 'Transfer Code', accessorKey: 'transferCode' },
     { header: 'Requested By', accessorKey: 'requestedBy' },
     { header: 'Transferred By', accessorKey: 'transferredBy' },
     { header: 'From Branch', accessorKey: 'fromBranch' },
     { header: 'To Branch', accessorKey: 'toBranch' },
-    { header: 'Transfer Cost', accessorKey: 'transferCost', cellClassName: 'text-right', cell: (value) => value?.toFixed(2) ?? 'N/A' },
-    { header: 'Other Charges', accessorKey: 'otherCharges', cellClassName: 'text-right', cell: (value) => value?.toFixed(2) ?? 'N/A' },
-    { header: 'Total Cost', accessorKey: 'totalTransferCost', cellClassName: 'text-right', cell: (value) => value?.toFixed(2) ?? 'N/A' },
+    { header: 'Transfer Cost', accessorKey: 'transferCost', cell: (value) => value?.toFixed(2) ?? 'N/A' },
+    { header: 'Other Charges', accessorKey: 'otherCharges', cell: (value) => value?.toFixed(2) ?? 'N/A' },
+    { header: 'Total Cost', accessorKey: 'totalTransferCost', cell: (value) => value?.toFixed(2) ?? 'N/A' },
 ];
 
 const ItemsTransferredReportPage: React.FC = () => {

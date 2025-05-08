@@ -33,12 +33,12 @@ const generalColumns: ColumnDefinition<GeneralEmployeeRecord>[] = [
     { header: 'Name', accessorKey: 'employeeName' },
     { header: 'DOB', accessorKey: 'dob', cellClassName: 'text-center' },
     { header: 'Iqama ID', accessorKey: 'iqamaId' },
-    { header: 'Iqama Expiry', accessorKey: 'iqamaExpiry', cellClassName: 'text-center' },
+    { header: 'Iqama Expiry', accessorKey: 'iqamaExpiry' },
     { header: 'Health Card #', accessorKey: 'healthCardNumber' },
-    { header: 'Health Card Expiry', accessorKey: 'healthCardExpiry', cellClassName: 'text-center' },
-    { header: 'Basic Salary', accessorKey: 'basicSalary', cellClassName: 'text-right', cell: (value) => value?.toFixed(2) ?? 'N/A' },
-    { header: 'Other Allowances', accessorKey: 'otherAllowances', cellClassName: 'text-right', cell: (value) => value?.toFixed(2) ?? 'N/A' },
-    { header: 'Items Prepared', accessorKey: 'totalItemsPrepared', cellClassName: 'text-right' },
+    { header: 'Health Card Expiry', accessorKey: 'healthCardExpiry' },
+    { header: 'Basic Salary', accessorKey: 'basicSalary', cell: (value) => value?.toFixed(2) ?? 'N/A' },
+    { header: 'Other Allowances', accessorKey: 'otherAllowances', cell: (value) => value?.toFixed(2) ?? 'N/A' },
+    { header: 'Items Prepared', accessorKey: 'totalItemsPrepared' },
     // Removed: Employee ID, Position, Department, Nationality, Mobile, Hire Date, Status
     // Note: Images are not typically displayed directly in a table column
 ];

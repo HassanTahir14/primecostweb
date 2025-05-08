@@ -30,10 +30,10 @@ const salaryBreakdownColumns: ColumnDefinition<SalaryBreakdownRecord>[] = [
     { header: 'Employee Name', accessorKey: 'employeeName' },
     { header: 'Position', accessorKey: 'position' },
     { header: 'Iqama ID', accessorKey: 'iqamaId' },
-    { header: 'Iqama Expiry', accessorKey: 'iqamaExpiry', cellClassName: 'text-center' },
+    { header: 'Iqama Expiry', accessorKey: 'iqamaExpiry' },
     { header: 'Health Card ID', accessorKey: 'healthCardId' },
-    { header: 'Health Card Expiry', accessorKey: 'healthCardExpiry', cellClassName: 'text-center' },
-    { header: 'Total Payroll', accessorKey: 'totalPayroll', cellClassName: 'text-right', cell: (value) => parseFloat(value || '0').toFixed(2) }, // Format as number
+    { header: 'Health Card Expiry', accessorKey: 'healthCardExpiry' },
+    { header: 'Total Payroll', accessorKey: 'totalPayroll', cell: (value) => parseFloat(value || '0').toFixed(2) }, // Format as number
 ];
 
 const SalaryBreakdownReportPage: React.FC = () => {

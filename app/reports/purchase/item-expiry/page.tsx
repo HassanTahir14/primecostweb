@@ -27,15 +27,15 @@ const itemExpiryColumns: ColumnDefinition<ItemExpiryDetail>[] = [
             return itemName.split('@')[0];
         }
     },
-    { header: 'Date Added', accessorKey: 'dateAdded', cellClassName: 'text-center' },
-    { header: 'Expiry Date', accessorKey: 'expiryDate', cellClassName: 'text-center font-medium', 
+    { header: 'Date Added', accessorKey: 'dateAdded' },
+    { header: 'Expiry Date', accessorKey: 'expiryDate', 
       cell: (value, row) => <span className={row.status === 'Expired' ? 'text-red-600' : 'text-gray-700'}>{value ?? 'N/A'}</span> },
-    { header: 'Quantity', accessorKey: 'quantity', cellClassName: 'text-right' },
+    { header: 'Quantity', accessorKey: 'quantity' },
     { header: 'Storage Location', accessorKey: 'storageLocationName' },
     { header: 'Branch Name', accessorKey: 'branchName' },
-    { header: 'Item Status', accessorKey: 'status', cellClassName: 'text-center', 
+    { header: 'Item Status', accessorKey: 'status', 
       cell: (value) => <span className={`px-2 py-0.5 rounded text-xs font-medium ${value === 'Expired' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>{value ?? 'N/A'}</span> },
-    { header: 'PO Status', accessorKey: 'purchaseOrderStatus', cellClassName: 'text-center' },
+    { header: 'PO Status', accessorKey: 'purchaseOrderStatus' },
 ];
 
 export default function ItemExpiryReportPage() {

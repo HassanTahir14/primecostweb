@@ -26,8 +26,8 @@ interface PerformanceRecord {
 const performanceColumns: ColumnDefinition<PerformanceRecord>[] = [
     { header: 'Employee Name', accessorKey: 'employeeName' },
     { header: 'Employee ID', accessorKey: 'id' }, // Assuming 'id' is Employee ID
-    { header: 'Orders', accessorKey: 'orders', cellClassName: 'text-right' },
-    { header: 'Incident Report?', accessorKey: 'incidentReport', cellClassName: 'text-center' },
+    { header: 'Orders', accessorKey: 'orders' },
+    { header: 'Incident Report?', accessorKey: 'incidentReport' },
 ];
 
 const PerformanceReportPage: React.FC = () => {

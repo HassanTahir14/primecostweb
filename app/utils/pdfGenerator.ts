@@ -601,7 +601,7 @@ export const generateDetailPDF = async (
             yPos = 20;
           }
           doc.text(line, 14, yPos);
-          yPos += 6;
+        yPos += 6;
         });
 
         // Handle critical point with text wrapping
@@ -630,7 +630,7 @@ export const generateDetailPDF = async (
               yPos = 20;
             }
             doc.text(line, 14, yPos);
-            yPos += 6;
+          yPos += 6;
           });
         }
 

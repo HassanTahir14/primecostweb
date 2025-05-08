@@ -26,8 +26,8 @@ interface HealthCardExpiryRecord {
 const healthCardExpiryColumns: ColumnDefinition<HealthCardExpiryRecord>[] = [
     { header: 'Employee Name', accessorKey: 'employeeName' },
     { header: 'Health Card ID', accessorKey: 'healthCardId' }, // Updated header and key
-    { header: 'Expiry Date', accessorKey: 'cardExpiry', cellClassName: 'text-center' }, // Updated key
-    { header: 'Status', accessorKey: 'status', cellClassName: 'text-center' }, // Added status
+    { header: 'Expiry Date', accessorKey: 'cardExpiry' }, // Updated key
+    { header: 'Status', accessorKey: 'status' }, // Added status
 ];
 
 const HealthCardExpiryReportPage: React.FC = () => {

@@ -27,9 +27,9 @@ const rejectedPOColumns: ColumnDefinition<RejectedPODetail>[] = [
             return itemName.split('@')[0];
         }
     },
-    { header: 'Quantity', accessorKey: 'quantity', cellClassName: 'text-right' },
-    { header: 'Unit', accessorKey: 'unit', cellClassName: 'text-center' },
-    { header: 'Date', accessorKey: 'dated', cellClassName: 'text-center' },
+    { header: 'Quantity', accessorKey: 'quantity' },
+    { header: 'Unit', accessorKey: 'unit' },
+    { header: 'Date', accessorKey: 'dated' },
     { header: 'Reason', accessorKey: 'reason' },
 ];
 

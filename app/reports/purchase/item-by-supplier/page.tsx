@@ -27,11 +27,11 @@ const itemsBySupplierColumns: ColumnDefinition<ItemsBySupplierDetail>[] = [
             return itemName.split('@')[0];
         }
     },
-    { header: 'Quantity', accessorKey: 'quantity', cellClassName: 'text-right' },
-    { header: 'Unit', accessorKey: 'unit', cellClassName: 'text-center' },
-    { header: 'Date', accessorKey: 'date', cellClassName: 'text-center' },
-    { header: 'Amount', accessorKey: 'amount', cellClassName: 'text-right', cell: (value) => value?.toFixed(2) ?? 'N/A' }, 
-    { header: 'PO Status', accessorKey: 'purchaseOrderStatus', cellClassName: 'text-center' },
+    { header: 'Quantity', accessorKey: 'quantity' },
+    { header: 'Unit', accessorKey: 'unit' },
+    { header: 'Date', accessorKey: 'date' },
+    { header: 'Amount', accessorKey: 'amount', cell: (value) => value?.toFixed(2) ?? 'N/A' }, 
+    { header: 'PO Status', accessorKey: 'purchaseOrderStatus' },
 ];
 
 export default function ItemsBySupplierReportPage() {

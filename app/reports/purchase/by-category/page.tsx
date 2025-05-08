@@ -21,7 +21,6 @@ import { getDefaultDateRange } from '@/utils/dateUtils';
 
 // Column Definitions for Purchase by Category
 const purchaseByCategoryColumns: ColumnDefinition<PurchaseByCategoryDetail>[] = [
-    // Define based on assumed successful response structure
     { 
         header: 'Item Name', 
         accessorKey: 'itemName',
@@ -30,10 +29,10 @@ const purchaseByCategoryColumns: ColumnDefinition<PurchaseByCategoryDetail>[] = 
             return itemName.split('@')[0];
         }
     },
-    { header: 'Quantity', accessorKey: 'quantity', cellClassName: 'text-right' },
-    { header: 'Unit', accessorKey: 'unit', cellClassName: 'text-center' },
-    { header: 'Date', accessorKey: 'date', cellClassName: 'text-center' },
-    { header: 'Amount', accessorKey: 'amount', cellClassName: 'text-right', cell: (value) => value?.toFixed(2) ?? 'N/A' },
+    { header: 'Quantity', accessorKey: 'quantity' },
+    { header: 'Unit', accessorKey: 'unit' },
+    { header: 'Date', accessorKey: 'date' },
+    { header: 'Amount', accessorKey: 'amount', cell: (value) => value?.toFixed(2) ?? 'N/A' },
     { header: 'Supplier', accessorKey: 'supplierName' },
 ];
 

@@ -18,10 +18,10 @@ import { getDefaultDateRange } from '@/utils/dateUtils';
 const recipeColumns: ColumnDefinition<RecipeTransferRecord>[] = [
     { header: 'Recipe Name', accessorKey: 'recipeName' },
     { header: 'Branch', accessorKey: 'branch' },
-    { header: 'Quantity', accessorKey: 'quantity', cellClassName: 'text-right' },
-    { header: 'Unit', accessorKey: 'unit', cellClassName: 'text-center' },
-    { header: 'Cost', accessorKey: 'cost', cellClassName: 'text-right', cell: (value) => value?.toFixed(2) ?? 'N/A' },
-    { header: 'Date', accessorKey: 'orderDate', cellClassName: 'text-center' }, // Assuming orderDate is transfer date
+    { header: 'Quantity', accessorKey: 'quantity' },
+    { header: 'Unit', accessorKey: 'unit' },
+    { header: 'Cost', accessorKey: 'cost', cell: (value) => value?.toFixed(2) ?? 'N/A' },
+    { header: 'Date', accessorKey: 'orderDate' },
 ];
 
 const RecipesTransferredReportPage: React.FC = () => {
