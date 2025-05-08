@@ -24,8 +24,7 @@ const foodCostColumns: ColumnDefinition<any>[] = [
     { header: 'Recipe Name', accessorKey: 'recipeName' },
     { header: 'Budget Food Cost', accessorKey: 'foodCostBudget' },
     { header: 'Actual Food Cost', accessorKey: 'foodCostActual' },
-    { header: 'Ideal Selling Price', accessorKey: 'idealSellingPrice', cellClassName: 'text-right', 
-      cell: (v) => parseFloat(v).toLocaleString('en-US', { style: 'currency', currency: 'USD' }) }
+    { header: 'Ideal Selling Price', accessorKey: 'idealSellingPrice', cell: (v) => parseFloat(v).toLocaleString('en-US', { style: 'currency', currency: 'USD' }) }
 ];
 // --- !!! END PLACEHOLDER !!! ---
 
@@ -86,7 +85,7 @@ export default function FoodCostReportPage() {
             {/* Report Table Section */}
             <ReportTypeTable
                 title="Food Cost Details"
-                data={Array.isArray(data) ? data : data?.details || []}
+                data={Array.isArray(data) ? data : (data && typeof data === 'object' && 'details' in data ? (data as any).details : [])}
                 columns={foodCostColumns}
                 isLoading={loading}
             />

@@ -25,19 +25,16 @@ const profitMarginColumns: ColumnDefinition<any>[] = [
     { 
         header: 'Cost Per Recipe', 
         accessorKey: 'costPerRecipe',
-        cellClassName: 'text-right',
         cell: (v) => parseFloat(v).toLocaleString('en-US', { style: 'currency', currency: 'USD' })
     },
     { 
         header: 'Cost Per Portion', 
         accessorKey: 'costPerPortion',
-        cellClassName: 'text-right',
         cell: (v) => parseFloat(v).toLocaleString('en-US', { style: 'currency', currency: 'USD' })
     },
     { 
         header: 'Profit Margin Per Portion', 
         accessorKey: 'profitMarginPerPortion',
-        cellClassName: 'text-right',
         cell: (v) => parseFloat(v).toLocaleString('en-US', { style: 'currency', currency: 'USD' })
     }
 ];
@@ -100,7 +97,7 @@ export default function ProfitMarginReportPage() {
             {/* Report Table Section */}
             <ReportTypeTable
                 title="Profit Margin Details"
-                data={Array.isArray(data) ? data : data?.details || []}
+                data={Array.isArray(data) ? data : (data && typeof data === 'object' && 'details' in data ? (data as any).details : [])}
                 columns={profitMarginColumns}
                 isLoading={loading}
             />

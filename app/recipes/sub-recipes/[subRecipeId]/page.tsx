@@ -134,13 +134,13 @@ export default function SubRecipeDetailPage() {
       // Add cost information for admin
       if (isAdmin) {
         fieldConfig.push(
-          { key: 'menuPrice', label: 'Menu Price', render: (v) => v ? `$${v.toFixed(2)}` : 'N/A' },
-          { key: 'foodCostBudgetPercentage', label: 'Food Cost Budget %', render: (v) => v ? `${v}%` : 'N/A' },
-          { key: 'foodCostActualPercentage', label: 'Food Cost Actual %', render: (v) => v ? `${v}%` : 'N/A' },
-          { key: 'idealSellingPrice', label: 'Ideal Selling Price', render: (v) => v ? `$${v.toFixed(2)}` : 'N/A' },
-          { key: 'costPerPortion', label: 'Cost Per Portion', render: (v) => v ? `$${v.toFixed(2)}` : 'N/A' },
-          { key: 'costPerRecipe', label: 'Cost Per Recipe', render: (v) => v ? `$${v.toFixed(2)}` : 'N/A' },
-          { key: 'marginPerPortion', label: 'Margin Per Portion', render: (v) => v ? `$${v.toFixed(2)}` : 'N/A' }
+          { key: 'menuPrice', label: 'Menu Price', render: (v) => v ? `$${Number(v).toFixed(2)}` : 'N/A' },
+          { key: 'foodCostBudgetPercentage', label: 'Food Cost Budget %', render: (v) => v ? `${Number(v).toFixed(2)}%` : 'N/A' },
+          { key: 'foodCostActualPercentage', label: 'Food Cost Actual %', render: (v) => v ? `${Number(v).toFixed(2)}%` : 'N/A' },
+          { key: 'idealSellingPrice', label: 'Ideal Selling Price', render: (v) => v ? `$${Number(v).toFixed(2)}` : 'N/A' },
+          { key: 'costPerPortion', label: 'Cost Per Portion', render: (v) => v ? `$${Number(v).toFixed(2)}` : 'N/A' },
+          { key: 'costPerRecipe', label: 'Cost Per Recipe', render: (v) => v ? `$${Number(v).toFixed(2)}` : 'N/A' },
+          { key: 'marginPerPortion', label: 'Margin Per Portion', render: (v) => v ? `$${Number(v).toFixed(2)}` : 'N/A' }
         );
       }
       
@@ -286,31 +286,31 @@ export default function SubRecipeDetailPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="bg-white p-4 rounded-lg shadow-sm">
               <h3 className="text-sm font-medium text-gray-500">Menu Price</h3>
-              <p className="mt-1">${subRecipe.menuPrice?.toFixed(2) ?? '0.00'}</p>
+              <p className="mt-1">${Number(subRecipe.menuPrice).toFixed(2) ?? '0.00'}</p>
             </div>
             <div className="bg-white p-4 rounded-lg shadow-sm">
               <h3 className="text-sm font-medium text-gray-500">Food Cost Budget %</h3>
-              <p className="mt-1">{subRecipe.foodCostBudgetPercentage ?? '0'}%</p>
+              <p className="mt-1">{Number(subRecipe.foodCostBudgetPercentage).toFixed(2)}%</p>
             </div>
             <div className="bg-white p-4 rounded-lg shadow-sm">
               <h3 className="text-sm font-medium text-gray-500">Food Cost Actual %</h3>
-              <p className="mt-1">{subRecipe.foodCostActualPercentage ?? '0'}%</p>
+              <p className="mt-1">{Number(subRecipe.foodCostActualPercentage).toFixed(2)}%</p>
             </div>
             <div className="bg-white p-4 rounded-lg shadow-sm">
               <h3 className="text-sm font-medium text-gray-500">Ideal Selling Price</h3>
-              <p className="mt-1">${subRecipe.idealSellingPrice?.toFixed(2) ?? '0.00'}</p>
+              <p className="mt-1">${Number(subRecipe.idealSellingPrice).toFixed(2) ?? '0.00'}</p>
             </div>
             <div className="bg-white p-4 rounded-lg shadow-sm">
               <h3 className="text-sm font-medium text-gray-500">Cost Per Portion</h3>
-              <p className="mt-1">${subRecipe.costPerPortion?.toFixed(2) ?? '0.00'}</p>
+              <p className="mt-1">${Number(subRecipe.costPerPortion).toFixed(2) ?? '0.00'}</p>
             </div>
             <div className="bg-white p-4 rounded-lg shadow-sm">
               <h3 className="text-sm font-medium text-gray-500">Cost Per Recipe</h3>
-              <p className="mt-1">${subRecipe.costPerRecipe?.toFixed(2) ?? '0.00'}</p>
+              <p className="mt-1">${Number(subRecipe.costPerRecipe).toFixed(2) ?? '0.00'}</p>
             </div>
             <div className="bg-white p-4 rounded-lg shadow-sm">
               <h3 className="text-sm font-medium text-gray-500">Margin Per Portion</h3>
-              <p className="mt-1">${subRecipe.marginPerPortion?.toFixed(2) ?? '0.00'}</p>
+              <p className="mt-1">${Number(subRecipe.marginPerPortion).toFixed(2) ?? '0.00'}</p>
             </div>
           </div>
         )}
@@ -376,7 +376,7 @@ export default function SubRecipeDetailPage() {
                         </>
                       )}
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{ing.yieldPercentage}%</td>
-                      {isAdmin && <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${ing.recipeCost?.toFixed(2) ?? '0.00'}</td>}
+                      {isAdmin && <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${Number(ing.recipeCost).toFixed(2) ?? '0.00'}</td>}
                     </tr>
                   );
                 })}

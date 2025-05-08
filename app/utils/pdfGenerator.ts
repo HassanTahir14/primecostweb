@@ -570,29 +570,72 @@ export const generateDetailPDF = async (
       doc.setLineWidth(0.5);
       doc.line(14, yPos, pageWidth - 14, yPos);
       yPos += 6;
+
       procedures.forEach((step: any, idx: number) => {
-        if (yPos > pageHeight - 40) {
+        // Check if we need a new page before starting a new step
+        if (yPos > pageHeight - 60) {
           doc.addPage();
           yPos = 20;
         }
+
+        // Add step number
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(12);
         doc.setTextColor(33, 33, 33);
         doc.text(`Step ${idx + 1} of ${procedures.length}`, 14, yPos);
         yPos += 6;
+
+        // Handle description with text wrapping
         doc.setFont('helvetica', 'normal');
         doc.setFontSize(10);
         doc.setTextColor(33, 33, 33);
-        doc.text(step.description || 'No description', 14, yPos);
-        yPos += 6;
+        
+        // Split description into lines that fit within page width
+        const descriptionLines = splitTextIntoLines(step.description || 'No description', pageWidth - 28, doc);
+        
+        // Add each line of the description
+        descriptionLines.forEach((line, lineIndex) => {
+          // Check if we need a new page for the next line
+          if (yPos > pageHeight - 20) {
+            doc.addPage();
+            yPos = 20;
+          }
+          doc.text(line, 14, yPos);
+          yPos += 6;
+        });
+
+        // Handle critical point with text wrapping
         if (step.criticalPoint) {
+          // Add some space before critical point
+          yPos += 4;
+          
+          // Check if we need a new page for critical point
+          if (yPos > pageHeight - 40) {
+            doc.addPage();
+            yPos = 20;
+          }
+
           doc.setFont('helvetica', 'italic');
           doc.setFontSize(10);
           doc.setTextColor(200, 0, 0);
-          doc.text(`Critical Point: ${step.criticalPoint}`, 14, yPos);
-          yPos += 6;
+          
+          // Split critical point into lines
+          const criticalPointLines = splitTextIntoLines(`Critical Point: ${step.criticalPoint}`, pageWidth - 28, doc);
+          
+          // Add each line of the critical point
+          criticalPointLines.forEach((line, lineIndex) => {
+            // Check if we need a new page for the next line
+            if (yPos > pageHeight - 20) {
+              doc.addPage();
+              yPos = 20;
+            }
+            doc.text(line, 14, yPos);
+            yPos += 6;
+          });
         }
-        yPos += 4;
+
+        // Add space between steps
+        yPos += 8;
       });
       yPos += 10;
     }

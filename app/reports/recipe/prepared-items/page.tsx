@@ -28,7 +28,6 @@ const preparedItemsColumns: ColumnDefinition<any>[] = [
     { 
         header: 'Quantity (Unit)',
         accessorKey: 'quantityPrepared',
-        cellClassName: 'text-right',
         cell: (v, row) => {
             let unit = '';
             if (row.unitOfMeasurement && typeof row.unitOfMeasurement === 'string') {
@@ -42,7 +41,6 @@ const preparedItemsColumns: ColumnDefinition<any>[] = [
     { 
         header: 'Item Cost', 
         accessorKey: 'itemCost',
-        cellClassName: 'text-right',
         cell: (v) => parseFloat(v).toLocaleString('en-US', { style: 'currency', currency: 'USD' })
     },
     { header: 'Storage Location', accessorKey: 'storageLocation' },
