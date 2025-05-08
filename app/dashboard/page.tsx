@@ -124,7 +124,7 @@ export default function Dashboard() {
     // Fetch profit margin data when dates change
     if (startDate && endDate) {
       dispatch(clearRecipeReportError("profitMargin"));
-      dispatch(fetchProfitMargin({ startDate: "2025-02-27", endDate: "2025-04-27", sortBy: "preparedDate", direction: "asc", page: 0, size: 1000 })); // Or another relevant sortBy
+      dispatch(fetchProfitMargin({ startDate: "2024-02-27", endDate: new Date().toISOString().split("T")[0], sortBy: "preparedDate", direction: "asc", page: 0, size: 1000 })); // Or another relevant sortBy
     }
   }, [dispatch, startDate, endDate]);
 
@@ -328,10 +328,25 @@ export default function Dashboard() {
             dataKey="category"
             fontSize={10}
             interval={0}
-            angle={-45}
-            textAnchor="end"
-            height={60}
-            tick={{ fontWeight: 'bold' }}
+            height={80}
+            tick={function CustomTick({ x, y, payload }) {
+              const name = payload.value.length > 12 ? payload.value.slice(0, 12) + '…' : payload.value;
+              return (
+                <g transform={`translate(${x},${y})`}>
+                  <text
+                    x={0}
+                    y={0}
+                    dy={16}
+                    textAnchor="end"
+                    fill="#666"
+                    fontSize={10}
+                    transform="rotate(-60)"
+                  >
+                    {name}
+                  </text>
+                </g>
+              );
+            }}
           />
           <YAxis
             fontSize={10}

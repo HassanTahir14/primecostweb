@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/store/store';
 import { fetchSubRecipesTransferred, clearTransferReportError } from '@/store/transferReportsSlice';
-import { SubRecipeTransferRecord } from '@/store/transferReportsApi'; // Import record type
+import { SubRecipeTransferRecord } from '@/store/transferReportsApi';
 import PageLayout from '@/components/PageLayout';
 import Button from '@/components/common/button';
 import Input from '@/components/common/input';
@@ -13,19 +13,13 @@ import ConfirmationModal from '@/components/common/ConfirmationModal';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { getDefaultDateRange } from '@/utils/dateUtils';
-
-// Column Definitions
-const subRecipeColumns: ColumnDefinition<SubRecipeTransferRecord>[] = [
-    { header: 'Sub-Recipe Name', accessorKey: 'subRecipeName' },
-    { header: 'Branch', accessorKey: 'branch' },
-    { header: 'Quantity', accessorKey: 'quantity' },
-    { header: 'Unit', accessorKey: 'unit' },
-    { header: 'Cost', accessorKey: 'cost', cell: (value) => value?.toFixed(2) ?? 'N/A' },
-    { header: 'Date', accessorKey: 'orderDate' }, // Assuming orderDate is transfer date
-];
+import { useCurrency } from '@/context/CurrencyContext';
+import { formatCurrencyValue } from '@/utils/currencyUtils';
 
 const SubRecipesTransferredReportPage: React.FC = () => {
   const dispatch: AppDispatch = useDispatch();
+  const { currency } = useCurrency();
+  const [formattedCosts, setFormattedCosts] = useState<any>({});
   const { data: reportData, loading, error } = useSelector((state: RootState) => state.transferReports.subRecipesTransferred);
 
   const { startDate: defaultStartDate, endDate: defaultEndDate } = getDefaultDateRange();
@@ -33,11 +27,30 @@ const SubRecipesTransferredReportPage: React.FC = () => {
   const [endDate, setEndDate] = useState<string>(defaultEndDate);
   const [validationError, setValidationError] = useState<string | null>(null);
 
-  // Fetch data on first load
   useEffect(() => {
     dispatch(clearTransferReportError('subRecipesTransferred'));
-    dispatch(fetchSubRecipesTransferred({ startDate, endDate, sortBy: "preparedDate", page: 0, size: 1000, direction: "asc" }));
-  }, []); // Empty dependency array means this runs once on mount
+    dispatch(fetchSubRecipesTransferred({ startDate, endDate, sortBy: "createdAt", page: 0, size: 1000, direction: "asc" }));
+  }, []); 
+
+  useEffect(() => {
+    if (reportData && currency) {
+      const formatCosts = async () => {
+        try {
+          const costs: {[key: string]: string} = {};
+          const details = reportData?.transferDetails || [];
+          for (const record of details) {
+            const key = `${record.transferCode}-${record.transferDate}`;
+            costs[key] = await formatCurrencyValue(record.transferCost || 0, currency);
+          }
+          setFormattedCosts(costs);
+        } catch (error) {
+          console.error('Error formatting costs:', error);
+          setFormattedCosts({});
+        }
+      };
+      formatCosts();
+    }
+  }, [reportData, currency]);
 
   const handleFetchReport = () => {
     if (!startDate || !endDate) {
@@ -53,7 +66,22 @@ const SubRecipesTransferredReportPage: React.FC = () => {
     dispatch(clearTransferReportError('subRecipesTransferred'));
   };
 
-  const tableTitle = "Transferred Sub-Recipes Report Results";
+  // Column definitions moved inside component to access formattedCosts
+  const subRecipeColumns: ColumnDefinition<SubRecipeTransferRecord>[] = [
+    { header: 'Transfer Date', accessorKey: 'transferDate' },
+    { header: 'Transfer Code', accessorKey: 'transferCode' },
+    { header: 'Requested By', accessorKey: 'requestedBy' },
+    { header: 'Transferred By', accessorKey: 'transferredBy' },
+    { header: 'From Branch', accessorKey: 'fromBranch' },
+    { header: 'To Branch', accessorKey: 'toBranch' },
+    { 
+        header: 'Transfer Cost', 
+        accessorKey: 'transferCost',
+        cell: (value, record) => formattedCosts[`${record.transferCode}-${record.transferDate}`] || 'N/A'
+    },
+    { header: 'Other Charges', accessorKey: 'otherCharges' },
+    { header: 'Total Cost', accessorKey: 'totalTransferCost' },
+  ];
 
   return (
     <PageLayout title="Sub-Recipes Transferred Report">
@@ -90,8 +118,8 @@ const SubRecipesTransferredReportPage: React.FC = () => {
       </div>
 
       <ReportTypeTable<SubRecipeTransferRecord>
-        title={tableTitle}
-        data={reportData?.subRecipes || []} // Access nested array
+        title="Transferred Sub-Recipes Report Results"
+        data={reportData?.transferDetails || []}
         columns={subRecipeColumns}
         isLoading={loading}
       />

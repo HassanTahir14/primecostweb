@@ -4,26 +4,33 @@ import api from './api';
 interface DateRangePayload {
     startDate: string; // "YYYY-MM-DD"
     endDate: string; // "YYYY-MM-DD"
+    categoryName?: string;
 }
 
 // --- Record Interfaces (Based on actual API responses) ---
 
 export interface SubRecipeTransferRecord {
-  subRecipeName: string;
-  branch: string;
-  quantity: number;
-  unit: string;
-  cost: number;
-  orderDate: string; // Assuming this is the transfer date
+  transferDate: string;
+  transferCode: number;
+  requestedBy: string;
+  transferredBy: string;
+  transferCost: number;
+  otherCharges: number;
+  totalTransferCost: number;
+  fromBranch: string | null;
+  toBranch: string | null;
 }
 
 export interface RecipeTransferRecord {
-  recipeName: string;
-  branch: string;
-  quantity: number;
-  unit: string;
-  cost: number;
-  orderDate: string; // Assuming this is the transfer date
+  transferDate: string;
+  transferCode: number;
+  requestedBy: string;
+  transferredBy: string;
+  transferCost: number;
+  otherCharges: number;
+  totalTransferCost: number;
+  fromBranch: string | null;
+  toBranch: string | null;
 }
 
 export interface MaterialTransferRecord {
@@ -55,11 +62,11 @@ interface BaseReportResponse {
 }
 
 export interface SubRecipeTransferResponse extends BaseReportResponse {
-    subRecipes: SubRecipeTransferRecord[];
+    transferDetails: SubRecipeTransferRecord[];
 }
 
 export interface RecipeTransferResponse extends BaseReportResponse {
-    recipes: RecipeTransferRecord[];
+    transferDetails: RecipeTransferRecord[];
 }
 
 export interface MaterialTransferResponse extends BaseReportResponse {
@@ -71,11 +78,40 @@ export interface ItemTransferResponse extends BaseReportResponse {
 }
 
 // Default response structure for error cases
-const defaultErrorResponse = (detailsKey: string) => ({
+const defaultErrorResponse = (detailsKey: string) => {
+  if (detailsKey === 'transferDetails') {
+    return {
+      responseCode: 'ERROR',
+      description: 'Failed to fetch report or invalid response structure.',
+      transferDetails: [],
+    };
+  }
+  if (detailsKey === 'recipes') {
+    return {
+      responseCode: 'ERROR',
+      description: 'Failed to fetch report or invalid response structure.',
+      recipes: [],
+    };
+  }
+  if (detailsKey === 'materials') {
+    return {
+      responseCode: 'ERROR',
+      description: 'Failed to fetch report or invalid response structure.',
+      materials: [],
+    };
+  }
+  if (detailsKey === 'subRecipes') {
+    return {
+      responseCode: 'ERROR',
+      description: 'Failed to fetch report or invalid response structure.',
+      subRecipes: [],
+    };
+  }
+  return {
     responseCode: 'ERROR',
     description: 'Failed to fetch report or invalid response structure.',
-    [detailsKey]: [],
-});
+  };
+};
 
 // --- API Functions --- Assuming endpoints from image
 export const transferReportsApi = {
@@ -84,14 +120,14 @@ export const transferReportsApi = {
         console.log(`Fetching report: ${endpoint}`, payload);
         try {
             const response = await api.post(endpoint, payload);
-            if (!response.data || !Array.isArray(response.data.subRecipes)) {
+            if (!response.data || !Array.isArray(response.data.transferDetails)) {
                 console.error(`API Error: Invalid response structure from ${endpoint}`, response.data);
-                return defaultErrorResponse('subRecipes') as SubRecipeTransferResponse;
+                return defaultErrorResponse('transferDetails') as SubRecipeTransferResponse;
             }
             return response.data as SubRecipeTransferResponse;
         } catch (error) {
             console.error(`API Call Failed: ${endpoint}`, error);
-            return defaultErrorResponse('subRecipes') as SubRecipeTransferResponse;
+            return defaultErrorResponse('transferDetails') as SubRecipeTransferResponse;
         }
     },
 
@@ -100,14 +136,14 @@ export const transferReportsApi = {
         console.log(`Fetching report: ${endpoint}`, payload);
         try {
             const response = await api.post(endpoint, payload);
-            if (!response.data || !Array.isArray(response.data.recipes)) {
+            if (!response.data || !Array.isArray(response.data.transferDetails)) {
                 console.error(`API Error: Invalid response structure from ${endpoint}`, response.data);
-                return defaultErrorResponse('recipes') as RecipeTransferResponse;
+                return defaultErrorResponse('transferDetails') as RecipeTransferResponse;
             }
             return response.data as RecipeTransferResponse;
         } catch (error) {
             console.error(`API Call Failed: ${endpoint}`, error);
-            return defaultErrorResponse('recipes') as RecipeTransferResponse;
+            return defaultErrorResponse('transferDetails') as RecipeTransferResponse;
         }
     },
 
