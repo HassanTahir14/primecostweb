@@ -33,10 +33,25 @@ interface PreparedRecipe {
   mainRecipeNameAndDescription: string;
 }
 
+interface PreparedSubRecipe {
+  preParedSubRecipeId: number;
+  preparedByUserId: number;
+  subeRecipeCode: string;
+  uom: string;
+  expirationDate: string;
+  preparedDate: string;
+  preparedSubRecipeStatus: string;
+  inventoryLocations: InventoryLocation[];
+  totalQuantityAcrossLocations: number;
+  subRecipeBatchNumber: string;
+  subRecipeNameAndDescription: string;
+}
+
 interface ApiResponse {
   responseCode: string;
   description: string;
-  preparedMainRecipeList: PreparedRecipe[];
+  preparedMainRecipeList?: PreparedRecipe[];
+  preparedSubRecipeList?: PreparedSubRecipe[];
   pageNumber: number;
   pageSize: number;
   totalElements: number;
@@ -46,7 +61,8 @@ interface ApiResponse {
 }
 
 export default function FinishedOrdersPage() {
-  const [recipes, setRecipes] = useState<PreparedRecipe[]>([]);
+  const [mainRecipes, setMainRecipes] = useState<PreparedRecipe[]>([]);
+  const [subRecipes, setSubRecipes] = useState<PreparedSubRecipe[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const currentUser = useSelector(selectCurrentUser);
@@ -61,19 +77,33 @@ export default function FinishedOrdersPage() {
       }
 
       try {
-        const response = await api.post<ApiResponse>('/inventory/view/prepared-main-recipe', {
+        // Fetch main recipes
+        const mainResponse = await api.post<ApiResponse>('/inventory/view/prepared-main-recipe', {
           page: 0,
           size: 1000,
           sortBy: "preparedDate",
           direction: "desc"
         });
 
-        if (response.data.responseCode === "0000") {
-          const filteredRecipes = response.data.preparedMainRecipeList.filter(
+        // Fetch sub recipes
+        const subResponse = await api.post<ApiResponse>('/inventory/view/prepared-sub-recipe', {
+          page: 0,
+          size: 1000,
+          sortBy: "preparedDate",
+          direction: "desc"
+        });
+
+        if (mainResponse.data.responseCode === "0000" && subResponse.data.responseCode === "0000") {
+          const filteredMainRecipes = mainResponse.data.preparedMainRecipeList?.filter(
             recipe => Number(recipe.preparedByUserId) === Number(userId)
-          );
-          console.log('Filtered Recipes:', filteredRecipes);
-          setRecipes(filteredRecipes);
+          ) || [];
+          
+          const filteredSubRecipes = subResponse.data.preparedSubRecipeList?.filter(
+            recipe => Number(recipe.preparedByUserId) === Number(userId)
+          ) || [];
+
+          setMainRecipes(filteredMainRecipes);
+          setSubRecipes(filteredSubRecipes);
         } else {
           setError('Failed to fetch recipes');
         }
@@ -88,19 +118,20 @@ export default function FinishedOrdersPage() {
     fetchPreparedRecipes();
   }, [userId]);
 
-  const handlePrintLabel = async (recipe: PreparedRecipe) => {
+  const handlePrintLabel = async (recipe: PreparedRecipe | PreparedSubRecipe) => {
     try {
+      const isSubRecipe = 'subeRecipeCode' in recipe;
       const labelData = {
         preparedBy: currentUser?.username || 'Unknown User',
-        itemName: recipe.mainRecipeNameAndDescription,
-        batchNumber: recipe.mainRecipeBatchNumber,
+        itemName: isSubRecipe ? recipe.subRecipeNameAndDescription : recipe.mainRecipeNameAndDescription,
+        batchNumber: isSubRecipe ? recipe.subRecipeBatchNumber : recipe.mainRecipeBatchNumber,
         quantity: `${recipe.totalQuantityAcrossLocations} ${recipe.uom.split('@')[0]}`,
         producedOn: new Date(recipe.preparedDate).toLocaleString(),
         bestBefore: new Date(recipe.expirationDate).toLocaleString(),
       };
 
       const doc = await generateRecipeLabel(labelData);
-      doc.save(`recipe-label-${recipe.preparedMainRecipeId}.pdf`);
+      doc.save(`recipe-label-${isSubRecipe ? recipe.preParedSubRecipeId : recipe.preparedMainRecipeId}.pdf`);
     } catch (error) {
       console.error('Error generating PDF:', error);
     }
@@ -132,7 +163,7 @@ export default function FinishedOrdersPage() {
         <div className="bg-white rounded-lg shadow p-6">
           <h2 className="text-xl font-semibold mb-4">My Prepared Recipes</h2>
           
-          {recipes.length === 0 ? (
+          {mainRecipes.length === 0 && subRecipes.length === 0 ? (
             <p className="text-gray-500">No prepared recipes found.</p>
           ) : (
             <div className="overflow-x-auto">
@@ -148,13 +179,45 @@ export default function FinishedOrdersPage() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {recipes.map((recipe) => (
-                    <tr key={recipe.preparedMainRecipeId}>
+                  {/* Main Recipes */}
+                  {mainRecipes.map((recipe) => (
+                    <tr key={`main-${recipe.preparedMainRecipeId}`}>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                         {recipe.mainRecipeNameAndDescription}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {recipe.mainRecipeBatchNumber}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {recipe.totalQuantityAcrossLocations} {recipe.uom.split('@')[0]}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {recipe.inventoryLocations.map((loc: InventoryLocation) => loc.storageLocationWithCode).join(', ') || 'N/A'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {new Date(recipe.preparedDate).toLocaleString()}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <Button 
+                          variant="default" 
+                          size="sm" 
+                          className="rounded-full bg-[#339A89] text-white text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-1.5"
+                          onClick={() => handlePrintLabel(recipe)}
+                        >
+                          <Printer size={16} className="mr-1" />
+                          Print Label
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
+                  {/* Sub Recipes */}
+                  {subRecipes.map((recipe) => (
+                    <tr key={`sub-${recipe.preParedSubRecipeId}`}>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        {recipe.subRecipeNameAndDescription}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {recipe.subRecipeBatchNumber}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {recipe.totalQuantityAcrossLocations} {recipe.uom.split('@')[0]}
