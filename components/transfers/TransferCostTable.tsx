@@ -22,7 +22,9 @@ const costTypes = [
 export default function TransferCostTable({ costs, onChange, totalItemCost }: TransferCostTableProps) {
   
   const handleCostChange = (key: string, value: number) => {
-    onChange({ ...costs, [key]: isNaN(value) ? 0 : value });
+    // Ensure value is between 0 and 100
+    const validatedValue = Math.min(Math.max(isNaN(value) ? 0 : value, 0), 100);
+    onChange({ ...costs, [key]: validatedValue });
   };
 
   // Calculate amounts based on totalItemCost and percentages
@@ -77,6 +79,7 @@ export default function TransferCostTable({ costs, onChange, totalItemCost }: Tr
                       className="pr-6"
                       step="0.01"
                       min="0"
+                      max="100"
                     />
                     <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 pointer-events-none">%</span>
                   </div>

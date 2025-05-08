@@ -239,10 +239,11 @@ export default function TransferSubRecipeTable({
                     <td className="p-2 align-top">
                         <Input
                             type="number"
-                            value={item.cost * item.quantity || 0}
+                            value={(item.cost * item.quantity || 0).toFixed(2)}
                             placeholder="Cost"
                             readOnly
                             className="bg-gray-100"
+                            step="0.01"
                         />
                     </td>
                     <td className="p-2 align-top text-center">
