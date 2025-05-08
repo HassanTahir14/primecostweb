@@ -14,6 +14,8 @@ import { fetchAllTaxes, selectAllTaxes } from '@/store/taxSlice'; // Import tax 
 import api from '@/store/api'; // Re-import api if needed for units
 import { RootState } from '@/store/store'; // Import RootState if needed for typing selector
 import axios from 'axios'; // Use axios for direct API call if not using your api wrapper
+import { useCurrency } from '@/context/CurrencyContext';
+import { formatCurrencyValue } from '@/utils/currencyUtils';
 
 // Define the specific Item structure (can be imported if defined elsewhere)
 interface ItemImage { imageId: number; path: string; }
@@ -104,6 +106,7 @@ export default function ItemDetailPage() {
   const router = useRouter();
   const params = useParams();
   const itemId = params.itemId as string;
+  const { currency } = useCurrency();
 
   // Get data from Redux state
   const allItems = useSelector(selectAllItems);
@@ -133,6 +136,8 @@ export default function ItemDetailPage() {
   const [purchaseOrdersError, setPurchaseOrdersError] = useState<string | null>(null);
   // Only use RECEIVED purchase orders for calculations and display
   const receivedPurchaseOrders = purchaseOrders.filter(po => po.purchaseOrderStatus === 'RECEIVED');
+
+  const [formattedCosts, setFormattedCosts] = useState<any>({});
 
   useEffect(() => {
     const authUserStr = localStorage.getItem('authUser');
@@ -240,6 +245,18 @@ export default function ItemDetailPage() {
     .finally(() => setPurchaseOrdersLoading(false));
 }, [itemId]);
 
+  useEffect(() => {
+    if (item) {
+      const formatCosts = async () => {
+        const costs = {
+          purchaseCostWithoutVat: await formatCurrencyValue(item.purchaseCostWithoutVat, currency),
+          purchaseCostWithVat: await formatCurrencyValue(item.purchaseCostWithVat, currency)
+        };
+        setFormattedCosts(costs);
+      };
+      formatCosts();
+    }
+  }, [item, currency]);
 
   // --- Field Configuration (Using IDs and render functions for names) ---
   const fieldConfig: DetailFieldConfig[] = [
@@ -294,12 +311,12 @@ export default function ItemDetailPage() {
       { 
         key: 'purchaseCostWithoutVat', 
         label: 'Cost (VAT Excl)',
-        render: (value: number | null | undefined) => formatCurrency(value) 
+        render: () => formattedCosts.purchaseCostWithoutVat || 'N/A'
       },
       { 
         key: 'purchaseCostWithVat', 
         label: 'Cost (VAT Incl)', 
-        render: (value: number | null | undefined) => formatCurrency(value)
+        render: () => formattedCosts.purchaseCostWithVat || 'N/A'
       }
     ] : []),
     { key: 'countryOrigin', label: 'Country of Origin' },

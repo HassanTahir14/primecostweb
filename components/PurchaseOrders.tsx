@@ -25,6 +25,8 @@ import { fetchAllBranches, Branch } from '@/store/branchSlice';
 import { fetchAllStorageLocations, StorageLocation } from '@/store/storageLocationSlice';
 import { useUnits } from '@/hooks/useUnits';
 import { fetchAllCategories } from '@/store/itemCategorySlice';
+import { useCurrency } from '@/context/CurrencyContext';
+import { formatCurrencyValue } from '@/utils/currencyUtils';
 
 // Extend the PurchaseOrder type to include createdAt
 interface PurchaseOrder extends PurchaseOrderType {
@@ -132,6 +134,9 @@ export default function PurchaseOrders({ onClose }: PurchaseOrdersProps) {
   const branches = useSelector((state: RootState) => state.branch.branches || []) as Branch[];
   console.log("branches", branches);
   const storageLocations = useSelector((state: RootState) => state.storageLocation.locations || []) as StorageLocation[];
+
+  // Get currency from context
+  const { currency } = useCurrency();
 
   // Function to get unit name by ID
   const getUnitName = (unitId: number) => {
@@ -610,6 +615,27 @@ export default function PurchaseOrders({ onClose }: PurchaseOrdersProps) {
 
   const [isDateAsc, setIsDateAsc] = useState(true);
 
+  const [formattedCosts, setFormattedCosts] = useState<any>({});
+
+  useEffect(() => {
+    if (purchaseOrders && currency) {
+      const formatCosts = async () => {
+        try {
+          const costs: {[key: string]: string} = {};
+          for (const order of purchaseOrders) {
+            const costWithVat = (order.purchaseCost ?? 0) + (order.vatAmount ?? 0);
+            costs[order.id] = await formatCurrencyValue(costWithVat, currency);
+          }
+          setFormattedCosts(costs);
+        } catch (error) {
+          console.error('Error formatting costs:', error);
+          setFormattedCosts({});
+        }
+      };
+      formatCosts();
+    }
+  }, [purchaseOrders, currency]);
+
   return (
     <div className="flex-1 flex flex-col bg-white min-h-screen px-3 py-3 sm:px-4 md:px-8 sm:py-4 md:py-6">
       <div className="flex items-center justify-between mb-4 sm:mb-6">
@@ -676,7 +702,7 @@ export default function PurchaseOrders({ onClose }: PurchaseOrdersProps) {
                           <td className="py-4 px-6 text-sm">{order.quantity}</td>
                           <td className="py-4 px-6 text-sm">{order.unitName}</td>
                           <td className="py-4 px-6 text-sm">{formatDate(order.dateOfOrder)}</td>
-                          <td className="py-4 px-6 text-sm">USD {costWithVat.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                          <td className="py-4 px-6 text-sm">{formattedCosts[order.id] || 'N/A'}</td>
                           <td className="py-4 px-6 text-sm">
                             <span className={order.tokenStatus === 'PENDING' ? 'text-red-600 font-bold' : ''}>
                               {order.tokenStatus.charAt(0).toUpperCase() + order.tokenStatus.slice(1).toLowerCase()}

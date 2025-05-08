@@ -23,6 +23,8 @@ import {
   clearError as clearItemsError,
 } from '@/store/itemsSlice';
 import { useRouter } from 'next/navigation';
+import { useCurrency } from '@/context/CurrencyContext';
+import { formatCurrencyValue } from '@/utils/currencyUtils';
 
 // Define Item interface matching the structure in itemsSlice
 interface ItemImage {

@@ -9,6 +9,8 @@ import Link from 'next/link';
 import { Edit, Trash2 } from 'lucide-react'; // Import icons for actions and remove Plus icon
 import ConfirmationModal from '@/components/common/ConfirmationModal';
 import { formatPositionName } from '@/utils/formatters';
+import { useCurrency } from '@/context/CurrencyContext';
+import { formatCurrencyValue } from '@/utils/currencyUtils';
 
 // Import Redux stuff
 import { AppDispatch, RootState } from '@/store/store';
@@ -27,6 +29,7 @@ export default function EmployeesPage() {
     loading: employeesLoading, 
     error: employeesError 
   } = useSelector((state: RootState) => state.employee);
+  const { currency } = useCurrency();
 
   // Modal state
   const [employeeModalMessage, setEmployeeModalMessage] = useState<string>('');
@@ -34,6 +37,8 @@ export default function EmployeesPage() {
   const [isConfirmModal, setIsConfirmModal] = useState<boolean>(false); // Differentiate confirm vs alert
   const [actionEmployeeId, setActionEmployeeId] = useState<number | null>(null);
   const [isDeleteSuccess, setIsDeleteSuccess] = useState<boolean>(false); // Track delete success
+
+  const [formattedSalaries, setFormattedSalaries] = useState<any>({});
 
   // Fetch employees on mount with retry
   useEffect(() => {
@@ -47,6 +52,25 @@ export default function EmployeesPage() {
 
     fetchData();
   }, [dispatch]);
+
+  useEffect(() => {
+    if (employees && currency) {
+      const formatSalaries = async () => {
+        try {
+          const salaries: {[key: string]: string} = {};
+          for (const emp of employees) {
+            const salary = emp.salaryDTO?.totalSalary || 0;
+            salaries[emp.employeeId] = await formatCurrencyValue(salary, currency);
+          }
+          setFormattedSalaries(salaries);
+        } catch (error) {
+          console.error('Error formatting salaries:', error);
+          setFormattedSalaries({});
+        }
+      };
+      formatSalaries();
+    }
+  }, [employees, currency]);
 
   // Show employee error modal if fetch fails
   useEffect(() => {
@@ -150,7 +174,7 @@ export default function EmployeesPage() {
         <div className="bg-white border border-gray-200 p-5 rounded-lg shadow flex justify-between items-center">
           <span className="font-medium text-gray-700">Total Payroll</span>
           <span className="text-xl font-semibold text-[#00997B]">
-            {employeesLoading ? '...' : `USD ${totalPayrollSum.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+            {employeesLoading ? '...' : formattedSalaries['total'] || 'N/A'}
           </span>
         </div>
       </div>
@@ -206,7 +230,7 @@ export default function EmployeesPage() {
                       <td className="py-4 px-6 text-sm">{employee.employeeDetailsDTO?.iqamaId || 'N/A'}</td>
                       <td className="py-4 px-6 text-sm">{employee.employeeDetailsDTO?.iqamaExpiryDate || 'N/A'}</td>
                       <td className="py-4 px-6 text-sm">
-                        USD {employee.salaryDTO?.totalSalary?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || '0.00'}
+                        {formattedSalaries[employee.employeeId] || 'N/A'}
                       </td>
                       <td className="py-4 px-6 text-sm">
                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${

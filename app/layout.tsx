@@ -1,6 +1,7 @@
 import './globals.css';
 import { Poppins } from 'next/font/google';
 import { ReduxProvider } from '@/store/Provider';
+import { CurrencyProvider } from '@/context/CurrencyContext';
 
 const poppins = Poppins({ 
   subsets: ['latin'],
@@ -23,7 +24,11 @@ export default function RootLayout({
         <link rel="icon" type="image/png" href="/logo.png" />
       </head>
       <body className={poppins.className}>
-        <ReduxProvider>{children}</ReduxProvider>
+        <CurrencyProvider>
+          <ReduxProvider>
+            {children}
+          </ReduxProvider>
+        </CurrencyProvider>
       </body>
     </html>
   );

@@ -7,6 +7,8 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import api from '@/store/api';
 import Loader from '@/components/common/Loader';
+import { useCurrency } from '@/context/CurrencyContext';
+import { formatCurrencyValue } from '@/utils/currencyUtils';
 type TransferTab = 'Inventory Items' | 'Recipe' | 'Sub Recipe';
 
 const tabs: { name: TransferTab; param: string }[] = [
@@ -27,10 +29,32 @@ export default function TransfersPage() {
   const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+  const { currency } = useCurrency();
+  const [formattedCosts, setFormattedCosts] = useState<any>({});
 
   useEffect(() => {
     fetchData();
   }, [activeTab]);
+
+  useEffect(() => {
+    if (data && currency) {
+      const formatCosts = async () => {
+        try {
+          const costs: {[key: string]: string} = {};
+          for (const item of data) {
+            const transferList = item.itemTransferList || item.preparedMainRecipeTransferList || item.preparedSubRecipeTransferList || [];
+            const cost = transferList.reduce((sum: number, it: any) => sum + (it.cost || 0), 0);
+            costs[item.transferReferenceNumber] = await formatCurrencyValue(cost, currency);
+          }
+          setFormattedCosts(costs);
+        } catch (error) {
+          console.error('Error formatting costs:', error);
+          setFormattedCosts({});
+        }
+      };
+      formatCosts();
+    }
+  }, [data, currency]);
 
   const fetchData = async () => {
     setLoading(true);
@@ -149,7 +173,7 @@ export default function TransfersPage() {
                       {/* <td className="p-3 text-sm">{item.approvedBy || 'N/A'}</td> */}
                       <td className="p-3 text-sm">{itemQuantity}</td>
                       <td className="p-3 text-sm">{uom}</td>
-                      <td className="p-3 text-sm">{cost.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                      <td className="p-3 text-sm">{formattedCosts[item.transferReferenceNumber] || 'N/A'}</td>
                     </tr>
                   );
                 })}

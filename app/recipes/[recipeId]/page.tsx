@@ -14,6 +14,8 @@ import { getImageUrlWithAuth } from '@/utils/imageUtils';
 import AuthImage from '@/components/common/AuthImage';
 import { generateDetailPDF } from '@/app/utils/pdfGenerator';
 import { DetailFieldConfig } from '@/components/common/GenericDetailPage';
+import { formatCurrencyValue } from '@/utils/currencyUtils';
+import { useCurrency } from '@/context/CurrencyContext';
 
 // Add interface for auth user
 interface AuthUser {
@@ -34,6 +36,7 @@ export default function RecipeDetailPage() {
   const orderId = searchParams.get('orderId');
   const recipes = useSelector(selectAllRecipes);
   const [branchId, setBranchId] = useState<number | undefined>();
+  const { currency } = useCurrency();
   
   const [recipe, setRecipe] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -41,6 +44,8 @@ export default function RecipeDetailPage() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+  const [formattedCosts, setFormattedCosts] = useState<any>({});
+  const [formattedIngredientCosts, setFormattedIngredientCosts] = useState<any>({});
 
   // Get user role from localStorage
   useEffect(() => {
@@ -104,6 +109,45 @@ export default function RecipeDetailPage() {
       fetchOrderDetails();
     }
   }, [isPreparationMode, orderId]);
+
+  useEffect(() => {
+    if (recipe && isAdmin && currency) {
+      const formatCosts = async () => {
+        try {
+          const costs = {
+            menuPrice: await formatCurrencyValue(recipe.menuPrice || 0, currency),
+            idealSellingPrice: await formatCurrencyValue(recipe.idealSellingPrice || 0, currency),
+            costPerPortion: await formatCurrencyValue(recipe.costPerPortion || 0, currency),
+            costPerRecipe: await formatCurrencyValue(recipe.costPerRecipe || 0, currency),
+            marginPerPortion: await formatCurrencyValue(recipe.marginPerPortion || 0, currency)
+          };
+          setFormattedCosts(costs);
+        } catch (error) {
+          console.error('Error formatting costs:', error);
+          setFormattedCosts({});
+        }
+      };
+      formatCosts();
+    }
+  }, [recipe, currency, isAdmin]);
+
+  useEffect(() => {
+    if (recipe && isAdmin && currency) {
+      const formatIngredientCosts = async () => {
+        try {
+          const costs: any = {};
+          for (const ing of recipe.ingredientsItems || []) {
+            costs[ing.id] = await formatCurrencyValue(ing.recipeCost || 0, currency);
+          }
+          setFormattedIngredientCosts(costs);
+        } catch (error) {
+          console.error('Error formatting ingredient costs:', error);
+          setFormattedIngredientCosts({});
+        }
+      };
+      formatIngredientCosts();
+    }
+  }, [recipe, currency, isAdmin]);
 
   const handleNextStep = () => {
     if (recipe && recipe.procedures && currentStep < recipe.procedures.length - 1) {
@@ -268,7 +312,7 @@ export default function RecipeDetailPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="bg-white p-4 rounded-lg shadow-sm">
               <h3 className="text-sm font-medium text-gray-500">Menu Price</h3>
-              <p className="mt-1">${Number(recipe.menuPrice).toFixed(2) ?? '0.00'}</p>
+              <p className="mt-1">{formattedCosts.menuPrice || 'N/A'}</p>
             </div>
             <div className="bg-white p-4 rounded-lg shadow-sm">
               <h3 className="text-sm font-medium text-gray-500">Food Cost Budget %</h3>
@@ -280,19 +324,19 @@ export default function RecipeDetailPage() {
             </div>
             <div className="bg-white p-4 rounded-lg shadow-sm">
               <h3 className="text-sm font-medium text-gray-500">Ideal Selling Price</h3>
-              <p className="mt-1">${Number(recipe.idealSellingPrice).toFixed(2) ?? '0.00'}</p>
+              <p className="mt-1">{formattedCosts.idealSellingPrice || 'N/A'}</p>
             </div>
             <div className="bg-white p-4 rounded-lg shadow-sm">
               <h3 className="text-sm font-medium text-gray-500">Cost Per Portion</h3>
-              <p className="mt-1">${Number(recipe.costPerPortion).toFixed(2) ?? '0.00'}</p>
+              <p className="mt-1">{formattedCosts.costPerPortion || 'N/A'}</p>
             </div>
             <div className="bg-white p-4 rounded-lg shadow-sm">
               <h3 className="text-sm font-medium text-gray-500">Cost Per Recipe</h3>
-              <p className="mt-1">${Number(recipe.costPerRecipe).toFixed(2) ?? '0.00'}</p>
+              <p className="mt-1">{formattedCosts.costPerRecipe || 'N/A'}</p>
             </div>
             <div className="bg-white p-4 rounded-lg shadow-sm">
               <h3 className="text-sm font-medium text-gray-500">Margin Per Portion</h3>
-              <p className="mt-1">${Number(recipe.marginPerPortion).toFixed(2) ?? '0.00'}</p>
+              <p className="mt-1">{formattedCosts.marginPerPortion || 'N/A'}</p>
             </div>
           </div>
         )}
@@ -358,7 +402,9 @@ export default function RecipeDetailPage() {
                         </>
                       )}
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{ing.yieldPercentage}%</td>
-                      {isAdmin && <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${Number(ing.recipeCost).toFixed(2) ?? '0.00'}</td>}
+                      {isAdmin && <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {formattedIngredientCosts[ing.id] || 'N/A'}
+                      </td>}
                     </tr>
                   );
                 })}
