@@ -15,6 +15,7 @@ import RecipeProcedureForm from '@/components/recipes/RecipeProcedureForm';
 import { updateRecipeThunk, fetchRecipeByIdThunk } from '@/store/recipeSlice';
 import { AppDispatch } from '@/store/store';
 import ConfirmationModal from '@/components/common/ConfirmationModal';
+import { useTranslation } from '@/context/TranslationContext';
 
 const steps = [
   { id: 'details', name: 'Details' },
@@ -27,6 +28,7 @@ export default function EditRecipePage() {
   const { id } = useParams();
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
+  const { t } = useTranslation();
   const [activeStep, setActiveStep] = useState('details');
   const [recipeData, setRecipeData] = useState<any>({});
   const [isLoading, setIsLoading] = useState(true);
@@ -244,7 +246,7 @@ export default function EditRecipePage() {
 
   if (isLoading) {
     return (
-      <PageLayout title="All Recipes">
+      <PageLayout title={t('recipes.edit.title')}>
         <div className="flex justify-center items-center h-64">
           <Loader size="medium" />
         </div>
@@ -253,15 +255,15 @@ export default function EditRecipePage() {
   }
 
   if (error) {
-    return <div>Error: {error}</div>;
+    return <div>{t('common.error')}: {error}</div>;
   }
 
   return (
-    <PageLayout title="Edit Recipe">
+    <PageLayout title={t('recipes.edit.title')}>
       <div className="mb-4">
         <Link href="/recipes" className="inline-flex items-center text-gray-600 hover:text-gray-900">
           <ArrowLeft className="w-5 h-5 mr-2" />
-          <span>Back to Recipes</span>
+          <span>{t('recipes.edit.backToRecipes')}</span>
         </Link>
       </div>
 
@@ -277,7 +279,7 @@ export default function EditRecipePage() {
                 : 'bg-gray-200 text-gray-700'
             }`}
           >
-            {step.name}
+            {t(`recipes.edit.steps.${step.id}`)}
           </button>
         ))}
       </div>
@@ -287,24 +289,26 @@ export default function EditRecipePage() {
         {renderStepContent()}
       </div>
 
-      {/* Success Modal */}
+      {/* Modals */}
       <ConfirmationModal
         isOpen={isSuccessModalOpen}
         onClose={() => setIsSuccessModalOpen(false)}
-        title="Success"
-        message="Recipe updated successfully!"
-        isAlert={true}
-        okText="OK"
+        onConfirm={() => {
+          setIsSuccessModalOpen(false);
+          router.push('/recipes');
+        }}
+        title={t('common.success')}
+        message={t('recipes.edit.success')}
+        confirmText={t('common.ok')}
       />
 
-      {/* Error Modal */}
       <ConfirmationModal
         isOpen={isErrorModalOpen}
         onClose={() => setIsErrorModalOpen(false)}
-        title="Error"
+        onConfirm={() => setIsErrorModalOpen(false)}
+        title={t('common.error')}
         message={errorMessage}
-        isAlert={true}
-        okText="OK"
+        confirmText={t('common.ok')}
       />
     </PageLayout>
   );

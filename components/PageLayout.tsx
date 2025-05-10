@@ -9,6 +9,7 @@ import { useAuth } from '@/hooks/useAuth';
 import Loader from '@/components/common/Loader';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout, selectCurrentUser } from '@/store/authSlice';
+import { useTranslation } from '@/context/TranslationContext';
 import api from '@/store/api';
 
 interface PageLayoutProps {
@@ -20,6 +21,7 @@ export default function PageLayout({ children, title }: PageLayoutProps) {
   const { isAuthenticated } = useAuth({ redirectTo: '/login' });
   const currentUser = useSelector(selectCurrentUser);
   const dispatch = useDispatch();
+  const { isRTL } = useTranslation();
 
   console.log("currentUser", currentUser);
 
@@ -92,12 +94,20 @@ export default function PageLayout({ children, title }: PageLayoutProps) {
   return (
     <div className="flex h-screen bg-[#F4F7FA]">
       <Sidebar isOpen={isSidebarOpen} onOpenChange={setIsSidebarOpen} />
-      <div className={`flex-1 flex flex-col transition-all duration-300 ${isSidebarOpen ? 'ml-[85%] sm:ml-[320px] lg:ml-[400px]' : 'ml-16 md:ml-20'}`}>
+      <div className={`flex-1 flex flex-col transition-all duration-300 ${
+        isSidebarOpen 
+          ? isRTL 
+            ? 'mr-[85%] sm:mr-[320px] lg:mr-[400px]' 
+            : 'ml-[85%] sm:ml-[320px] lg:ml-[400px]'
+          : isRTL
+            ? 'mr-16 md:mr-20'
+            : 'ml-16 md:ml-20'
+      }`}>
         {/* Header */}
         <header className="bg-white shadow-sm px-4 sm:px-6 py-3 flex justify-between items-center sticky top-0 z-30">
           {/* Left side - Display Page Title */}
           <div className="flex items-center">
-             <h1 className="text-lg sm:text-xl font-semibold text-gray-800">{title}</h1>
+            <h1 className="text-lg sm:text-xl font-semibold text-gray-800">{title}</h1>
           </div>
 
           {/* Right side - User Info & Actions */}
@@ -129,7 +139,7 @@ export default function PageLayout({ children, title }: PageLayoutProps) {
 
               {/* Dropdown Menu */}
               {isUserMenuOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-40 ring-1 ring-black ring-opacity-5">
+                <div className={`absolute ${isRTL ? 'left-0' : 'right-0'} mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-40 ring-1 ring-black ring-opacity-5`}>
                   <Link 
                     href="/settings" 
                     className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"

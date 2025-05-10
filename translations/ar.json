@@ -1,0 +1,356 @@
+{
+  "common": {
+    "welcome": "مرحباً",
+    "login": "تسجيل الدخول",
+    "signup": "إنشاء حساب",
+    "logout": "تسجيل الخروج",
+    "profile": "الملف الشخصي",
+    "settings": "الإعدادات",
+    "language": "اللغة",
+    "search": "بحث",
+    "menu": "القائمة",
+    "home": "الرئيسية",
+    "about": "حول",
+    "contact": "اتصل بنا",
+    "submit": "إرسال",
+    "cancel": "إلغاء",
+    "save": "حفظ",
+    "delete": "حذف",
+    "edit": "تعديل",
+    "loading": "جاري التحميل...",
+    "error": "خطأ",
+    "success": "نجاح",
+    "ok": "موافق",
+    "close": "إغلاق"
+  },
+  "auth": {
+    "email": "البريد الإلكتروني",
+    "password": "كلمة المرور",
+    "forgotPassword": "نسيت كلمة المرور؟",
+    "rememberMe": "تذكرني",
+    "dontHaveAccount": "ليس لديك حساب؟",
+    "alreadyHaveAccount": "لديك حساب بالفعل؟"
+  },
+  "settings": {
+    "title": "الإعدادات",
+    "language": {
+      "title": "اللغة",
+      "description": "اختر لغتك المفضلة للتطبيق",
+      "english": "الإنجليزية",
+      "arabic": "العربية",
+      "selected": "الحالية: {language}"
+    }
+  },
+  "items": {
+    "title": "قائمة العناصر الرئيسية",
+    "addItem": "إضافة عنصر",
+    "manageCategories": "إدارة التصنيفات",
+    "searchPlaceholder": "البحث عن عناصر...",
+    "loading": "جاري تحميل العناصر...",
+    "noItemsFound": "لم يتم العثور على عناصر.",
+    "table": {
+      "itemName": "اسم العنصر",
+      "code": "الرمز",
+      "brand": "العلامة التجارية",
+      "tokenStatus": "حالة التوكن",
+      "costVatExcl": "التكلفة (بدون ضريبة القيمة المضافة)",
+      "actions": "الإجراءات"
+    },
+    "delete": {
+      "title": "حذف العنصر",
+      "confirmMessage": "هل أنت متأكد من حذف العنصر \"{name}\"؟ لا يمكن التراجع عن هذا الإجراء.",
+      "deleting": "جاري الحذف...",
+      "cancel": "إلغاء",
+      "success": "تم حذف العنصر بنجاح!",
+      "error": "فشل في حذف العنصر. يرجى المحاولة مرة أخرى."
+    }
+  },
+  "recipes": {
+    "title": "جميع الوصفات",
+    "ingredients": "المكونات",
+    "createNew": "إنشاء جديد",
+    "subRecipesList": "قائمة الوصفات الفرعية",
+    "categories": {
+      "title": "فئات الوصفات",
+      "createNew": "إنشاء جديد",
+      "categoryName": "اسم الفئة",
+      "categoryType": "نوع الفئة",
+      "actions": "الإجراءات",
+      "noCategories": "لم يتم العثور على فئات.",
+      "modal": {
+        "title": "فئة جديدة",
+        "editTitle": "تعديل الفئة",
+        "enterName": "أدخل اسم الفئة",
+        "discard": "تجاهل",
+        "add": "إضافة",
+        "update": "تحديث"
+      },
+      "delete": {
+        "title": "حذف الفئة",
+        "confirmMessage": "هل أنت متأكد أنك تريد حذف {name}؟ لا يمكن التراجع عن هذا الإجراء.",
+        "success": "تم حذف الفئة بنجاح!"
+      }
+    },
+    "recipeName": "اسم الوصفة",
+    "tokenStatus": "حالة التوكن",
+    "approved": "تمت الموافقة",
+    "pending": "قيد الانتظار",
+    "approveToken": "الموافقة على التوكن",
+    "assignTo": "تعيين إلى",
+    "view": "عرض",
+    "edit": "تعديل",
+    "noRecipesFound": "لم يتم العثور على وصفات!",
+    "showing": "عرض",
+    "to": "إلى",
+    "of": "من",
+    "recipes": "وصفات",
+    "previous": "السابق",
+    "next": "التالي",
+    "searchPlaceholder": "البحث عن وصفة",
+    "editRestriction": "يمكن تعديل الوصفة فقط بعد موافقة المسؤول.",
+    "assignRestriction": "يمكن تعيين الوصفة فقط بعد موافقة المسؤول.",
+    "detail": {
+      "title": "تفاصيل الوصفة",
+      "category": "التصنيف",
+      "status": "الحالة",
+      "portions": "عدد الحصص",
+      "menuPrice": "سعر القائمة",
+      "foodCostBudget": "نسبة تكلفة الطعام المستهدفة",
+      "foodCostActual": "نسبة تكلفة الطعام الفعلية",
+      "idealSellingPrice": "سعر البيع المثالي",
+      "costPerPortion": "التكلفة لكل حصة",
+      "costPerRecipe": "تكلفة الوصفة",
+      "marginPerPortion": "هامش الربح لكل حصة",
+      "ingredient": "المكون",
+      "quantity": "الكمية",
+      "unit": "الوحدة",
+      "volume": "الحجم",
+      "yield": "العائد",
+      "recipeCost": "تكلفة الوصفة",
+      "instructions": "التعليمات",
+      "criticalPoint": "نقطة حرجة",
+      "previous": "السابق",
+      "next": "التالي",
+      "downloadPDF": "تحميل PDF",
+      "generating": "جاري إنشاء PDF...",
+      "noProcedure": "لا توجد تعليمات متاحة",
+      "ingredients": "المكونات",
+      "procedures": "الإجراءات"
+    },
+    "create": {
+      "title": "إنشاء وصفة",
+      "backToRecipes": "العودة إلى الوصفات",
+      "steps": {
+        "details": "التفاصيل",
+        "ingredients": "المكونات",
+        "costing": "التكاليف",
+        "procedure": "الإجراءات"
+      },
+      "details": {
+        "title": "تفاصيل الوصفة",
+        "uploadImage": "رفع صورة",
+        "currentImages": "الصور الحالية",
+        "newImages": "الصور الجديدة",
+        "name": "اسم الوصفة",
+        "recipeCode": "رمز الوصفة",
+        "category": "التصنيف",
+        "portions": "عدد الحصص",
+        "servingSize": "حجم الحصة",
+        "errors": {
+          "nameRequired": "اسم الوصفة مطلوب",
+          "nameLength": "يجب أن يكون اسم الوصفة 3 أحرف على الأقل",
+          "categoryRequired": "التصنيف مطلوب",
+          "portionsRequired": "يجب أن يكون عدد الحصص رقماً موجباً",
+          "servingSizeRequired": "حجم الحصة مطلوب",
+          "imageRequired": "مطلوب صورة واحدة على الأقل"
+        }
+      },
+      "ingredients": {
+        "title": "مكونات الوصفة",
+        "list": "قائمة المكونات",
+        "addIngredient": "إضافة مكون",
+        "editIngredient": "تعديل المكون",
+        "item": "المكون",
+        "quantity": "الكمية",
+        "yieldPercent": "نسبة العائد",
+        "apUsdUnit": "سعر الشراء / الوحدة",
+        "epUsdUnit": "سعر التكلفة / الوحدة",
+        "recipeCost": "تكلفة الوصفة",
+        "unit": "الوحدة",
+        "actions": "الإجراءات",
+        "errors": {
+          "itemRequired": "المكون مطلوب",
+          "quantityRequired": "يجب أن تكون الكمية أكبر من 0",
+          "yieldPercentRequired": "يجب أن تكون نسبة العائد أكبر من 0",
+          "apUsdUnitRequired": "يجب أن يكون سعر الشراء / الوحدة 0 أو أكبر",
+          "epUsdUnitRequired": "يجب أن يكون سعر التكلفة / الوحدة 0 أو أكبر",
+          "ingredientsRequired": "مطلوب مكون واحد على الأقل"
+        }
+      },
+      "costing": {
+        "title": "تكاليف الوصفة",
+        "menuPrice": "سعر القائمة",
+        "foodCostBudget": "نسبة تكلفة الطعام المستهدفة",
+        "foodCostActual": "نسبة تكلفة الطعام الفعلية",
+        "idealSellingPrice": "سعر البيع المثالي",
+        "costPerPortion": "التكلفة لكل حصة",
+        "costPerRecipe": "تكلفة الوصفة",
+        "marginPerPortion": "هامش الربح لكل حصة",
+        "errors": {
+          "menuPriceRequired": "سعر القائمة مطلوب",
+          "menuPriceGreaterThanZero": "يجب أن يكون أكبر من 0",
+          "foodCostBudgetRequired": "نسبة تكلفة الطعام المستهدفة مطلوبة",
+          "foodCostBudgetGreaterThanZero": "يجب أن تكون أكبر من 0",
+          "foodCostBudgetRange": "يجب أن تكون بين 0 و 100",
+          "marginPerPortionNegative": "لا يمكن أن يكون الهامش سالباً. يرجى زيادة سعر القائمة",
+          "foodCostActualRange": "يجب أن تكون بين 0 و 100"
+        }
+      },
+      "procedure": {
+        "title": "إجراءات الوصفة",
+        "addStep": "إضافة خطوة",
+        "steps": "خطوات الإجراءات",
+        "stepLabel": "الخطوة",
+        "enterDescription": "أدخل وصف الإجراء",
+        "errors": {
+          "descriptionRequired": "يجب أن يكون وصف الخطوة 3 أحرف على الأقل",
+          "descriptionTooLong": "يجب ألا يتجاوز وصف الخطوة 2000 حرف",
+          "stepsRequired": "يجب أن تحتوي جميع الخطوات على وصف"
+        },
+        "validation": {
+          "title": "خطأ في التحقق",
+          "fixErrors": "يرجى تصحيح أخطاء التحقق قبل المتابعة"
+        },
+        "success": {
+          "created": "تم إنشاء الوصفة بنجاح!",
+          "updated": "تم تحديث الوصفة بنجاح!"
+        },
+        "creating": "جاري إنشاء الوصفة...",
+        "updating": "جاري تحديث الوصفة...",
+        "createButton": "إنشاء الوصفة",
+        "updateButton": "تحديث الوصفة",
+        "imageRequired": "مطلوب صورة واحدة على الأقل. يرجى الاحتفاظ بالصور الحالية أو رفع صور جديدة.",
+        "imageProcessError": "فشل في معالجة بعض الصور"
+      }
+    },
+    "subRecipes": {
+      "title": "الوصفات الفرعية",
+      "searchPlaceholder": "البحث عن وصفة فرعية",
+      "createNew": "إنشاء جديد",
+      "categories": "التصنيفات",
+      "tokenStatus": "حالة التوكن",
+      "approved": "تمت الموافقة",
+      "pending": "قيد الانتظار",
+      "approveToken": "الموافقة على التوكن",
+      "assignTo": "تعيين إلى",
+      "view": "عرض",
+      "edit": "تعديل",
+      "editRestriction": "يمكن تعديل الوصفة الفرعية فقط بعد موافقة المسؤول.",
+      "assignRestriction": "يمكن تعيين الوصفة الفرعية فقط بعد موافقة المسؤول.",
+      "noRecipesFound": "لم يتم العثور على وصفات فرعية!",
+      "showing": "عرض",
+      "to": "إلى",
+      "of": "من",
+      "recipes": "وصفات فرعية",
+      "previous": "السابق",
+      "next": "التالي",
+      "delete": {
+        "title": "حذف الوصفة الفرعية",
+        "confirmMessage": "هل أنت متأكد من حذف {name}؟ لا يمكن التراجع عن هذا الإجراء.",
+        "success": "تم حذف الوصفة الفرعية بنجاح!"
+      },
+      "categories": {
+        "title": "تصنيفات الوصفات الفرعية",
+        "createNew": "إنشاء جديد",
+        "edit": "تعديل",
+        "delete": "حذف",
+        "noCategoriesFound": "لم يتم العثور على تصنيفات.",
+        "delete": {
+          "title": "حذف التصنيف",
+          "confirmMessage": "هل أنت متأكد من حذف {name}؟ لا يمكن التراجع عن هذا الإجراء.",
+          "success": "تم حذف التصنيف بنجاح!"
+        },
+        "create": {
+          "title": "إنشاء تصنيف",
+          "name": "اسم التصنيف",
+          "description": "الوصف",
+          "backToCategories": "العودة إلى التصنيفات"
+        },
+        "edit": {
+          "title": "تعديل التصنيف",
+          "name": "اسم التصنيف",
+          "description": "الوصف",
+          "backToCategories": "العودة إلى التصنيفات"
+        }
+      },
+      "detail": {
+        "title": "تفاصيل الوصفة الفرعية",
+        "category": "التصنيف",
+        "status": "الحالة",
+        "portions": "عدد الحصص",
+        "menuPrice": "سعر القائمة",
+        "foodCostBudget": "نسبة تكلفة الطعام المستهدفة",
+        "foodCostActual": "نسبة تكلفة الطعام الفعلية",
+        "idealSellingPrice": "سعر البيع المثالي",
+        "costPerPortion": "التكلفة لكل حصة",
+        "costPerRecipe": "تكلفة الوصفة",
+        "marginPerPortion": "هامش الربح لكل حصة",
+        "ingredient": "المكون",
+        "quantity": "الكمية",
+        "unit": "الوحدة",
+        "weight": "الوزن",
+        "volume": "الحجم",
+        "yield": "العائد",
+        "recipeCost": "تكلفة الوصفة",
+        "instructions": "التعليمات",
+        "criticalPoint": "نقطة حرجة",
+        "previous": "السابق",
+        "next": "التالي",
+        "downloadPDF": "تحميل PDF",
+        "generating": "جاري إنشاء PDF...",
+        "noProcedure": "لا توجد تعليمات متاحة",
+        "ingredients": "المكونات",
+        "procedures": "الإجراءات"
+      }
+    }
+  },
+  "dashboard": {
+    "title": "لوحة التحكم",
+    "dateRange": {
+      "label": "اختر نطاق التاريخ",
+      "to": "إلى"
+    },
+    "stats": {
+      "preparedRecipes": "الوصفات المحضرة",
+      "totalItems": "إجمالي العناصر",
+      "totalOrders": "إجمالي الطلبات",
+      "totalEmployees": "إجمالي الموظفين"
+    },
+    "recipeProfitability": {
+      "title": "ربحية الوصفات",
+      "loading": "جاري جلب البيانات...",
+      "noData": "لا توجد بيانات للوصفات",
+      "profitMargin": "نسبة الربح %",
+      "costPerRecipe": "تكلفة الوصفة"
+    },
+    "reports": {
+      "title": "التقارير",
+      "nonConformance": "تقرير عدم المطابقة",
+      "recipe": "تقرير الوصفات",
+      "purchase": "تقرير المشتريات",
+      "employee": "تقرير بيانات الموظفين",
+      "transfer": "تقرير التحويلات"
+    },
+    "suppliers": {
+      "title": "أفضل الموردين حسب عدد العناصر",
+      "loading": "جاري تحميل الموردين...",
+      "noData": "لا توجد بيانات للموردين"
+    },
+    "countryOrigin": {
+      "title": "العناصر حسب بلد المنشأ",
+      "loading": "جاري تحميل الخريطة...",
+      "countriesFound": "البلدان الموجودة",
+      "noData": "لم يتم العثور على بيانات بلد المنشأ في العناصر."
+    }
+  }
+} 

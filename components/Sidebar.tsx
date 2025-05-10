@@ -9,6 +9,7 @@ import { selectCurrentUser } from '@/store/authSlice';
 import { logout } from '@/store/authSlice';
 import { useDispatch } from 'react-redux';
 import { useRouter } from 'next/navigation';
+import { useTranslation } from '@/context/TranslationContext';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -55,6 +56,7 @@ export default function Sidebar({ isOpen, onOpenChange }: SidebarProps) {
   const currentUser = useSelector(selectCurrentUser);
   const dispatch = useDispatch();
   const router = useRouter();
+  const { isRTL } = useTranslation();
 
   // Get the dashboard route based on user role
   const dashboardRoute = getDashboardRoute(currentUser?.role);
@@ -89,7 +91,7 @@ export default function Sidebar({ isOpen, onOpenChange }: SidebarProps) {
     const showMoreButton = accessibleMenuItems.length > maxCollapsedItems;
 
     return (
-      <div className="fixed h-screen bg-[#339A89] w-16 md:w-20 flex flex-col items-center py-4 z-50 left-0">
+      <div className={`fixed h-screen bg-[#339A89] w-16 md:w-20 flex flex-col items-center py-4 z-50 ${isRTL ? 'right-0' : 'left-0'}`}>
         <button
           onClick={() => onOpenChange(true)}
           className="text-white mb-8"
@@ -143,7 +145,7 @@ export default function Sidebar({ isOpen, onOpenChange }: SidebarProps) {
         onClick={() => onOpenChange(false)}
       />
       
-      <div className="fixed h-screen bg-[#339A89] w-[85%] sm:w-[320px] lg:w-[400px] p-4 md:p-6 z-50 left-0 overflow-y-auto">
+      <div className={`fixed h-screen bg-[#339A89] w-[85%] sm:w-[320px] lg:w-[400px] p-4 md:p-6 z-50 ${isRTL ? 'right-0' : 'left-0'} overflow-y-auto`}>
         <div className="flex items-center gap-2 text-white mb-6 md:mb-8">
           <button
             onClick={() => onOpenChange(false)}
@@ -172,7 +174,7 @@ export default function Sidebar({ isOpen, onOpenChange }: SidebarProps) {
         {/* Logout Button */}
         <button
           onClick={handleLogout}
-          className="flex items-center gap-2 text-white absolute bottom-4 md:bottom-6 left-4 md:left-6 hover:opacity-80"
+          className={`flex items-center gap-2 text-white absolute bottom-4 md:bottom-6 ${isRTL ? 'right-4 md:right-6' : 'left-4 md:left-6'} hover:opacity-80`}
         >
           <Image src="/assets/svgs/logout.svg" alt="Logout" width={20} height={20} className="brightness-0 invert" />
           <span className="text-xs md:text-sm">Logout</span>

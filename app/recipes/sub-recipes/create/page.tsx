@@ -5,11 +5,11 @@ import { ArrowLeft, Upload } from 'lucide-react';
 import Link from 'next/link';
 import PageLayout from '@/components/PageLayout';
 import Button from '@/components/common/button';
-
 import SubRecipeDetailsForm from '@/components/sub-recipe/SubRecipeDetailsForm';
 import SubRecipeIngredientsForm from '@/components/sub-recipe/SubRecipeIngredientsForm';
 import SubRecipeCostingForm from '@/components/sub-recipe/SubRecipeCostingForm';
 import SubRecipeProcedureForm from '@/components/sub-recipe/SubRecipeProcedureForm';
+import { useTranslation } from '@/context/TranslationContext';
 
 const steps = [
   { id: 'details', name: 'Details' },
@@ -19,6 +19,7 @@ const steps = [
 ];
 
 export default function CreateRecipePage() {
+  const { t } = useTranslation();
   const [activeStep, setActiveStep] = useState('details');
   const [recipeData, setRecipeData] = useState({
     existingImages: [],
@@ -75,11 +76,11 @@ export default function CreateRecipePage() {
   };
 
   return (
-    <PageLayout title="Create Sub Recipe">
+    <PageLayout title={t('recipes.subRecipes.create.title')}>
       <div className="mb-4">
         <Link href="/recipes/sub-recipes" className="inline-flex items-center text-gray-600 hover:text-gray-900">
           <ArrowLeft className="w-5 h-5 mr-2" />
-          <span>Back to Sub Recipes</span>
+          <span>{t('recipes.subRecipes.create.backToSubRecipes')}</span>
         </Link>
       </div>
 
@@ -95,7 +96,7 @@ export default function CreateRecipePage() {
                 : 'bg-gray-200 text-gray-700'
             }`}
           >
-            {step.name}
+            {t(`recipes.subRecipes.create.steps.${step.id}`)}
           </button>
         ))}
       </div>

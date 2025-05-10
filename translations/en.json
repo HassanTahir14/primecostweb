@@ -1,0 +1,354 @@
+{
+  "common": {
+    "welcome": "Welcome",
+    "login": "Login",
+    "signup": "Sign Up",
+    "logout": "Logout",
+    "profile": "Profile",
+    "settings": "Settings",
+    "language": "Language",
+    "search": "Search",
+    "menu": "Menu",
+    "home": "Home",
+    "about": "About",
+    "contact": "Contact",
+    "submit": "Submit",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "ok": "OK",
+    "close": "Close"
+  },
+  "auth": {
+    "email": "Email",
+    "password": "Password",
+    "forgotPassword": "Forgot Password?",
+    "rememberMe": "Remember Me",
+    "dontHaveAccount": "Don't have an account?",
+    "alreadyHaveAccount": "Already have an account?"
+  },
+  "settings": {
+    "title": "Settings",
+    "language": {
+      "title": "Language",
+      "description": "Choose your preferred language for the application",
+      "english": "English",
+      "arabic": "Arabic",
+      "selected": "Current: {language}"
+    }
+  },
+  "items": {
+    "title": "Items Master List",
+    "addItem": "Add Item",
+    "manageCategories": "Manage Categories",
+    "searchPlaceholder": "Search items...",
+    "loading": "Loading items...",
+    "noItemsFound": "No items found.",
+    "table": {
+      "itemName": "Item name",
+      "code": "Code",
+      "brand": "Brand",
+      "tokenStatus": "Token Status",
+      "costVatExcl": "Cost (VAT Excl)",
+      "actions": "Actions"
+    },
+    "delete": {
+      "title": "Delete Item",
+      "confirmMessage": "Are you sure you want to delete the item \"{name}\"? This action cannot be undone.",
+      "deleting": "Deleting...",
+      "cancel": "Cancel",
+      "success": "Item deleted successfully!",
+      "error": "Failed to delete item. Please try again."
+    }
+  },
+  "recipes": {
+    "title": "All Recipes",
+    "ingredients": "Ingredients",
+    "createNew": "Create New",
+    "subRecipesList": "Sub Recipes List",
+    "categories": {
+      "title": "Recipe Categories",
+      "createNew": "Create New",
+      "categoryName": "Category Name",
+      "categoryType": "Category Type",
+      "actions": "Actions",
+      "noCategories": "No categories found.",
+      "modal": {
+        "title": "New Category",
+        "editTitle": "Edit Category",
+        "enterName": "Enter Category Name",
+        "discard": "Discard",
+        "add": "Add",
+        "update": "Update"
+      },
+      "delete": {
+        "title": "Delete Category",
+        "confirmMessage": "Are you sure you want to delete {name}? This action cannot be undone.",
+        "success": "Category deleted successfully!"
+      }
+    },
+    "recipeName": "Recipe Name",
+    "tokenStatus": "Token Status",
+    "approved": "Approved",
+    "pending": "Pending",
+    "approveToken": "Approve Token",
+    "assignTo": "Assign To",
+    "view": "View",
+    "edit": "Edit",
+    "noRecipesFound": "No recipes found!",
+    "showing": "Showing",
+    "to": "to",
+    "of": "of",
+    "recipes": "recipes",
+    "previous": "Previous",
+    "next": "Next",
+    "searchPlaceholder": "Search for a recipe",
+    "editRestriction": "Recipe can only be edited after admin approval.",
+    "assignRestriction": "Recipe can only be assigned after admin approval.",
+    "detail": {
+      "title": "Recipe Details",
+      "category": "Category",
+      "status": "Status",
+      "portions": "Number of Portions",
+      "menuPrice": "Menu Price",
+      "foodCostBudget": "Food Cost Budget %",
+      "foodCostActual": "Food Cost Actual %",
+      "idealSellingPrice": "Ideal Selling Price",
+      "costPerPortion": "Cost per Portion",
+      "costPerRecipe": "Cost per Recipe",
+      "marginPerPortion": "Margin per Portion",
+      "ingredient": "Ingredient",
+      "quantity": "Quantity",
+      "unit": "Unit",
+      "volume": "Volume",
+      "yield": "Yield",
+      "recipeCost": "Recipe Cost",
+      "instructions": "Procedure",
+      "criticalPoint": "Critical Point",
+      "previous": "Previous",
+      "next": "Next",
+      "downloadPDF": "Download PDF",
+      "generating": "Generating PDF...",
+      "noProcedure": "No procedure available"
+    },
+    "create": {
+      "title": "Create Recipe",
+      "backToRecipes": "Back to Recipes",
+      "steps": {
+        "details": "Details",
+        "ingredients": "Ingredients",
+        "costing": "Costing",
+        "procedure": "Procedure"
+      },
+      "details": {
+        "title": "Recipe Details",
+        "uploadImage": "Upload Image",
+        "currentImages": "Current Images",
+        "newImages": "New Images",
+        "name": "Recipe Name",
+        "recipeCode": "Recipe Code",
+        "category": "Category",
+        "portions": "Number of Portions",
+        "servingSize": "Serving Size",
+        "errors": {
+          "nameRequired": "Name is required",
+          "nameLength": "Name must be at least 3 characters long",
+          "categoryRequired": "Category is required",
+          "portionsRequired": "Portions must be a positive number",
+          "servingSizeRequired": "Serving size is required",
+          "imageRequired": "At least one image is required"
+        }
+      },
+      "ingredients": {
+        "title": "Recipe Ingredients",
+        "list": "Ingredients List",
+        "addIngredient": "Add Ingredient",
+        "editIngredient": "Edit Ingredient",
+        "item": "Item",
+        "quantity": "Quantity",
+        "yieldPercent": "Yield %",
+        "apUsdUnit": "AP USD / Unit",
+        "epUsdUnit": "EP USD / Unit",
+        "recipeCost": "Recipe Cost",
+        "unit": "Unit",
+        "actions": "Actions",
+        "errors": {
+          "itemRequired": "Item is required",
+          "quantityRequired": "Quantity must be greater than 0",
+          "yieldPercentRequired": "Yield % must be greater than 0",
+          "apUsdUnitRequired": "AP USD / Unit must be 0 or greater",
+          "epUsdUnitRequired": "EP USD / Unit must be 0 or greater",
+          "ingredientsRequired": "At least one ingredient is required"
+        }
+      },
+      "costing": {
+        "title": "Recipe Costing",
+        "menuPrice": "Menu Price",
+        "foodCostBudget": "Food Cost % Budget",
+        "foodCostActual": "Food Cost % Actual",
+        "idealSellingPrice": "Ideal Selling Price",
+        "costPerPortion": "Cost Per Portion",
+        "costPerRecipe": "Cost Per Recipe",
+        "marginPerPortion": "Margin Per Portion",
+        "errors": {
+          "menuPriceRequired": "Menu Price is required",
+          "menuPriceGreaterThanZero": "Must be greater than 0",
+          "foodCostBudgetRequired": "Food Cost % Budget is required",
+          "foodCostBudgetGreaterThanZero": "Must be greater than 0",
+          "foodCostBudgetRange": "Must be between 0 and 100",
+          "marginPerPortionNegative": "Margin cannot be negative. Please increase the menu price",
+          "foodCostActualRange": "Must be between 0 and 100"
+        }
+      },
+      "procedure": {
+        "title": "Recipe Procedures",
+        "addStep": "Add Step",
+        "steps": "Procedure Steps",
+        "stepLabel": "Step",
+        "enterDescription": "Enter procedure description",
+        "errors": {
+          "descriptionRequired": "Step description must be at least 3 characters long",
+          "descriptionTooLong": "Step description must not exceed 2000 characters",
+          "stepsRequired": "All steps must have a description"
+        },
+        "validation": {
+          "title": "Validation Error",
+          "fixErrors": "Please fix the validation errors before proceeding"
+        },
+        "success": {
+          "created": "Recipe created successfully!",
+          "updated": "Recipe updated successfully!"
+        },
+        "creating": "Creating Recipe...",
+        "updating": "Updating Recipe...",
+        "createButton": "CREATE RECIPE",
+        "updateButton": "UPDATE RECIPE",
+        "imageRequired": "At least one image is required. Please either keep existing images or upload new ones.",
+        "imageProcessError": "Failed to process some images"
+      }
+    },
+    "subRecipes": {
+      "title": "Sub Recipes",
+      "searchPlaceholder": "Search Sub Recipe",
+      "createNew": "Create New",
+   
+      "tokenStatus": "Token Status",
+      "approved": "Approved",
+      "pending": "Pending",
+      "approveToken": "Approve Token",
+      "assignTo": "Assign To",
+      "view": "View",
+      "edit": "Edit",
+      "editRestriction": "Sub-recipe can only be edited once it is approved by admin.",
+      "assignRestriction": "Sub-recipe can only be assigned once it is approved by admin.",
+      "noRecipesFound": "No sub recipes found!",
+      "showing": "Showing",
+      "to": "to",
+      "of": "of",
+      "recipes": "sub-recipes",
+      "previous": "Previous",
+      "next": "Next",
+      "delete": {
+        "title": "Delete Sub Recipe",
+        "confirmMessage": "Are you sure you want to delete {name}? This action cannot be undone.",
+        "success": "Sub recipe deleted successfully!"
+      },
+      "categories": {
+        "title": "Sub Recipe Categories",
+        "createNew": "Create New",
+        "edit": "Edit",
+        "delete": "Delete",
+        "noCategoriesFound": "No categories found.",
+        "delete": {
+          "title": "Delete Category",
+          "confirmMessage": "Are you sure you want to delete {name}? This action cannot be undone.",
+          "success": "Category deleted successfully!"
+        },
+        "create": {
+          "title": "Create Category",
+          "name": "Category Name",
+          "description": "Description",
+          "backToCategories": "Back to Categories"
+        },
+        "edit": {
+          "title": "Edit Category",
+          "name": "Category Name",
+          "description": "Description",
+          "backToCategories": "Back to Categories"
+        }
+      },
+      "detail": {
+        "title": "Sub-Recipe Details",
+        "category": "Category",
+        "status": "Status",
+        "portions": "Number of Portions",
+        "menuPrice": "Menu Price",
+        "foodCostBudget": "Food Cost Budget %",
+        "foodCostActual": "Food Cost Actual %",
+        "idealSellingPrice": "Ideal Selling Price",
+        "costPerPortion": "Cost per Portion",
+        "costPerRecipe": "Cost per Recipe",
+        "marginPerPortion": "Margin per Portion",
+        "ingredient": "Ingredient",
+        "quantity": "Quantity",
+        "unit": "Unit",
+        "weight": "Weight",
+        "volume": "Volume",
+        "yield": "Yield",
+        "recipeCost": "Recipe Cost",
+        "instructions": "Procedure",
+        "criticalPoint": "Critical Point",
+        "previous": "Previous",
+        "next": "Next",
+        "downloadPDF": "Download PDF",
+        "generating": "Generating PDF...",
+        "noProcedure": "No procedure available",
+        "ingredients": "Ingredients",
+        "procedures": "Procedures"
+      }
+    }
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "dateRange": {
+      "label": "Select Date Range",
+      "to": "To"
+    },
+    "stats": {
+      "preparedRecipes": "Prepared Recipes",
+      "totalItems": "Total Items",
+      "totalOrders": "Total Orders",
+      "totalEmployees": "Total Employees"
+    },
+    "recipeProfitability": {
+      "title": "Recipe Profitability",
+      "loading": "Fetching data...",
+      "noData": "No recipe data available",
+      "profitMargin": "Profit Margin %",
+      "costPerRecipe": "Cost Per Recipe"
+    },
+    "reports": {
+      "title": "Reports",
+      "nonConformance": "Non Conformance Report",
+      "recipe": "Recipe Report",
+      "purchase": "Purchase Report",
+      "employee": "Employee Data Report",
+      "transfer": "Transfer Report"
+    },
+    "suppliers": {
+      "title": "Top Brands/Suppliers by Item Count",
+      "loading": "Loading suppliers...",
+      "noData": "No supplier data available"
+    },
+    "countryOrigin": {
+      "title": "Items by Country Origin",
+      "loading": "Loading Map...",
+      "countriesFound": "Countries Found",
+      "noData": "No country of origin data found in items."
+    }
+  }
+} 

@@ -16,6 +16,7 @@ import {
 } from '@/store/subRecipeCategorySlice';
 import type { AppDispatch, RootState } from '@/store/store';
 import Loader from '@/components/common/Loader';
+import { useTranslation } from '@/context/TranslationContext';
 
 interface Category {
   subRecipeCategoryId: number;
@@ -25,6 +26,7 @@ interface Category {
 
 export default function CategoriesPage() {
   const dispatch = useDispatch<AppDispatch>();
+  const { t } = useTranslation();
   const { subRecipeCategories, loading, error } = useSelector((state: RootState) => state.subRecipeCategory);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
@@ -80,10 +82,10 @@ export default function CategoriesPage() {
           subRecipeCategoryId: editingCategory.subRecipeCategoryId,
           ...categoryData
         })).unwrap();
-        setSuccessMessage('Category updated successfully!');
+        setSuccessMessage(t('recipes.categories.delete.success'));
       } else {
         await dispatch(addCategory(categoryData)).unwrap();
-        setSuccessMessage('Category created successfully!');
+        setSuccessMessage(t('recipes.categories.delete.success'));
       }
       closeModal();
       setIsSuccessModalOpen(true);
@@ -105,7 +107,7 @@ export default function CategoriesPage() {
     try {
       await dispatch(deleteCategory({ subRecipeCategoryId: selectedCategory.subRecipeCategoryId })).unwrap();
       setIsDeleteModalOpen(false);
-      setSuccessMessage('Category deleted successfully!');
+      setSuccessMessage(t('recipes.categories.delete.success'));
       setIsSuccessModalOpen(true);
       loadCategories();
     } catch (err: any) {
@@ -133,7 +135,7 @@ export default function CategoriesPage() {
 
   if (loading) {
     return (
-      <PageLayout title="Recipe Categories">
+      <PageLayout title={t('recipes.categories.title')}>
         <div className="flex justify-center items-center h-64">
           <Loader size="medium" />
         </div>
@@ -146,7 +148,7 @@ export default function CategoriesPage() {
   }
 
   return (
-    <PageLayout title="Recipe Categories">
+    <PageLayout title={t('recipes.categories.title')}>
       <div className="bg-white rounded-lg shadow-sm p-6 space-y-6">
         {/* Back link and Title/Create Button */}
         <div className="flex justify-between items-center mb-4">
@@ -154,18 +156,18 @@ export default function CategoriesPage() {
              <Link href="/recipes" className="text-gray-500 hover:text-gray-700">
                <ArrowLeft size={24} />
              </Link>
-             <h1 className="text-3xl font-semibold text-gray-900">Categories</h1>
+             <h1 className="text-3xl font-semibold text-gray-900">{t('recipes.categories.title')}</h1>
           </div>
-          <Button onClick={() => setIsModalOpen(true)}>Create New</Button>
+          <Button onClick={() => setIsModalOpen(true)}>{t('recipes.categories.createNew')}</Button>
         </div>
 
         {/* Category List */}
         <div className="space-y-3">
           {/* Header */}
           <div className="flex items-center px-4 py-2 text-sm font-medium text-gray-500 border-b">
-            <div className="flex-1">Category Name</div>
-            <div className="w-40">Category Type</div>
-            <div className="w-32 text-right">Actions</div>
+            <div className="flex-1">{t('recipes.categories.categoryName')}</div>
+            <div className="w-40">{t('recipes.categories.categoryType')}</div>
+            <div className="w-32 text-right">{t('recipes.categories.actions')}</div>
           </div>
           
           {/* Rows */}  
@@ -180,21 +182,21 @@ export default function CategoriesPage() {
                     size="sm"
                     onClick={() => handleEditCategory(category)}
                   >
-                    Edit
+                    {t('common.edit')}
                   </Button> 
                   <Button 
                     variant="destructive" 
                     size="sm"
                     onClick={() => handleDeleteClick(category)}
                   >
-                    Delete
+                    {t('common.delete')}
                   </Button>
                 </div>
               </div>
             ))
           ) : (
             <div className="text-center py-10 text-gray-500">
-              No categories found.
+              {t('recipes.categories.noCategories')}
             </div>
           )}
         </div>
@@ -204,11 +206,11 @@ export default function CategoriesPage() {
       <Modal 
         isOpen={isModalOpen} 
         onClose={() => setIsModalOpen(false)} 
-        title={editingCategory ? "Edit Category" : "New Category"}
+        title={editingCategory ? t('recipes.categories.modal.editTitle') : t('recipes.categories.modal.title')}
       >
         <div className="space-y-4 p-1">
           <div className="flex items-center justify-between">
-            <label className="text-sm font-medium text-gray-700">Recipe Category Type</label>
+            <label className="text-sm font-medium text-gray-700">{t('recipes.categories.categoryType')}</label>
             <div className="flex items-center space-x-4">
               <label className="flex items-center cursor-pointer">
                 <input 
@@ -236,7 +238,7 @@ export default function CategoriesPage() {
           </div>
           <div>
             <label htmlFor="categoryName" className="block text-sm font-medium text-gray-700 mb-1">
-              Category Name
+              {t('recipes.categories.categoryName')}
             </label>
             <input
               type="text"
@@ -246,7 +248,7 @@ export default function CategoriesPage() {
                 setNewCategoryName(e.target.value);
                 setFormError('');
               }}
-              placeholder="Enter Category Name"
+              placeholder={t('recipes.categories.modal.enterName')}
               className={`w-full px-3 py-2 border ${formError ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00997B]`}
             />
             {formError && (
@@ -254,9 +256,9 @@ export default function CategoriesPage() {
             )}
           </div>
           <div className="flex justify-end space-x-3 pt-4">
-            <Button variant="secondary" onClick={closeModal}>Discard</Button>
+            <Button variant="secondary" onClick={closeModal}>{t('recipes.categories.modal.discard')}</Button>
             <Button onClick={handleAddCategory}>
-              {editingCategory ? 'Update' : 'Add'}
+              {editingCategory ? t('recipes.categories.modal.update') : t('recipes.categories.modal.add')}
             </Button>
           </div>
         </div>
@@ -267,30 +269,30 @@ export default function CategoriesPage() {
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
         onConfirm={handleDeleteConfirm}
-        title="Delete Category"
-        message={`Are you sure you want to delete ${selectedCategory?.name}? This action cannot be undone.`}
-        confirmText="Delete"
-        cancelText="Cancel"
+        title={t('recipes.categories.delete.title')}
+        message={t('recipes.categories.delete.confirmMessage', { name: selectedCategory?.name || '' })}
+        confirmText={t('common.delete')}
+        cancelText={t('common.cancel')}
       />
 
       {/* Success Modal */}
       <ConfirmationModal
         isOpen={isSuccessModalOpen}
         onClose={() => setIsSuccessModalOpen(false)}
-        title="Success"
+        title={t('common.success')}
         message={successMessage}
         isAlert={true}
-        okText="OK"
+        okText={t('common.ok')}
       />
 
       {/* Error Modal */}
       <ConfirmationModal
         isOpen={isErrorModalOpen}
         onClose={() => setIsErrorModalOpen(false)}
-        title="Error"
+        title={t('common.error')}
         message={errorMessage}
         isAlert={true}
-        okText="OK"
+        okText={t('common.ok')}
       />
     </PageLayout>
   );

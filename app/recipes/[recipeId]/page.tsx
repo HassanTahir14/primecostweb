@@ -16,6 +16,7 @@ import { generateDetailPDF } from '@/app/utils/pdfGenerator';
 import { DetailFieldConfig } from '@/components/common/GenericDetailPage';
 import { formatCurrencyValue } from '@/utils/currencyUtils';
 import { useCurrency } from '@/context/CurrencyContext';
+import { useTranslation } from '@/context/TranslationContext';
 
 // Add interface for auth user
 interface AuthUser {
@@ -29,6 +30,7 @@ const imageBaseUrl = 'http://212.85.26.46:8082/api/v1/images/view';
 
 export default function RecipeDetailPage() {
   const router = useRouter();
+  const { t } = useTranslation();
   const params = useParams();
   const searchParams = useSearchParams();
   const recipeId = params.recipeId as string;
@@ -213,9 +215,9 @@ export default function RecipeDetailPage() {
 
   if (loading) {
     return (
-      <PageLayout title="Recipe Details">
+      <PageLayout title={t('recipes.detail.title')}>
         <div className="flex justify-center items-center h-64">
-          <p className="text-gray-500">Loading recipe details...</p>
+          <p className="text-gray-500">{t('recipes.detail.loading')}</p>
         </div>
       </PageLayout>
     );
@@ -223,17 +225,17 @@ export default function RecipeDetailPage() {
 
   if (error || !recipe) {
     return (
-      <PageLayout title="Recipe Details">
+      <PageLayout title={t('recipes.detail.title')}>
         <div className="flex flex-col items-center justify-center h-64">
-          <p className="text-red-500 mb-4">{error || 'Recipe not found'}</p>
-          <Button onClick={() => router.back()}>Go Back</Button>
+          <p className="text-red-500 mb-4">{error || t('recipes.detail.notFound')}</p>
+          <Button onClick={() => router.back()}>{t('recipes.detail.goBack')}</Button>
         </div>
       </PageLayout>
     );
   }
 
   return (
-    <PageLayout title="Recipe Details">
+    <PageLayout title={t('recipes.detail.title')}>
       <div className="space-y-6">
         {/* Header with back button and download PDF button */}
         <div className="flex items-center justify-between">
@@ -258,12 +260,12 @@ export default function RecipeDetailPage() {
             {isGeneratingPDF ? (
               <>
                 <Loader className="w-4 h-4 animate-spin" />
-                <span>Generating...</span>
+                <span>{t('recipes.detail.generating')}</span>
               </>
             ) : (
               <>
                 <Download className="w-4 h-4" />
-                <span>Download PDF</span>
+                <span>{t('recipes.detail.downloadPDF')}</span>
               </>
             )}
           </Button>
@@ -288,11 +290,11 @@ export default function RecipeDetailPage() {
         {/* Recipe details */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="bg-white p-4 rounded-lg shadow-sm">
-            <h3 className="text-sm font-medium text-gray-500">Category</h3>
+            <h3 className="text-sm font-medium text-gray-500">{t('recipes.detail.category')}</h3>
             <p className="mt-1">{recipe.categoryName || 'N/A'}</p>
           </div>
           <div className="bg-white p-4 rounded-lg shadow-sm">
-            <h3 className="text-sm font-medium text-gray-500">Status</h3>
+            <h3 className="text-sm font-medium text-gray-500">{t('recipes.detail.status')}</h3>
             <p className="mt-1">
               <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                 recipe.tokenStatus === 'APPROVED' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
@@ -302,7 +304,7 @@ export default function RecipeDetailPage() {
             </p>
           </div>
           <div className="bg-white p-4 rounded-lg shadow-sm">
-            <h3 className="text-sm font-medium text-gray-500">Number of Portions</h3>
+            <h3 className="text-sm font-medium text-gray-500">{t('recipes.detail.portions')}</h3>
             <p className="mt-1">{recipe.numberOfPortions || 'N/A'}</p>
           </div>
         </div>
@@ -311,31 +313,31 @@ export default function RecipeDetailPage() {
         {isAdmin && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="bg-white p-4 rounded-lg shadow-sm">
-              <h3 className="text-sm font-medium text-gray-500">Menu Price</h3>
+              <h3 className="text-sm font-medium text-gray-500">{t('recipes.detail.menuPrice')}</h3>
               <p className="mt-1">{formattedCosts.menuPrice || 'N/A'}</p>
             </div>
             <div className="bg-white p-4 rounded-lg shadow-sm">
-              <h3 className="text-sm font-medium text-gray-500">Food Cost Budget %</h3>
+              <h3 className="text-sm font-medium text-gray-500">{t('recipes.detail.foodCostBudget')}</h3>
               <p className="mt-1">{Number(recipe.foodCostBudgetPercentage).toFixed(2)}%</p>
             </div>
             <div className="bg-white p-4 rounded-lg shadow-sm">
-              <h3 className="text-sm font-medium text-gray-500">Food Cost Actual %</h3>
+              <h3 className="text-sm font-medium text-gray-500">{t('recipes.detail.foodCostActual')}</h3>
               <p className="mt-1">{Number(recipe.foodCostActualPercentage).toFixed(2)}%</p>
             </div>
             <div className="bg-white p-4 rounded-lg shadow-sm">
-              <h3 className="text-sm font-medium text-gray-500">Ideal Selling Price</h3>
+              <h3 className="text-sm font-medium text-gray-500">{t('recipes.detail.idealSellingPrice')}</h3>
               <p className="mt-1">{formattedCosts.idealSellingPrice || 'N/A'}</p>
             </div>
             <div className="bg-white p-4 rounded-lg shadow-sm">
-              <h3 className="text-sm font-medium text-gray-500">Cost Per Portion</h3>
+              <h3 className="text-sm font-medium text-gray-500">{t('recipes.detail.costPerPortion')}</h3>
               <p className="mt-1">{formattedCosts.costPerPortion || 'N/A'}</p>
             </div>
             <div className="bg-white p-4 rounded-lg shadow-sm">
-              <h3 className="text-sm font-medium text-gray-500">Cost Per Recipe</h3>
+              <h3 className="text-sm font-medium text-gray-500">{t('recipes.detail.costPerRecipe')}</h3>
               <p className="mt-1">{formattedCosts.costPerRecipe || 'N/A'}</p>
             </div>
             <div className="bg-white p-4 rounded-lg shadow-sm">
-              <h3 className="text-sm font-medium text-gray-500">Margin Per Portion</h3>
+              <h3 className="text-sm font-medium text-gray-500">{t('recipes.detail.marginPerPortion')}</h3>
               <p className="mt-1">{formattedCosts.marginPerPortion || 'N/A'}</p>
             </div>
           </div>
@@ -344,29 +346,29 @@ export default function RecipeDetailPage() {
         {/* Ingredients table */}
         <div className="bg-white rounded-lg shadow-sm overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-lg font-medium">Ingredients</h2>
+            <h2 className="text-lg font-medium">{t('recipes.ingredients')}</h2>
           </div>
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ingredient</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Unit</th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('recipes.detail.ingredient')}</th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('recipes.detail.quantity')}</th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('recipes.detail.unit')}</th>
                   {recipe.ingredientsItems?.length === 1 ? (
                     recipe.ingredientsItems[0].itemName.includes('@Solid Item') ? (
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Weight</th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('recipes.detail.weight')}</th>
                     ) : (
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Volume</th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('recipes.detail.volume')}</th>
                     )
                   ) : (
                     <>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Weight</th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Volume</th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('recipes.detail.weight')}</th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('recipes.detail.volume')}</th>
                     </>
                   )}
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Yield %</th>
-                  {isAdmin && <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Recipe Cost</th>}
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('recipes.detail.yield')}</th>
+                  {isAdmin && <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('recipes.detail.recipeCost')}</th>}
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
@@ -416,7 +418,7 @@ export default function RecipeDetailPage() {
         {/* Instructions */}
         <div className="bg-white rounded-lg shadow-sm overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-lg font-medium">Instructions</h2>
+            <h2 className="text-lg font-medium">{t('recipes.detail.instructions')}</h2>
           </div>
           <div className="p-6">
             {recipe.procedures && recipe.procedures.length > 0 ? (
@@ -429,7 +431,7 @@ export default function RecipeDetailPage() {
                     <p className="text-gray-800">{recipe.procedures[currentStep].description}</p>
                     {recipe.procedures[currentStep].criticalPoint && (
                       <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded">
-                        <p className="text-red-600 font-medium">Critical Point: {recipe.procedures[currentStep].criticalPoint}</p>
+                        <p className="text-red-600 font-medium">{t('recipes.detail.criticalPoint')}: {recipe.procedures[currentStep].criticalPoint}</p>
                       </div>
                     )}
                   </div>
@@ -440,20 +442,20 @@ export default function RecipeDetailPage() {
                       variant="outline"
                       className="flex items-center"
                     >
-                      <ChevronLeft className="w-4 h-4 mr-1" /> Previous
+                      <ChevronLeft className="w-4 h-4 mr-1" /> {t('recipes.detail.previous')}
                     </Button>
                     <Button 
                       onClick={handleNextStep} 
                       disabled={currentStep === recipe.procedures.length - 1}
                       className="flex items-center"
                     >
-                      Next <ChevronRight className="w-4 h-4 ml-1" />
+                      {t('recipes.detail.next')} <ChevronRight className="w-4 h-4 ml-1" />
                     </Button>
                   </div>
                 </div>
               </div>
             ) : (
-              <p className="text-gray-500">No instructions available</p>
+              <p className="text-gray-500">{t('recipes.detail.noInstructions')}</p>
             )}
           </div>
         </div>

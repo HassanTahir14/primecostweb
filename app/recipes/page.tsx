@@ -16,6 +16,7 @@ import SearchInput from '@/components/common/SearchInput';
 import AssignModal from '@/components/recipes/AssignModal';
 import { getImageUrlWithAuth } from '@/utils/imageUtils';
 import AuthImage from '@/components/common/AuthImage';
+import { useTranslation } from '@/context/TranslationContext';
 
 export default function RecipesPage() {
   const dispatch = useDispatch<AppDispatch>();
@@ -24,6 +25,7 @@ export default function RecipesPage() {
   const error = useSelector(selectRecipeError);
   const pagination = useSelector(selectRecipePagination);
   const [searchQuery, setSearchQuery] = useState('');
+  const { t, isRTL } = useTranslation();
   
   // Modal states
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -125,7 +127,7 @@ export default function RecipesPage() {
 
   if (status === 'loading') {
     return (
-      <PageLayout title="All Recipes">
+      <PageLayout title={t('recipes.title')}>
         <div className="flex justify-center items-center h-64">
           <Loader size="medium" />
         </div>
@@ -135,38 +137,38 @@ export default function RecipesPage() {
 
   if (status === 'failed') {
     return (
-      <PageLayout title="All Recipes">
+      <PageLayout title={t('recipes.title')}>
         <div className="text-center py-10 text-red-500">
-          Error loading recipes: {typeof error === 'object' && error !== null ? (error as { description?: string }).description || JSON.stringify(error) : error}
+          {t('common.error')}: {typeof error === 'object' && error !== null ? (error as { description?: string }).description || JSON.stringify(error) : error}
         </div>
       </PageLayout>
     );
   }
 
   return (
-    <PageLayout title="All Recipes">
+    <PageLayout title={t('recipes.title')}>
       <div className="bg-white rounded-lg shadow-sm p-6 space-y-6">
         <div className="flex flex-col md:flex-row justify-between items-center gap-4">
           <SearchInput 
-            placeholder="Search Recipe" 
+            placeholder={t('recipes.searchPlaceholder')} 
             value={searchQuery} 
             onChange={(e) => setSearchQuery(e.target.value)} 
           />
           <div className="flex gap-2 flex-shrink-0">
             <Link href="/recipes/create">
-              <Button>Create New</Button>
+              <Button>{t('recipes.createNew')}</Button>
             </Link>
             <Link href="/recipes/sub-recipes">
-              <Button variant="secondary">Sub-Recipes List</Button>
+              <Button variant="secondary">{t('recipes.subRecipesList')}</Button>
             </Link>
             <Link href="/recipes/categories">
-              <Button variant="secondary">Categories</Button>
+              <Button variant="secondary">{t('recipes.categories')}</Button>
             </Link>
           </div>
         </div>
         
         {/* Recipe List or Empty State */}
-        <div className="text-gray-500 text-sm mb-2">Recipe Name</div>
+        <div className="text-gray-500 text-sm mb-2">{t('recipes.recipeName')}</div>
         <div className="space-y-2">
           {filteredRecipes?.length > 0 ? (
             filteredRecipes.map((recipe: any) => (
@@ -177,9 +179,9 @@ export default function RecipesPage() {
                 <div>
                   <div className="font-medium">{recipe.name}</div>
                   <div>
-                    Token Status: {" "}
+                    {t('recipes.tokenStatus')}: {" "}
                     <span className={recipe.tokenStatus === "APPROVED" ? "text-green-500 font-bold" : "text-teal-500 font-bold"}>
-                      {recipe.tokenStatus}
+                      {recipe.tokenStatus === "APPROVED" ? t('recipes.approved') : t('recipes.pending')}
                     </span>
                     {recipe.tokenStatus === "PENDING" && (
                       <span
@@ -189,7 +191,7 @@ export default function RecipesPage() {
                           // TODO: Add approve token logic here
                         }}
                       >
-                        Approve the Token
+                        {t('recipes.approveToken')}
                       </span>
                     )}
                   </div>
@@ -198,37 +200,37 @@ export default function RecipesPage() {
                   <Button 
                     onClick={() => {
                       if (recipe.tokenStatus !== 'APPROVED') {
-                        setEditModalMessage('Recipe can only be assigned once it is approved by admin.');
+                        setEditModalMessage(t('recipes.assignRestriction'));
                         setIsEditModalOpen(true);
                       } else {
                         handleAssignClick(recipe);
                       }
                     }}
                   >
-                    Assign To
+                    {t('recipes.assignTo')}
                   </Button>
-                  <Button onClick={() => router.push(`/recipes/${recipe.id}`)} variant="secondary">View</Button>
+                  <Button onClick={() => router.push(`/recipes/${recipe.id}`)} variant="secondary">{t('recipes.view')}</Button>
                   <Button onClick={() => {
                     if (recipe.tokenStatus !== 'APPROVED') {
-                      setEditModalMessage('Recipe can only be edited once it is approved by admin.');
+                      setEditModalMessage(t('recipes.editRestriction'));
                       setIsEditModalOpen(true);
                     } else {
                       router.push(`/recipes/edit/${recipe.id}`);
                     }
-                  }} variant="secondary">Edit</Button>
+                  }} variant="secondary">{t('recipes.edit')}</Button>
                 </div>
               </div>
             ))
           ) : (
             <div className="text-center py-10 text-gray-500 border-t border-gray-200 pt-6">
-              No recipes found!
+              {t('recipes.noRecipesFound')}
             </div>
           )}
         </div>
         {pagination && pagination.total > 0 && (
           <div className="flex justify-between items-center pt-4">
             <div className="text-sm text-gray-500">
-              Showing {pagination.page * pagination.size + 1} to {Math.min((pagination.page + 1) * pagination.size, pagination.total)} of {pagination.total} recipes
+              {t('recipes.showing')} {pagination.page * pagination.size + 1} {t('recipes.to')} {Math.min((pagination.page + 1) * pagination.size, pagination.total)} {t('recipes.of')} {pagination.total} {t('recipes.recipes')}
             </div>
             <div className="flex gap-2">
               <Button
@@ -236,72 +238,66 @@ export default function RecipesPage() {
                 onClick={() => handlePageChange(currentPage - 1)}
                 disabled={currentPage === 0}
               >
-                Previous
+                {t('recipes.previous')}
               </Button>
               <Button
                 variant="secondary"
                 onClick={() => handlePageChange(currentPage + 1)}
                 disabled={currentPage >= totalPages - 1}
               >
-                Next
+                {t('recipes.next')}
               </Button>
             </div>
           </div>
         )}
+
+        {/* Modals */}
+        <ConfirmationModal
+          isOpen={isDeleteModalOpen}
+          onClose={() => setIsDeleteModalOpen(false)}
+          onConfirm={handleDeleteConfirm}
+          title={t('common.delete')}
+          message={t('recipes.delete.confirmMessage', { name: selectedRecipe?.name })}
+          confirmText={t('common.delete')}
+          cancelText={t('common.cancel')}
+        />
+
+        <ConfirmationModal
+          isOpen={isSuccessModalOpen}
+          onClose={() => setIsSuccessModalOpen(false)}
+          onConfirm={() => setIsSuccessModalOpen(false)}
+          title={t('common.success')}
+          message={t('recipes.delete.success')}
+          confirmText={t('common.ok')}
+        />
+
+        <ConfirmationModal
+          isOpen={isErrorModalOpen}
+          onClose={() => setIsErrorModalOpen(false)}
+          onConfirm={() => setIsErrorModalOpen(false)}
+          title={t('common.error')}
+          message={errorMessage}
+          confirmText={t('common.ok')}
+        />
+
+        <ConfirmationModal
+          isOpen={isEditModalOpen}
+          onClose={() => setIsEditModalOpen(false)}
+          onConfirm={() => setIsEditModalOpen(false)}
+          title={t('common.error')}
+          message={editModalMessage}
+          confirmText={t('common.ok')}
+        />
+
+        <AssignModal
+          isOpen={isAssignModalOpen}
+          onClose={() => setIsAssignModalOpen(false)}
+          recipeId={selectedRecipeForAssign?.id || 0}
+          isSubRecipe={false}
+          onSuccess={handleAssignSuccess}
+          onError={handleAssignError}
+        />
       </div>
-
-      {/* Delete Confirmation Modal */}
-      <ConfirmationModal
-        isOpen={isDeleteModalOpen}
-        onClose={() => setIsDeleteModalOpen(false)}
-        onConfirm={handleDeleteConfirm}
-        title="Delete Recipe"
-        message={`Are you sure you want to delete ${selectedRecipe?.name}? This action cannot be undone.`}
-        confirmText="Delete"
-        cancelText="Cancel"
-      />
-
-      {/* Success Modal */}
-      <ConfirmationModal
-        isOpen={isSuccessModalOpen}
-        onClose={() => setIsSuccessModalOpen(false)}
-        title="Success"
-        message="Recipe deleted successfully!"
-        isAlert={true}
-        okText="OK"
-      />
-
-      {/* Error Modal */}
-      <ConfirmationModal
-        isOpen={isErrorModalOpen}
-        onClose={() => setIsErrorModalOpen(false)}
-        title="Error"
-        message={errorMessage}
-        isAlert={true}
-        okText="OK"
-      />
-
-      {/* Add the AssignModal */}
-      <AssignModal
-        isOpen={isAssignModalOpen}
-        onClose={() => {
-          setIsAssignModalOpen(false);
-          setSelectedRecipeForAssign(null);
-        }}
-        onSuccess={handleAssignSuccess}
-        onError={handleAssignError}
-        recipeId={selectedRecipeForAssign?.id || 0}
-        isSubRecipe={false}
-      />
-
-      <ConfirmationModal
-        isOpen={isEditModalOpen}
-        onClose={() => setIsEditModalOpen(false)}
-        title="Not Allowed"
-        message={editModalMessage}
-        isAlert={true}
-        okText="OK"
-      />
     </PageLayout>
   );
 } 

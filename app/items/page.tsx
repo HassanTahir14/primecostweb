@@ -11,6 +11,7 @@ import AddItemForm from '@/components/AddItemForm';
 import EditItemForm from '@/components/EditItemForm'; // Import EditItemForm
 import Categories from '@/components/Categories';
 import ConfirmationModal from '@/components/common/ConfirmationModal';
+import { useTranslation } from '@/context/TranslationContext';
 import { AppDispatch } from '@/store/store';
 import {
   fetchAllItems,
@@ -56,6 +57,7 @@ interface Item {
 }
 
 export default function ItemsMasterList() {
+  const { t, isRTL } = useTranslation();
   const dispatch = useDispatch<AppDispatch>();
   const items = useSelector(selectAllItems);
   const pagination = useSelector(selectItemsPagination);
@@ -201,51 +203,55 @@ export default function ItemsMasterList() {
       <div className="bg-white rounded-lg shadow-sm p-6 space-y-6">
         <div className="flex flex-col md:flex-row justify-between items-center gap-4">
           <SearchInput 
-            placeholder="Search items..." 
+            placeholder={t('items.searchPlaceholder')} 
             value={internalSearchTerm} 
             onChange={handleSearchInputChange} 
           />
           <div className="flex gap-2 flex-shrink-0">
-            <Button onClick={() => {setShowAddForm(true); setShowEditForm(false); setItemToEdit(null);}}>Add Item</Button>
-            <Button onClick={() => setShowCategories(true)} variant="secondary">Manage Categories</Button>
+            <Button onClick={() => {setShowAddForm(true); setShowEditForm(false); setItemToEdit(null);}}>
+              {t('items.addItem')}
+            </Button>
+            <Button onClick={() => setShowCategories(true)} variant="secondary">
+              {t('items.manageCategories')}
+            </Button>
           </div>
         </div>
 
         {isLoading && currentAction === 'fetch' ? (
           <div className="text-center py-10 text-gray-500">
-            Loading items...
+            {t('items.loading')}
           </div>
         ) : error && currentAction === 'fetch' ? (
           <div className="text-center py-10 text-red-500">
-             Error loading items: {typeof error === 'string' ? error : error?.message || 'Unknown error'}
-           </div>
+            {t('common.error')}: {typeof error === 'string' ? error : error?.message || 'Unknown error'}
+          </div>
         ) : (
           <div>
-              <div className="overflow-x-auto">
+            <div className="overflow-x-auto">
               <table className="w-full">
                 <thead className="bg-gray-50 text-gray-700 uppercase text-xs">
                   <tr>
-                    <th className="px-6 py-3 text-left">Item name</th>
-                    <th className="px-6 py-3 text-left">Code</th>
-                    <th className="px-6 py-3 text-left">Brand</th>
-                    <th className="px-6 py-3 text-left">Token Status</th>
-                    {/* <th className="px-6 py-3 text-left">Primary Unit</th> */}
-                    <th className="px-6 py-3 text-left">Cost (VAT Excl)</th>
-                    <th className="px-6 py-3 text-left">Actions</th>
+                    <th className="px-6 py-3 text-left">{t('items.table.itemName')}</th>
+                    <th className="px-6 py-3 text-left">{t('items.table.code')}</th>
+                    <th className="px-6 py-3 text-left">{t('items.table.brand')}</th>
+                    <th className="px-6 py-3 text-left">{t('items.table.tokenStatus')}</th>
+                    <th className="px-6 py-3 text-left">{t('items.table.costVatExcl')}</th>
+                    <th className="px-6 py-3 text-left">{t('items.table.actions')}</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {items.length === 0 && (
+                    <tr>
+                      <td colSpan={6} className="px-6 py-4 text-center text-sm text-gray-500">
+                        {t('items.noItemsFound')}
+                      </td>
                     </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {items.length === 0 && (
-                       <tr>
-                       <td colSpan={6} className="px-6 py-4 text-center text-sm text-gray-500">No items found.</td>
-                       </tr>
-                    )}
-                    {items.map((item:any) => (
+                  )}
+                  {items.map((item:any) => (
                     <tr 
                       key={item.itemId} 
                       className="hover:bg-gray-50 cursor-pointer"
                       onClick={(e) => {
-                        // Prevent navigation if clicking on action buttons
                         if ((e.target as HTMLElement).closest('.action-buttons')) {
                           return;
                         }
@@ -258,67 +264,67 @@ export default function ItemsMasterList() {
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{item.code || '-'}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{item.itemsBrandName || '-'}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                            {item.tokenStatus}
-                        </td>
-                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                            SAR {item.purchaseCostWithoutVat?.toFixed(2) ?? '0.00'}
-                        </td>
+                        {item.tokenStatus}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                        SAR {item.purchaseCostWithoutVat?.toFixed(2) ?? '0.00'}
+                      </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center space-x-2 action-buttons">
-                             <Button 
+                          <Button 
                             variant="default" 
-                               size="sm" 
+                            size="sm" 
                             className="rounded-full bg-[#339A89] text-white text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-1.5"
                             onClick={(e) => {
                               e.stopPropagation();
                               handleEditClick(item);
                             }}
-                              >
-                                Edit
-                              </Button> 
-                             <Button 
-                               variant="destructive"
-                               size="sm" 
+                          >
+                            {t('common.edit')}
+                          </Button>
+                          <Button 
+                            variant="destructive"
+                            size="sm" 
                             className="rounded-full bg-red-500 text-white text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-1.5"
                             onClick={(e) => {
                               e.stopPropagation();
                               handleDeleteClick(item);
                             }}
                           >
-                            Delete
-                             </Button>
-                           </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-              {pagination && pagination.totalPages > 1 && (
-                <div className="flex justify-between items-center p-4 border-t bg-gray-50">
-                   <span className="text-sm text-gray-600">
-                     Page {pagination.pageNumber + 1} of {pagination.totalPages} ({pagination.totalElements} items)
-                   </span>
-                  <div className="flex gap-2">
-                     <Button 
-                       onClick={() => handlePageChange(pagination.pageNumber - 1)} 
-                       disabled={pagination.first || isLoading}
-                       variant="outline" 
-                       size="sm"
-                     >
-                       Previous
-                     </Button>
-                     <Button 
-                       onClick={() => handlePageChange(pagination.pageNumber + 1)} 
-                       disabled={pagination.last || isLoading}
-                       variant="outline" 
-                       size="sm"
-                     >
-                       Next
-                     </Button>
-                  </div>
+                            {t('common.delete')}
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            {pagination && pagination.totalPages > 1 && (
+              <div className="flex justify-between items-center p-4 border-t bg-gray-50">
+                <span className="text-sm text-gray-600">
+                  {t('recipes.showing')} {pagination.pageNumber + 1} {t('recipes.to')} {pagination.totalPages} ({pagination.totalElements} {t('recipes.recipes')})
+                </span>
+                <div className="flex gap-2">
+                  <Button 
+                    onClick={() => handlePageChange(pagination.pageNumber - 1)} 
+                    disabled={pagination.first || isLoading}
+                    variant="outline" 
+                    size="sm"
+                  >
+                    {t('recipes.previous')}
+                  </Button>
+                  <Button 
+                    onClick={() => handlePageChange(pagination.pageNumber + 1)} 
+                    disabled={pagination.last || isLoading}
+                    variant="outline" 
+                    size="sm"
+                  >
+                    {t('recipes.next')}
+                  </Button>
                 </div>
-              )}
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -326,17 +332,17 @@ export default function ItemsMasterList() {
   }
 
   return (
-    <PageLayout title="Items Master List">
+    <PageLayout title={t('items.title')}>
       {mainContent}
 
       <ConfirmationModal
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
         onConfirm={confirmDelete}
-        title="Delete Item"
-        message={`Are you sure you want to delete the item "${itemToDelete?.name}"? This action cannot be undone.`}
-        confirmText={isActionLoading ? "Deleting..." : "Delete"}
-        cancelText="Cancel"
+        title={t('items.delete.title')}
+        message={t('items.delete.confirmMessage', { name: itemToDelete?.name || '' })}
+        confirmText={isActionLoading ? t('items.delete.deleting') : t('common.delete')}
+        cancelText={t('items.delete.cancel')}
         isAlert={false}
       />
 
@@ -346,7 +352,7 @@ export default function ItemsMasterList() {
         title={messageModalContent.title}
         message={messageModalContent.message}
         isAlert={true}
-        okText="OK"
+        okText={t('common.ok')}
       />
     </PageLayout>
   );

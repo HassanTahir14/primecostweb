@@ -32,6 +32,7 @@ import { fetchAllPurchaseOrders } from "@/store/purchaseOrderSlice";
 import { fetchAllSuppliers } from "@/store/supplierSlice";
 import api from "@/store/api";
 import PageLayout from '@/components/PageLayout';
+import { useTranslation } from '@/context/TranslationContext';
 
 // URL for world map TopoJSON data
 const geoUrl = "https://unpkg.com/world-atlas@2.0.2/countries-110m.json";
@@ -62,6 +63,7 @@ interface ProfitMarginEntry {
 export default function Dashboard() {
   const dispatch = useDispatch<AppDispatch>();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const { t, isRTL } = useTranslation();
 
   // --- Date Range State ---
   const [startDate, setStartDate] = useState(getTodaysDate()); // Default to today
@@ -220,7 +222,7 @@ export default function Dashboard() {
   // TODO: Add display for itemsError and profitMarginError if needed
 
   return (
-    <PageLayout title="Dashboard">
+    <PageLayout title={t('dashboard.title')}>
       <div className="p-4 sm:p-6 md:p-8">
         <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-6">
           <div className="flex items-center gap-2">
@@ -228,13 +230,13 @@ export default function Dashboard() {
               <ArrowLeft size={20} />
             </Link>
             <h1 className="text-xl md:text-2xl font-bold text-[#1a2b3c]">
-              Dashboard
+              {t('dashboard.title')}
             </h1>
           </div>
           
           <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 items-start sm:items-center">
             <span className="text-gray-600 text-xs md:text-sm whitespace-nowrap">
-              Select Date Range
+              {t('dashboard.dateRange.label')}
             </span>
             <div className="flex gap-2 sm:gap-4 items-center w-full sm:w-auto">
               <input
@@ -243,7 +245,7 @@ export default function Dashboard() {
                 value={startDate}
                 onChange={handleStartDateChange}
               />
-              <span className="text-gray-600 text-xs md:text-sm">To</span>
+              <span className="text-gray-600 text-xs md:text-sm">{t('dashboard.dateRange.to')}</span>
               <input
                 type="date"
                 className="border rounded-full px-3 py-1.5 md:px-4 md:py-2 text-xs md:text-sm w-full sm:w-auto"
@@ -263,7 +265,7 @@ export default function Dashboard() {
               {mainRecipes?.length || "-"}
             </h2>
             <p className="text-gray-600 text-xs md:text-sm mb-1">
-              Prepared Recipes
+              {t('dashboard.stats.preparedRecipes')}
             </p>
           </div>
 
@@ -275,7 +277,7 @@ export default function Dashboard() {
               {items?.length || "-"}
             </h2>
             <p className="text-gray-600 text-xs md:text-sm mb-1">
-              Total Items
+              {t('dashboard.stats.totalItems')}
             </p>
           </div>
 
@@ -287,7 +289,7 @@ export default function Dashboard() {
               {ordersLoading ? '...' : approvedPurchaseOrdersCount ?? '-'}
             </h2>
             <p className="text-gray-600 text-xs md:text-sm mb-1">
-              Total Orders
+              {t('dashboard.stats.totalOrders')}
             </p>
           </div>
 
@@ -299,106 +301,106 @@ export default function Dashboard() {
               {employeesLoading ? '...' : activeEmployeesCount ?? '-'}
             </h2>
             <p className="text-gray-600 text-xs md:text-sm mb-1">
-              Total Employee
+              {t('dashboard.stats.totalEmployees')}
             </p>
           </div>
         </div>
 
         <div className="bg-white p-4 sm:p-6 md:p-8 rounded-2xl shadow-sm mb-6">
-  <h2 className="text-base md:text-lg font-bold mb-4 md:mb-6">
-    Recipe Profitability
-  </h2>
-  <div className="w-full h-[300px] md:h-[400px]">
-    {profitMarginLoading ? (
-      <div className="flex items-center justify-center h-full text-gray-500">
-        Fetching data...
-      </div>
-    ) : profitChartData.length === 0 ? (
-      <div className="flex items-center justify-center h-full text-gray-500">
-        No recipe data available
-      </div>
-    ) : (
-      <ResponsiveContainer width="100%" height="100%">
-        <BarChart
-          data={profitChartData}
-          margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
-        >
-          <CartesianGrid strokeDasharray="3 3" vertical={false} />
-          <XAxis
-            dataKey="category"
-            fontSize={10}
-            interval={0}
-            height={80}
-            tick={function CustomTick({ x, y, payload }) {
-              const name = payload.value.length > 12 ? payload.value.slice(0, 12) + '…' : payload.value;
-              return (
-                <g transform={`translate(${x},${y})`}>
-                  <text
-                    x={0}
-                    y={0}
-                    dy={16}
-                    textAnchor="end"
-                    fill="#666"
+          <h2 className="text-base md:text-lg font-bold mb-4 md:mb-6">
+            {t('dashboard.recipeProfitability.title')}
+          </h2>
+          <div className="w-full h-[300px] md:h-[400px]">
+            {profitMarginLoading ? (
+              <div className="flex items-center justify-center h-full text-gray-500">
+                {t('dashboard.recipeProfitability.loading')}
+              </div>
+            ) : profitChartData.length === 0 ? (
+              <div className="flex items-center justify-center h-full text-gray-500">
+                {t('dashboard.recipeProfitability.noData')}
+              </div>
+            ) : (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                  data={profitChartData}
+                  margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                  <XAxis
+                    dataKey="category"
                     fontSize={10}
-                    transform="rotate(-60)"
+                    interval={0}
+                    height={80}
+                    tick={function CustomTick({ x, y, payload }) {
+                      const name = payload.value.length > 12 ? payload.value.slice(0, 12) + '…' : payload.value;
+                      return (
+                        <g transform={`translate(${x},${y})`}>
+                          <text
+                            x={0}
+                            y={0}
+                            dy={16}
+                            textAnchor="end"
+                            fill="#666"
+                            fontSize={10}
+                            transform="rotate(-60)"
+                          >
+                            {name}
+                          </text>
+                        </g>
+                      );
+                    }}
+                  />
+                  <YAxis
+                    fontSize={10}
+                    tick={{ fontWeight: 'bold' }}
+                    domain={[0, (dataMax: number) => Math.ceil(dataMax * 1.2)]}
+                  />
+                  <Tooltip 
+                    formatter={(value: number) => `$${value.toFixed(2)}`}
+                    labelFormatter={(label) => `Recipe: ${label}`}
+                  />
+                  <Legend 
+                    wrapperStyle={{ fontSize: "10px" }} 
+                    verticalAlign="bottom"
+                  />
+                  <Bar
+                    dataKey="profitMargin"
+                    name={t('dashboard.recipeProfitability.profitMargin')}
+                    fill="#4CAF50"
+                    barSize={35}
+                    radius={[4, 4, 0, 0]}
+                  />
+                  <Bar 
+                    dataKey="costPerRecipe" 
+                    name={t('dashboard.recipeProfitability.costPerRecipe')}
+                    fill="#FF9800"
+                    barSize={35}
+                    radius={[4, 4, 0, 0]}
                   >
-                    {name}
-                  </text>
-                </g>
-              );
-            }}
-          />
-          <YAxis
-            fontSize={10}
-            tick={{ fontWeight: 'bold' }}
-            domain={[0, (dataMax: number) => Math.ceil(dataMax * 1.2)]} // Add 20% padding
-          />
-          <Tooltip 
-            formatter={(value: number) => `$${value.toFixed(2)}`}
-            labelFormatter={(label) => `Recipe: ${label}`}
-          />
-          <Legend 
-            wrapperStyle={{ fontSize: "10px" }} 
-            verticalAlign="bottom"
-          />
-          <Bar
-            dataKey="profitMargin"
-            name="Profit Margin %"
-            fill="#4CAF50" // Green color
-            barSize={35}
-            radius={[4, 4, 0, 0]}
-          />
-          <Bar 
-            dataKey="costPerRecipe" 
-            name="Cost Per Recipe" 
-            fill="#FF9800" // Orange color
-            barSize={35}
-            radius={[4, 4, 0, 0]}
-          >
-            <LabelList 
-              dataKey="costPerRecipe" 
-              position="top" 
-              formatter={(value: number) => `$${value.toFixed(2)}`}
-              style={{ fontSize: '10px', fontWeight: 'bold' }}
-            />
-          </Bar>
-        </BarChart>
-      </ResponsiveContainer>
-    )}
-  </div>
-</div>
+                    <LabelList 
+                      dataKey="costPerRecipe" 
+                      position="top" 
+                      formatter={(value: number) => `$${value.toFixed(2)}`}
+                      style={{ fontSize: '10px', fontWeight: 'bold' }}
+                    />
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            )}
+          </div>
+        </div>
 
         <div className="bg-white p-4 sm:p-6 md:p-8 rounded-2xl shadow-sm mb-6">
           <h2 className="text-base md:text-lg font-bold mb-4 md:mb-6">
-            Reports
+            {t('dashboard.reports.title')}
           </h2>
           <div className="flex flex-wrap gap-2 md:gap-4">
             {[
-              { name: "Non Conformance Report", path: "/non-conformance" },
-              { name: "Recipe Report", path: "/reports/recipe" },
-              { name: "Purchase Report", path: "/reports/purchase" },
-              { name: "Employee Data Report", path: "/reports/employee" },
-              { name: "Transfer Report", path: "/reports/transfer" },
+              { name: t('dashboard.reports.nonConformance'), path: "/non-conformance" },
+              { name: t('dashboard.reports.recipe'), path: "/reports/recipe" },
+              { name: t('dashboard.reports.purchase'), path: "/reports/purchase" },
+              { name: t('dashboard.reports.employee'), path: "/reports/employee" },
+              { name: t('dashboard.reports.transfer'), path: "/reports/transfer" },
             ].map((report) => (
               <Link
                 key={report.path}
@@ -417,15 +419,10 @@ export default function Dashboard() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div className="bg-white p-4 sm:p-6 md:p-8 rounded-2xl shadow-sm">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4 md:mb-6">
-              <h2 className="text-base md:text-lg font-bold">Top Brands/Suppliers by Item Count</h2>
-              {/* <Link href="/suppliers" passHref legacyBehavior>
-                <a className="bg-[#339A89] text-white px-4 md:px-6 py-1.5 md:py-2 rounded-full hover:bg-[#2b8274] transition-colors text-xs md:text-sm w-full sm:w-auto no-underline">
-                 
-                </a>
-              </Link> */}
+              <h2 className="text-base md:text-lg font-bold">{t('dashboard.suppliers.title')}</h2>
             </div>
             {itemsLoading ? (
-              <div className="text-gray-500">Loading suppliers...</div>
+              <div className="text-gray-500">{t('dashboard.suppliers.loading')}</div>
             ) : topSuppliers.length > 0 ? (
               topSuppliers.map((supplier, index) => (
                 <div key={supplier.name} className="mb-4 last:mb-0">
@@ -444,17 +441,17 @@ export default function Dashboard() {
                 </div>
               ))
             ) : (
-              <div className="text-gray-500">No supplier data available.</div>
+              <div className="text-gray-500">{t('dashboard.suppliers.noData')}</div>
             )}
           </div>
 
           <div className="bg-white p-4 sm:p-6 md:p-8 rounded-2xl shadow-sm">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4 md:mb-6">
-              <h2 className="text-base md:text-lg font-bold">Items by Country Origin</h2>
+              <h2 className="text-base md:text-lg font-bold">{t('dashboard.countryOrigin.title')}</h2>
             </div>
             <div className="h-[350px] md:h-[450px] w-full border rounded-lg overflow-hidden">
               {itemsLoading ? (
-                <div className="flex items-center justify-center h-full text-gray-500">Loading Map...</div>
+                <div className="flex items-center justify-center h-full text-gray-500">{t('dashboard.countryOrigin.loading')}</div>
               ) : (
                 <ComposableMap projection="geoMercator" projectionConfig={{ scale: 100 }}>
                   <Geographies geography={geoUrl}>
@@ -502,14 +499,14 @@ export default function Dashboard() {
             </div>
             <div className="mt-4">
               {itemsLoading ? (
-                <div className="text-gray-400 text-xs">Loading countries...</div>
+                <div className="text-gray-400 text-xs">{t('dashboard.countryOrigin.loading')}</div>
               ) : countryOrigins.length > 0 ? (
                 <div className="text-gray-500 text-xs">
-                  <p className="font-medium mb-1">Countries Found ({countryOrigins.length}):</p>
+                  <p className="font-medium mb-1">{t('dashboard.countryOrigin.countriesFound')} ({countryOrigins.length}):</p>
                   <p className="break-words">{countryOrigins.join(", ")}</p>
                 </div>
               ) : (
-                <div className="text-gray-400 text-xs">No country of origin data found in items.</div>
+                <div className="text-gray-400 text-xs">{t('dashboard.countryOrigin.noData')}</div>
               )}
             </div>
           </div>

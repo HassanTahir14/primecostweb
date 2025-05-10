@@ -16,6 +16,7 @@ import { generateDetailPDF } from '@/app/utils/pdfGenerator';
 import { DetailFieldConfig } from '@/components/common/GenericDetailPage';
 import { useCurrency } from '@/context/CurrencyContext';
 import { formatCurrencyValue } from '@/utils/currencyUtils';
+import { useTranslation } from '@/context/TranslationContext';
 
 // Add interface for auth user
 interface AuthUser {
@@ -37,6 +38,7 @@ export default function SubRecipeDetailPage() {
   const subRecipes = useSelector(selectAllSubRecipes);
   const [branchId, setBranchId] = useState<number | undefined>();
   const { currency } = useCurrency();
+  const { t } = useTranslation();
   
   const [subRecipe, setSubRecipe] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -208,9 +210,9 @@ export default function SubRecipeDetailPage() {
 
   if (loading) {
     return (
-      <PageLayout title="Sub-Recipe Details">
+      <PageLayout title={t('recipes.subRecipes.detail.title')}>
         <div className="flex justify-center items-center h-64">
-          <p className="text-gray-500">Loading sub-recipe details...</p>
+          <p className="text-gray-500">{t('recipes.subRecipes.detail.loading')}</p>
         </div>
       </PageLayout>
     );
@@ -218,17 +220,17 @@ export default function SubRecipeDetailPage() {
 
   if (error || !subRecipe) {
     return (
-      <PageLayout title="Sub-Recipe Details">
+      <PageLayout title={t('recipes.subRecipes.detail.title')}>
         <div className="flex flex-col items-center justify-center h-64">
-          <p className="text-red-500 mb-4">{error || 'Sub-recipe not found'}</p>
-          <Button onClick={() => router.back()}>Go Back</Button>
+          <p className="text-red-500 mb-4">{error || t('recipes.subRecipes.detail.notFound')}</p>
+          <Button onClick={() => router.back()}>{t('recipes.subRecipes.detail.goBack')}</Button>
         </div>
       </PageLayout>
     );
   }
 
   return (
-    <PageLayout title="Sub-Recipe Details">
+    <PageLayout title={t('recipes.subRecipes.detail.title')}>
       <div className="space-y-6">
         {/* Header with back button and download PDF button */}
         <div className="flex items-center justify-between">
@@ -253,12 +255,12 @@ export default function SubRecipeDetailPage() {
             {isGeneratingPDF ? (
               <>
                 <Loader className="w-4 h-4 animate-spin" />
-                <span>Generating...</span>
+                <span>{t('recipes.subRecipes.detail.generating')}</span>
               </>
             ) : (
               <>
                 <Download className="w-4 h-4" />
-                <span>Download PDF</span>
+                <span>{t('recipes.subRecipes.detail.downloadPDF')}</span>
               </>
             )}
           </Button>
@@ -280,41 +282,25 @@ export default function SubRecipeDetailPage() {
           </div>
         )}
 
-        {/* Basic details */}
+        {/* Recipe details */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="bg-white p-4 rounded-lg shadow-sm">
-            <h3 className="text-sm font-medium text-gray-500">Recipe Code</h3>
-            <p className="mt-1">{subRecipe.subRecipeCode || 'N/A'}</p>
-          </div>
-          <div className="bg-white p-4 rounded-lg shadow-sm">
-            <h3 className="text-sm font-medium text-gray-500">Category</h3>
+            <h3 className="text-sm font-medium text-gray-500">{t('recipes.subRecipes.detail.category')}</h3>
             <p className="mt-1">{subRecipe.categoryName || 'N/A'}</p>
           </div>
           <div className="bg-white p-4 rounded-lg shadow-sm">
-            <h3 className="text-sm font-medium text-gray-500">Status</h3>
+            <h3 className="text-sm font-medium text-gray-500">{t('recipes.subRecipes.detail.status')}</h3>
             <p className="mt-1">
               <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                subRecipe.tokenStatus === 'APPROVED' 
-                  ? 'bg-green-100 text-green-800' 
-                  : subRecipe.tokenStatus === 'PENDING'
-                  ? 'bg-yellow-100 text-yellow-800'
-                  : 'bg-red-100 text-red-800'
+                subRecipe.tokenStatus === 'APPROVED' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
               }`}>
                 {subRecipe.tokenStatus || 'DRAFT'}
               </span>
             </p>
           </div>
-        </div>
-
-        {/* Portion details */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="bg-white p-4 rounded-lg shadow-sm">
-            <h3 className="text-sm font-medium text-gray-500">Number of Portions</h3>
+            <h3 className="text-sm font-medium text-gray-500">{t('recipes.subRecipes.detail.portions')}</h3>
             <p className="mt-1">{subRecipe.numberOfPortions || 'N/A'}</p>
-          </div>
-          <div className="bg-white p-4 rounded-lg shadow-sm">
-            <h3 className="text-sm font-medium text-gray-500">Serving Size</h3>
-            <p className="mt-1">{subRecipe.servingSize || 'N/A'}</p>
           </div>
         </div>
 
@@ -322,31 +308,31 @@ export default function SubRecipeDetailPage() {
         {isAdmin && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="bg-white p-4 rounded-lg shadow-sm">
-              <h3 className="text-sm font-medium text-gray-500">Menu Price</h3>
+              <h3 className="text-sm font-medium text-gray-500">{t('recipes.subRecipes.detail.menuPrice')}</h3>
               <p className="mt-1">{formattedCosts.menuPrice || 'N/A'}</p>
             </div>
             <div className="bg-white p-4 rounded-lg shadow-sm">
-              <h3 className="text-sm font-medium text-gray-500">Food Cost Budget %</h3>
+              <h3 className="text-sm font-medium text-gray-500">{t('recipes.subRecipes.detail.foodCostBudget')}</h3>
               <p className="mt-1">{Number(subRecipe.foodCostBudgetPercentage).toFixed(2)}%</p>
             </div>
             <div className="bg-white p-4 rounded-lg shadow-sm">
-              <h3 className="text-sm font-medium text-gray-500">Food Cost Actual %</h3>
+              <h3 className="text-sm font-medium text-gray-500">{t('recipes.subRecipes.detail.foodCostActual')}</h3>
               <p className="mt-1">{Number(subRecipe.foodCostActualPercentage).toFixed(2)}%</p>
             </div>
             <div className="bg-white p-4 rounded-lg shadow-sm">
-              <h3 className="text-sm font-medium text-gray-500">Ideal Selling Price</h3>
+              <h3 className="text-sm font-medium text-gray-500">{t('recipes.subRecipes.detail.idealSellingPrice')}</h3>
               <p className="mt-1">{formattedCosts.idealSellingPrice || 'N/A'}</p>
             </div>
             <div className="bg-white p-4 rounded-lg shadow-sm">
-              <h3 className="text-sm font-medium text-gray-500">Cost Per Portion</h3>
+              <h3 className="text-sm font-medium text-gray-500">{t('recipes.subRecipes.detail.costPerPortion')}</h3>
               <p className="mt-1">{formattedCosts.costPerPortion || 'N/A'}</p>
             </div>
             <div className="bg-white p-4 rounded-lg shadow-sm">
-              <h3 className="text-sm font-medium text-gray-500">Cost Per Recipe</h3>
+              <h3 className="text-sm font-medium text-gray-500">{t('recipes.subRecipes.detail.costPerRecipe')}</h3>
               <p className="mt-1">{formattedCosts.costPerRecipe || 'N/A'}</p>
             </div>
             <div className="bg-white p-4 rounded-lg shadow-sm">
-              <h3 className="text-sm font-medium text-gray-500">Margin Per Portion</h3>
+              <h3 className="text-sm font-medium text-gray-500">{t('recipes.subRecipes.detail.marginPerPortion')}</h3>
               <p className="mt-1">{formattedCosts.marginPerPortion || 'N/A'}</p>
             </div>
           </div>
@@ -355,29 +341,29 @@ export default function SubRecipeDetailPage() {
         {/* Ingredients table */}
         <div className="bg-white rounded-lg shadow-sm overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-lg font-medium">Ingredients</h2>
+            <h2 className="text-lg font-medium">{t('recipes.subRecipes.detail.ingredients')}</h2>
           </div>
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ingredient</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Unit</th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('recipes.subRecipes.detail.ingredient')}</th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('recipes.subRecipes.detail.quantity')}</th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('recipes.subRecipes.detail.unit')}</th>
                   {subRecipe.ingredients?.length === 1 ? (
                     subRecipe.ingredients[0].itemName.includes('@Solid Item') ? (
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Weight</th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('recipes.subRecipes.detail.weight')}</th>
                     ) : (
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Volume</th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('recipes.subRecipes.detail.volume')}</th>
                     )
                   ) : (
                     <>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Weight</th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Volume</th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('recipes.subRecipes.detail.weight')}</th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('recipes.subRecipes.detail.volume')}</th>
                     </>
                   )}
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Yield %</th>
-                  {isAdmin && <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Recipe Cost</th>}
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('recipes.subRecipes.detail.yield')}</th>
+                  {isAdmin && <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('recipes.subRecipes.detail.recipeCost')}</th>}
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
@@ -427,7 +413,7 @@ export default function SubRecipeDetailPage() {
         {/* Instructions */}
         <div className="bg-white rounded-lg shadow-sm overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-lg font-medium">Instructions</h2>
+            <h2 className="text-lg font-medium">{t('recipes.subRecipes.detail.instructions')}</h2>
           </div>
           <div className="p-6">
             {subRecipe.procedures && subRecipe.procedures.length > 0 ? (
@@ -451,14 +437,14 @@ export default function SubRecipeDetailPage() {
                       variant="outline"
                       className="flex items-center"
                     >
-                      <ChevronLeft className="w-4 h-4 mr-1" /> Previous
+                      <ChevronLeft className="w-4 h-4 mr-1" /> {t('recipes.subRecipes.detail.previous')}
                     </Button>
                     <Button 
                       onClick={handleNextStep} 
                       disabled={currentStep === subRecipe.procedures.length - 1}
                       className="flex items-center"
                     >
-                      Next <ChevronRight className="w-4 h-4 ml-1" />
+                      {t('recipes.subRecipes.detail.next')} <ChevronRight className="w-4 h-4 ml-1" />
                     </Button>
                   </div>
                 </div>

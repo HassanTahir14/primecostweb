@@ -2,6 +2,51 @@
 @tailwind components;
 @tailwind utilities;
 
+/* RTL Support */
+[dir="rtl"] {
+  /* Text alignment */
+  .text-left {
+    text-align: right;
+  }
+  .text-right {
+    text-align: left;
+  }
+
+  /* Margins and paddings */
+  .space-x-2 > :not([hidden]) ~ :not([hidden]) {
+    --tw-space-x-reverse: 1;
+  }
+  .space-x-4 > :not([hidden]) ~ :not([hidden]) {
+    --tw-space-x-reverse: 1;
+  }
+
+  /* Flexbox */
+  .flex-row {
+    flex-direction: row-reverse;
+  }
+
+  /* Table alignment */
+  th, td {
+    text-align: right;
+  }
+
+  /* Icons and buttons */
+  .action-buttons {
+    flex-direction: row-reverse;
+  }
+}
+
+/* Use logical properties for better RTL support */
+.ml-auto {
+  margin-inline-start: auto;
+}
+
+.mr-auto {
+  margin-inline-end: auto;
+}
+
+/* Add any other RTL-specific styles here */
+
 :root {
   --primary: #339A89;
   --primary-light: #E8FFFE;
