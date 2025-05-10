@@ -233,7 +233,7 @@ export default function RecipeProcedureForm({ onNext, onBack, initialData, isEdi
   };
 
   // Mock data for step type select
-  const stepTypes = ['CP', 'CPP'];
+  const stepTypes = ['CP', 'CCP'];
 
   return (
     <div className="space-y-6">
