@@ -29,6 +29,9 @@ interface BranchDetail {
   quantity: number;
 }
 
+
+
+
 interface Item {
   itemId: number;
   name: string;
@@ -171,6 +174,27 @@ export default function ItemDetailPage() {
             setUnitsLoading(false);
         });
   }, []); // Fetch only once on mount
+
+   useEffect(() => {
+    api.get('/tax/all')
+      .then(res => {
+        const taxArr = res.data.taxList || [];
+        setTaxes(taxArr);
+      })
+      .catch(err => {
+        console.error('Failed to fetch taxes:', err);
+      });
+
+    api.get('categories/all')
+      .then(res => {
+        const catArr = res.data.itemCategoryList || [];
+        setCategories(catArr);
+      })
+      .catch(err => {
+        console.error('Failed to fetch categories:', err);
+      });
+
+  }, [dispatch]);
 
   // Effect to find the item in the Redux store once items & units are ready
   useEffect(() => {
@@ -334,7 +358,7 @@ export default function ItemDetailPage() {
 
   // Calculate total stock using sum of per-branch calculated quantities
   const totalStock = item && item.branchDetails && item.secondaryUnitValue
-    ? item.branchDetails.reduce((sum, detail) => sum + (detail.quantity / (item.secondaryUnitValue || 1)), 0)
+    ? Math.floor(item.branchDetails.reduce((sum, detail) => sum + (detail.quantity / (item.secondaryUnitValue || 1)), 0) * 100) / 100
     : 0;
 
   // Prepare extra fields for conversion and total stock
@@ -368,7 +392,7 @@ export default function ItemDetailPage() {
   const branchDetailsForPDF = item?.branchDetails?.map(detail => {
     // Calculate branch stock using only branchDetails and secondaryUnitValue
     const branchStock = item && item.secondaryUnitValue
-      ? (detail.quantity / item.secondaryUnitValue)
+      ? Math.floor((detail.quantity / item.secondaryUnitValue) * 100) / 100
       : detail.quantity;
     return {
       ...detail,
@@ -407,7 +431,7 @@ export default function ItemDetailPage() {
                   {item.branchDetails.map((detail) => {
                     // Calculate branch stock using only branchDetails and secondaryUnitValue
                     const branchStock = item && item.secondaryUnitValue
-                      ? (detail.quantity / item.secondaryUnitValue)
+                      ? Math.floor((detail.quantity / item.secondaryUnitValue) * 100) / 100
                       : detail.quantity;
                     return (
                       <div key={detail.branchId + '-' + detail.storageLocationId}>
