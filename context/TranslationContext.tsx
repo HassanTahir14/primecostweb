@@ -17,7 +17,13 @@ interface TranslationContextType {
 const TranslationContext = createContext<TranslationContextType | undefined>(undefined);
 
 export function TranslationProvider({ children }: { children: React.ReactNode }) {
-  const [language, setLanguage] = useState<Language>('en');
+  const [language, setLanguage] = useState<Language>(() => {
+    // Try to get language from localStorage, default to 'en'
+    if (typeof window !== 'undefined') {
+      return (localStorage.getItem('language') as Language) || 'en';
+    }
+    return 'en';
+  });
   const [translations, setTranslations] = useState<Translations>(enTranslations);
   const isRTL = language === 'ar';
 
@@ -25,7 +31,9 @@ export function TranslationProvider({ children }: { children: React.ReactNode })
     setTranslations(language === 'en' ? enTranslations : arTranslations);
     document.documentElement.dir = isRTL ? 'rtl' : 'ltr';
     document.documentElement.lang = language;
-  }, [language]);
+    // Save language preference to localStorage whenever it changes
+    localStorage.setItem('language', language);
+  }, [language, isRTL]);
 
   const t = (key: string, params?: Record<string, string>) => {
     const keys = key.split('.');
