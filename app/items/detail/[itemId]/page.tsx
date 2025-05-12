@@ -29,6 +29,9 @@ interface BranchDetail {
   quantity: number;
 }
 
+
+
+
 interface Item {
   itemId: number;
   name: string;
@@ -171,6 +174,27 @@ export default function ItemDetailPage() {
             setUnitsLoading(false);
         });
   }, []); // Fetch only once on mount
+
+   useEffect(() => {
+    api.get('/tax/all')
+      .then(res => {
+        const taxArr = res.data.taxList || [];
+        setTaxes(taxArr);
+      })
+      .catch(err => {
+        console.error('Failed to fetch taxes:', err);
+      });
+
+    api.get('categories/all')
+      .then(res => {
+        const catArr = res.data.itemCategoryList || [];
+        setCategories(catArr);
+      })
+      .catch(err => {
+        console.error('Failed to fetch categories:', err);
+      });
+
+  }, [dispatch]);
 
   // Effect to find the item in the Redux store once items & units are ready
   useEffect(() => {
@@ -332,47 +356,19 @@ export default function ItemDetailPage() {
   // Conversion rate (e.g., 1 PLT = 12 LTR)
   const conversionRate = item?.secondaryUnitValue;
 
-  // Calculate total stock in primary unit (PLT)
-  let totalStockPrimary = 0;
-  if (item && receivedPurchaseOrders.length > 0 && primaryUnit && secondaryUnit && conversionRate) {
-    receivedPurchaseOrders.forEach(po => {
-      if (po.unitId === primaryUnit.unitOfMeasurementId) {
-        totalStockPrimary += po.quantity;
-      } else if (po.unitId === secondaryUnit.unitOfMeasurementId) {
-        totalStockPrimary += po.quantity / conversionRate;
-      }
-    });
-    // Optional: round to 2 decimals
-    totalStockPrimary = Math.round(totalStockPrimary * 100) / 100;
-  }
-
-  useEffect(() => {
-    api.get('/tax/all')
-      .then(res => {
-        const taxArr = res.data.taxList || [];
-        setTaxes(taxArr);
-      })
-      .catch(err => {
-        console.error('Failed to fetch taxes:', err);
-      });
-
-    api.get('categories/all')
-      .then(res => {
-        const catArr = res.data.itemCategoryList || [];
-        setCategories(catArr);
-      })
-      .catch(err => {
-        console.error('Failed to fetch categories:', err);
-      });
-
-  }, [dispatch]);
+  // Calculate total stock using sum of per-branch calculated quantities
+  const totalStock = item && item.branchDetails && item.secondaryUnitValue
+    ? Math.floor(item.branchDetails.reduce((sum, detail) => sum + (detail.quantity / (item.secondaryUnitValue || 1)), 0) * 100) / 100
+    : 0;
 
   // Prepare extra fields for conversion and total stock
   let extraDetails: Record<string, any> = {};
   if (primaryUnit && secondaryUnit && conversionRate) {
     extraDetails = {
       conversionInfo: `1 ${primaryUnit.unitName} = ${conversionRate} ${secondaryUnit.unitName}`,
-      totalStockInfo: totalStockPrimary > 0 ? `${totalStockPrimary} ${primaryUnit.unitName}` : undefined,
+      totalStockInfo: item && item.secondaryUnitValue
+        ? `${totalStock} ${primaryUnit ? primaryUnit.unitName : ''}`
+        : undefined,
     };
   }
 
@@ -394,24 +390,13 @@ export default function ItemDetailPage() {
 
   // Prepare branch details with calculated quantities for PDF
   const branchDetailsForPDF = item?.branchDetails?.map(detail => {
-    let branchTotal = 0;
-    if (receivedPurchaseOrders.length > 0 && primaryUnit && secondaryUnit && conversionRate) {
-      receivedPurchaseOrders.forEach(po => {
-        if (po.branchId === detail.branchId) {
-          if (po.unitId === primaryUnit.unitOfMeasurementId) {
-            branchTotal += po.quantity;
-          } else if (po.unitId === secondaryUnit.unitOfMeasurementId) {
-            branchTotal += po.quantity / conversionRate;
-          }
-        }
-      });
-      branchTotal = Math.round(branchTotal * 100) / 100;
-    } else {
-      branchTotal = 0;
-    }
+    // Calculate branch stock using only branchDetails and secondaryUnitValue
+    const branchStock = item && item.secondaryUnitValue
+      ? Math.floor((detail.quantity / item.secondaryUnitValue) * 100) / 100
+      : detail.quantity;
     return {
       ...detail,
-      calculatedQuantity: branchTotal,
+      calculatedQuantity: branchStock,
       unitName: primaryUnit ? primaryUnit.unitName : '',
     };
   }) || [];
@@ -444,22 +429,10 @@ export default function ItemDetailPage() {
               <div className="p-4 sm:p-6">
                 <dl className="grid grid-cols-1 gap-y-4">
                   {item.branchDetails.map((detail) => {
-                    // Calculate total quantity for this branch from purchase orders
-                    let branchTotal = 0;
-                    if (receivedPurchaseOrders.length > 0 && primaryUnit && secondaryUnit && conversionRate) {
-                      receivedPurchaseOrders.forEach(po => {
-                        if (po.branchId === detail.branchId) {
-                          if (po.unitId === primaryUnit.unitOfMeasurementId) {
-                            branchTotal += po.quantity;
-                          } else if (po.unitId === secondaryUnit.unitOfMeasurementId) {
-                            branchTotal += po.quantity / conversionRate;
-                          }
-                        }
-                      });
-                      branchTotal = Math.round(branchTotal * 100) / 100;
-                    } else {
-                      branchTotal = detail.quantity;
-                    }
+                    // Calculate branch stock using only branchDetails and secondaryUnitValue
+                    const branchStock = item && item.secondaryUnitValue
+                      ? Math.floor((detail.quantity / item.secondaryUnitValue) * 100) / 100
+                      : detail.quantity;
                     return (
                       <div key={detail.branchId + '-' + detail.storageLocationId}>
                         <dt className="text-lg font-medium text-gray-900">{detail.branchName}</dt>
@@ -471,7 +444,7 @@ export default function ItemDetailPage() {
                             </div>
                             <div>
                               <span className="text-sm font-medium text-gray-500">Quantity</span>
-                              <p className="mt-1 text-sm text-gray-900">{branchTotal} {primaryUnit ? primaryUnit.unitName : ''}</p>
+                              <p className="mt-1 text-sm text-gray-900">{branchStock} {primaryUnit ? primaryUnit.unitName : ''}</p>
                             </div>
                           </div>
                         </dd>

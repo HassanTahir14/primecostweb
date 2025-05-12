@@ -458,41 +458,49 @@ export const generateDetailPDF = async (
       doc.setLineWidth(0.5);
       doc.line(14, yPos, pageWidth - 14, yPos);
       yPos += 10;
-      // Table header
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(10);
-      doc.setTextColor(100, 100, 100);
-      const headers = ['Purchase Order Id', 'Quantity', 'Unit', 'Supplier Name', 'Delivered Date', 'Expiry Date'];
-      let x = 14;
-      headers.forEach((header, i) => {
-        doc.text(header, x, yPos);
-        x += 32;
+      // Use autoTable for responsive table
+      const purchaseColumns = [
+        { header: 'Purchase Order Id', dataKey: 'id' },
+        { header: 'Quantity', dataKey: 'quantity' },
+        { header: 'Unit', dataKey: 'unitName' },
+        { header: 'Supplier Name', dataKey: 'supplierName' },
+        { header: 'Delivered Date', dataKey: 'dateOfDelivery' },
+        { header: 'Expiry Date', dataKey: 'expiryDate' },
+      ];
+      const purchaseRows = purchaseOrders.map((po: any) => ({
+        id: String(po.id),
+        quantity: String(po.quantity),
+        unitName: String(po.unitName),
+        supplierName: String(po.supplierName),
+        dateOfDelivery: po.dateOfDelivery ? new Date(po.dateOfDelivery).toLocaleDateString('en-GB') : 'N/A',
+        expiryDate: po.expiryDate ? new Date(po.expiryDate).toLocaleDateString('en-GB') : 'N/A',
+      }));
+      autoTable(doc, {
+        startY: yPos,
+        head: [purchaseColumns.map(col => col.header)],
+        body: purchaseRows.map(row => purchaseColumns.map(col => row[col.dataKey as keyof typeof row] ?? '')),
+        headStyles: { fillColor: [240, 240, 240], textColor: 33, fontStyle: 'bold' },
+        margin: { left: 14, right: 14 },
+        theme: 'grid',
+        didDrawPage: (data) => {
+          if (data.cursor && typeof data.cursor.y === 'number') {
+            yPos = data.cursor.y + 10;
+          }
+        },
+        columnStyles: {
+          3: { cellWidth: 40 }, // Supplier Name column wider for wrapping
+        },
+        styles: {
+          overflow: 'linebreak',
+          cellWidth: 'auto',
+          fontSize: 10,
+        },
       });
-      yPos += 6;
-      // Table rows
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(10);
-      doc.setTextColor(33, 33, 33);
-      purchaseOrders.forEach((po: any) => {
-        let x = 14;
-        doc.text(String(po.id), x, yPos);
-        x += 32;
-        doc.text(String(po.quantity), x, yPos);
-        x += 32;
-        doc.text(String(po.unitName), x, yPos);
-        x += 32;
-        doc.text(String(po.supplierName), x, yPos);
-        x += 32;
-        doc.text(po.dateOfDelivery ? new Date(po.dateOfDelivery).toLocaleDateString('en-GB') : 'N/A', x, yPos);
-        x += 32;
-        doc.text(po.expiryDate ? new Date(po.expiryDate).toLocaleDateString('en-GB') : 'N/A', x, yPos);
-        yPos += 6;
-        if (yPos > pageHeight - 20) {
-          doc.addPage();
-          yPos = 20;
-        }
-      });
-      yPos += 10;
+      if ((doc as any).lastAutoTable && typeof (doc as any).lastAutoTable.finalY === 'number') {
+        yPos = (doc as any).lastAutoTable.finalY + 10;
+      } else {
+        yPos += 10;
+      }
     }
     
     // --- INGREDIENTS TABLE ---

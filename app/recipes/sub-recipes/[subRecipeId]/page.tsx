@@ -381,20 +381,20 @@ export default function SubRecipeDetailPage() {
                       {isSingleIngredient ? (
                         isSolidItem ? (
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                           {ing.weight}
+                            {`${ing.quantity} ${ing.unit}`}
                           </td>
                         ) : (
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {`${ing.volume}`}
+                            {`${ing.quantity} ${ing.unit}`}
                           </td>
                         )
                       ) : (
                         <>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {isSolidItem ? `${ing.weight}` : '-'}
+                            {isSolidItem ? `${ing.quantity} ${ing.unit}` : '-'}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {isLiquidItem ? `${ing.volume}` : '-'}
+                            {isLiquidItem ? `${ing.quantity} ${ing.unit}` : '-'}
                           </td>
                         </>
                       )}
