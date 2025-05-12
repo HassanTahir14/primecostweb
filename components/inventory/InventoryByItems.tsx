@@ -34,7 +34,7 @@ export default function InventoryByItems() {
           itemMap.get(item.itemId).storageInfo.push({
             storageLocation: item.storageLocation,
             branchLocation: item.branchLocation,
-            quantity: item.totalQuantity / (item.secondaryUnitValue || 1),
+            quantity: Math.floor((item.totalQuantity / item.secondaryUnitValue) * 100) / 100,
             unitId: item.primaryUnitId,
           });
         });
@@ -80,7 +80,7 @@ export default function InventoryByItems() {
                   <td className="px-6 py-4 align-top">
                     {item.storageInfo.map((s: any, idx: number) => (
                       <div key={idx}>
-                        {s.storageLocation} = <b>{s.quantity.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {getUnitName(s.unitId)}</b>
+                        {s.storageLocation} = <b>{s.quantity.toFixed(2)} {getUnitName(s.unitId)}</b>
                       </div>
                     ))}
                   </td>
