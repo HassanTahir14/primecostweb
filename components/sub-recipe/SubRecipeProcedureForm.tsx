@@ -181,7 +181,7 @@ export default function RecipeProcedureForm({ onNext, onBack, initialData, isEdi
           itemId: Number(ing.itemId) || 1,
           weight: ing.weight || 'string',
           epsPerUnit: Number(ing.epsPerUnit || ing.epUsdUnit) || 0,
-          volume: ing.volume || 'string',
+          volume: null,
           recipeCost: Number(ing.recipeCost) || 0,
           apsPerUnit: Number(ing.apsPerUnit || ing.apUsdUnit) || 0,
           itemName: ing.itemName || ing.item || 'string'
