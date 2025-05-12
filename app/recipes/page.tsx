@@ -162,7 +162,7 @@ export default function RecipesPage() {
               <Button variant="secondary">{t('recipes.subRecipesList')}</Button>
             </Link>
             <Link href="/recipes/categories">
-              <Button variant="secondary">{t('recipes.categories')}</Button>
+              <Button variant="secondary">{t('recipes.categories.title')}</Button>
             </Link>
           </div>
         </div>
@@ -217,7 +217,7 @@ export default function RecipesPage() {
                     } else {
                       router.push(`/recipes/edit/${recipe.id}`);
                     }
-                  }} variant="secondary">{t('recipes.edit')}</Button>
+                  }} variant="secondary">{t('recipes.edit.title')}</Button>
                 </div>
               </div>
             ))

@@ -73,12 +73,16 @@
     "categories": {
       "title": "Recipe Categories",
       "createNew": "Create New",
+      "edit": "Edit",
       "categoryName": "Category Name",
       "categoryType": "Category Type",
       "actions": "Actions",
       "noCategories": "No categories found.",
       "modal": {
+        "newTitle": "New Category",
         "title": "New Category",
+        "recipeType": "Recipe",
+        "subRecipeType": "Sub Recipe",
         "editTitle": "Edit Category",
         "enterName": "Enter Category Name",
         "discard": "Discard",
@@ -86,8 +90,8 @@
         "update": "Update"
       },
       "delete": {
-        "title": "Delete Category",
-        "confirmMessage": "Are you sure you want to delete {name}? This action cannot be undone.",
+        "title": "Delete",
+        "confirmMessage": "Are you sure you want to delete this category? This action cannot be undone.",
         "success": "Category deleted successfully!"
       }
     },
@@ -98,7 +102,16 @@
     "approveToken": "Approve Token",
     "assignTo": "Assign To",
     "view": "View",
-    "edit": "Edit",
+    "edit": {
+      "title": "Edit",
+      "backToRecipes": "Back to Recipes",
+      "steps": {
+        "details": "Details",
+        "ingredients": "Ingredients",
+        "costing": "Costing",
+        "procedure": "Procedure"
+      }
+    },
     "noRecipesFound": "No recipes found!",
     "showing": "Showing",
     "to": "to",
@@ -242,7 +255,16 @@
       "approveToken": "Approve Token",
       "assignTo": "Assign To",
       "view": "View",
-      "edit": "Edit",
+      "edit": {
+        "title": "Edit Sub-Recipe",
+        "backToSubRecipes": "Back to Sub-Recipes",
+        "steps": {
+          "details": "Details",
+          "ingredients": "Ingredients",
+          "costing": "Costing",
+          "procedure": "Procedure"
+        }
+      },
       "editRestriction": "Sub-recipe can only be edited once it is approved by admin.",
       "assignRestriction": "Sub-recipe can only be assigned once it is approved by admin.",
       "noRecipesFound": "No sub recipes found!",
@@ -309,6 +331,103 @@
         "noProcedure": "No procedure available",
         "ingredients": "Ingredients",
         "procedures": "Procedures"
+      },
+      "create": {
+        "title": "Create Sub-Recipe",
+        "backToRecipes": "Back to Recipes",
+        "steps": {
+          "details": "Details",
+          "ingredients": "Ingredients",
+          "costing": "Costing",
+          "procedure": "Procedure"
+        },
+        "details": {
+          "title": "Sub-Recipe Details",
+          "uploadImage": "Upload Image",
+          "currentImages": "Current Images",
+          "newImages": "New Images",
+          "name": "Sub-Recipe Name",
+          "recipeCode": "Sub-Recipe Code",
+          "category": "Category",
+          "portions": "Number of Portions",
+          "servingSize": "Serving Size",
+          "errors": {
+            "nameRequired": "Name is required",
+            "nameLength": "Name must be at least 3 characters long",
+            "categoryRequired": "Category is required",
+            "portionsRequired": "Portions must be a positive number",
+            "servingSizeRequired": "Serving size is required",
+            "imageRequired": "At least one image is required"
+          }
+        },
+        "ingredients": {
+          "title": "Sub-Recipe Ingredients",
+          "list": "Ingredients List",
+          "addIngredient": "Add Ingredient",
+          "editIngredient": "Edit Ingredient",
+          "item": "Item",
+          "quantity": "Quantity",
+          "yieldPercent": "Yield %",
+          "apUsdUnit": "AP USD / Unit",
+          "epUsdUnit": "EP USD / Unit",
+          "recipeCost": "Recipe Cost",
+          "unit": "Unit",
+          "actions": "Actions",
+          "errors": {
+            "itemRequired": "Item is required",
+            "quantityRequired": "Quantity must be greater than 0",
+            "yieldPercentRequired": "Yield % must be greater than 0",
+            "apUsdUnitRequired": "AP USD / Unit must be 0 or greater",
+            "epUsdUnitRequired": "EP USD / Unit must be 0 or greater",
+            "ingredientsRequired": "At least one ingredient is required"
+          }
+        },
+        "costing": {
+          "title": "Sub-Recipe Costing",
+          "menuPrice": "Menu Price",
+          "foodCostBudget": "Food Cost % Budget",
+          "foodCostActual": "Food Cost % Actual",
+          "idealSellingPrice": "Ideal Selling Price",
+          "costPerPortion": "Cost Per Portion",
+          "costPerRecipe": "Cost Per Recipe",
+          "marginPerPortion": "Margin Per Portion",
+          "errors": {
+            "menuPriceRequired": "Menu Price is required",
+            "menuPriceGreaterThanZero": "Must be greater than 0",
+            "foodCostBudgetRequired": "Food Cost % Budget is required",
+            "foodCostBudgetGreaterThanZero": "Must be greater than 0",
+            "foodCostBudgetRange": "Must be between 0 and 100",
+            "marginPerPortionNegative": "Margin cannot be negative. Please increase the menu price",
+            "foodCostActualRange": "Must be between 0 and 100"
+          }
+        },
+        "procedure": {
+          "title": "Sub-Recipe Procedures",
+          "addStep": "Add Step",
+          "steps": "Procedure Steps",
+          "stepLabel": "Step",
+          "enterDescription": "Enter procedure description",
+          "errors": {
+            "descriptionRequired": "Step description must be at least 3 characters long",
+            "descriptionTooLong": "Step description must not exceed 2000 characters",
+            "stepsRequired": "All steps must have a description"
+          },
+          "validation": {
+            "title": "Validation Error",
+            "fixErrors": "Please fix the validation errors before proceeding"
+          },
+          "success": {
+            "created": "Sub-Recipe created successfully!",
+            "updated": "Sub-Recipe updated successfully!"
+          },
+          "creating": "Creating Sub-Recipe...",
+          "updating": "Updating Sub-Recipe...",
+          "createButton": "CREATE SUB-RECIPE",
+          "updateButton": "UPDATE SUB-RECIPE",
+          "imageRequired": "At least one image is required. Please either keep existing images or upload new ones.",
+          "imageProcessError": "Failed to process some images"
+        },
+        "backToSubRecipes": "Back to Sub-Recipes"
       }
     }
   },

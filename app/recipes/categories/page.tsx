@@ -57,7 +57,7 @@ export default function CategoriesPage() {
   };
 
   const handleDeleteCategory = async (categoryId: number) => {
-    if (window.confirm(t('recipes.categories.deleteConfirm'))) {
+    if (window.confirm(t('recipes.categories.delete.confirmMessage', { name: editingCategory?.name }))) {
       await dispatch(deleteCategory(categoryId));
     }
   };
@@ -132,7 +132,7 @@ export default function CategoriesPage() {
                     size="sm"
                     onClick={() => handleDeleteCategory(category.categoryId)}
                   >
-                    {t('recipes.categories.delete')}
+                    {t('recipes.categories.delete.title')}
                   </Button>
                 </div>
               </div>

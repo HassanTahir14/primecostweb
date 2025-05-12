@@ -135,7 +135,7 @@ export default function CategoriesPage() {
 
   if (loading) {
     return (
-      <PageLayout title={t('recipes.categories.title')}>
+      <PageLayout title={t('recipes.subRecipes.categories.title')}>
         <div className="flex justify-center items-center h-64">
           <Loader size="medium" />
         </div>

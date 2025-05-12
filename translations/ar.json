@@ -98,7 +98,16 @@
     "approveToken": "الموافقة على التوكن",
     "assignTo": "تعيين إلى",
     "view": "عرض",
-    "edit": "تعديل",
+    "edit": {
+      "title": "تعديل الوصفة",
+      "backToRecipes": "العودة إلى الوصفات",
+      "steps": {
+        "details": "التفاصيل",
+        "ingredients": "المكونات",
+        "costing": "التكاليف",
+        "procedure": "الإجراءات"
+      }
+    },
     "noRecipesFound": "لم يتم العثور على وصفات!",
     "showing": "عرض",
     "to": "إلى",
@@ -244,7 +253,16 @@
       "approveToken": "الموافقة على التوكن",
       "assignTo": "تعيين إلى",
       "view": "عرض",
-      "edit": "تعديل",
+      "edit": {
+        "title": "تعديل الوصفة الفرعية",
+        "backToSubRecipes": "العودة إلى الوصفات الفرعية",
+        "steps": {
+          "details": "التفاصيل",
+          "ingredients": "المكونات",
+          "costing": "التكاليف",
+          "procedure": "الإجراءات"
+        }
+      },
       "editRestriction": "يمكن تعديل الوصفة الفرعية فقط بعد موافقة المسؤول.",
       "assignRestriction": "يمكن تعيين الوصفة الفرعية فقط بعد موافقة المسؤول.",
       "noRecipesFound": "لم يتم العثور على وصفات فرعية!",
@@ -311,6 +329,16 @@
         "noProcedure": "لا توجد تعليمات متاحة",
         "ingredients": "المكونات",
         "procedures": "الإجراءات"
+      },
+      "create": {
+        "backToSubRecipes": "العودة إلى الوصفات الفرعية",
+        "title": "إنشاء وصفة فرعية",
+        "steps": {
+          "details": "التفاصيل",
+          "ingredients": "المكونات",
+          "costing": "التكاليف",
+          "procedure": "الإجراءات"
+        }
       }
     }
   },

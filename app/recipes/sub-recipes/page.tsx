@@ -241,7 +241,7 @@ export default function SubRecipesPage() {
                     } else {
                       router.push(`/recipes/sub-recipes/edit/${recipe.id}`);
                     }
-                  }} variant="secondary">{t('recipes.subRecipes.edit')}</Button>
+                  }} variant="secondary">{t('recipes.subRecipes.edit.title')}</Button>
                 </div>
               </div>
             ))
