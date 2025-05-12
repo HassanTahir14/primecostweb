@@ -166,7 +166,7 @@ export default function CategoriesPage() {
           {/* Header */}
           <div className="flex items-center px-4 py-2 text-sm font-medium text-gray-500 border-b">
             <div className="flex-1">{t('recipes.categories.categoryName')}</div>
-            <div className="w-40">{t('recipes.categories.categoryType')}</div>
+            {/* <div className="w-40">{t('recipes.categories.categoryType')}</div> */}
             <div className="w-32 text-right">{t('recipes.categories.actions')}</div>
           </div>
           
