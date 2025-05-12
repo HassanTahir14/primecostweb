@@ -174,7 +174,7 @@ export default function ItemsMasterList() {
     // Refetch current page data after adding
     dispatch(fetchAllItems({ 
         page: currentPage, 
-        size: pageSize, 
+        size: 200000, 
         searchQuery: searchQuery,
         sortBy: sortBy,
         direction: sortDirection
