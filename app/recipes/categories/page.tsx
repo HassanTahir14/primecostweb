@@ -107,7 +107,7 @@ export default function CategoriesPage() {
           {/* Header */}
           <div className="flex items-center px-4 py-2 text-sm font-medium text-gray-500 border-b">
             <div className="flex-1">Category Name</div>
-            <div className="w-40">Category Type</div>
+            {/* <div className="w-40">Category Type</div> */}
             <div className="w-32 text-right">Actions</div>
           </div>
           
