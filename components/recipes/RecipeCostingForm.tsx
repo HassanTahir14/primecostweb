@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Button from '@/components/common/button';
+import { getCurrencyFromStorage } from '@/utils/currencyUtils';
 
 interface RecipeCostingFormProps {
   onNext: (data: any) => void;
@@ -149,11 +150,13 @@ export default function RecipeCostingForm({ onNext, onBack, initialData, onSave 
           <div>
             <label className="block text-gray-700 font-medium mb-2">Menu Price</label>
             <div className="relative">
-              <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">$</span>
+              <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
+                {getCurrencyFromStorage()}
+              </span>
               <input
                 type="number"
                 placeholder="Enter value"
-                className={`${inputClasses} pl-8 border-gray-300 ${errors.menuPrice ? 'border-red-500' : ''}`}
+                className={`${inputClasses} pl-16 border-gray-300 ${errors.menuPrice ? 'border-red-500' : ''}`}
                 value={menuPrice}
                 onChange={(e) => setMenuPrice(e.target.value)}
               />
@@ -196,11 +199,13 @@ export default function RecipeCostingForm({ onNext, onBack, initialData, onSave 
           <div>
             <label className="block text-gray-700 font-medium mb-2">Ideal Selling Price</label>
             <div className="relative">
-              <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">$</span>
+              <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
+                {getCurrencyFromStorage()}
+              </span>
               <input
                 type="text"
                 readOnly
-                className="w-full p-3 border border-gray-300 rounded-lg bg-gray-100 pl-8"
+                className="w-full p-3 border border-gray-300 rounded-lg bg-gray-100 pl-16"
                 value={idealSellingPrice}
               />
             </div>
@@ -212,11 +217,13 @@ export default function RecipeCostingForm({ onNext, onBack, initialData, onSave 
           <div>
             <label className="block text-gray-700 font-medium mb-2">Cost Per Portion</label>
             <div className="relative">
-              <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">$</span>
+              <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
+                {getCurrencyFromStorage()}
+              </span>
               <input
                 type="text"
                 readOnly
-                className="w-full p-3 border border-gray-300 rounded-lg bg-gray-100 pl-8"
+                className="w-full p-3 border border-gray-300 rounded-lg bg-gray-100 pl-16"
                 value={parseFloat(costPerPortion).toFixed(2)}
               />
             </div>
@@ -226,11 +233,13 @@ export default function RecipeCostingForm({ onNext, onBack, initialData, onSave 
           <div>
             <label className="block text-gray-700 font-medium mb-2">Cost Per Recipe</label>
             <div className="relative">
-              <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">$</span>
+              <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
+                {getCurrencyFromStorage()}
+              </span>
               <input
                 type="text"
                 readOnly
-                className="w-full p-3 border border-gray-300 rounded-lg bg-gray-100 pl-8"
+                className="w-full p-3 border border-gray-300 rounded-lg bg-gray-100 pl-16"
                 value={parseFloat(costPerRecipe).toFixed(2)}
               />
             </div>
@@ -240,11 +249,13 @@ export default function RecipeCostingForm({ onNext, onBack, initialData, onSave 
           <div>
             <label className="block text-gray-700 font-medium mb-2">Margin Per Portion</label>
             <div className="relative">
-              <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">$</span>
+              <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
+                {getCurrencyFromStorage()}
+              </span>
               <input
                 type="text"
                 readOnly
-                className={`w-full p-3 border ${errors.marginPerPortion ? 'border-red-500' : 'border-gray-300'} rounded-lg bg-gray-100 pl-8`}
+                className={`w-full p-3 border ${errors.marginPerPortion ? 'border-red-500' : 'border-gray-300'} rounded-lg bg-gray-100 pl-16`}
                 value={parseFloat(marginPerPortion).toFixed(2)}
               />
             </div>

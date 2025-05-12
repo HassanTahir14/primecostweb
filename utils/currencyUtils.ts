@@ -89,4 +89,11 @@ export function getCurrencySymbol(currency: string = 'USD'): string {
     default:
       return '$';
   }
+}
+
+export function getCurrencyFromStorage(): string {
+  if (typeof window !== 'undefined') {
+    return localStorage.getItem('currency') || 'USD';
+  }
+  return 'USD';
 } 

@@ -20,6 +20,7 @@ import { fetchAllTaxes, selectAllTaxes } from '@/store/taxSlice';
 import { fetchCountries, formatCountryOptions } from '@/utils/countryUtils';
 import { getImageUrlWithAuth } from '@/utils/imageUtils';
 import AuthImage from './common/AuthImage';
+import { getCurrencyFromStorage } from '@/utils/currencyUtils';
 
 // Define Item interface matching the structure in itemsSlice/ItemsMasterList
 interface ItemImage {
@@ -640,11 +641,13 @@ export default function EditItemForm({ itemToEdit, onClose, onSuccess }: EditIte
                  value={formData.purchaseCostWithoutVAT}
                  onChange={handleInputChange}
                  placeholder="Enter value"
-                 className="pl-12"
+                 className="pl-16"
                  step="any"
                  min="0"
                />
-               <span className="absolute bottom-2 left-3 text-gray-500">USD</span>
+               <span className="absolute bottom-2 left-3 text-gray-500">
+                 {getCurrencyFromStorage()}
+               </span>
              </div>
 
              <div className="relative">
@@ -654,9 +657,11 @@ export default function EditItemForm({ itemToEdit, onClose, onSuccess }: EditIte
                  type="number"
                  value={formData.purchaseCostWithVAT}
                  disabled
-                 className="pl-12 bg-gray-50"
+                 className="pl-16 bg-gray-50"
                />
-               <span className="absolute bottom-2 left-3 text-gray-500">USD</span>
+               <span className="absolute bottom-2 left-3 text-gray-500">
+                 {getCurrencyFromStorage()}
+               </span>
              </div>
 
              {/* Image Management Section */}

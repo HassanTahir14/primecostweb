@@ -12,6 +12,7 @@ import { fetchAllCategories as fetchItemCategories, selectAllCategories as selec
 import { fetchAllTaxes, selectAllTaxes } from '@/store/taxSlice';
 import { fetchAllBranches } from "@/store/branchSlice";
 import { fetchCountries, formatCountryOptions } from '@/utils/countryUtils';
+import { getCurrencyFromStorage } from '@/utils/currencyUtils';
 // TODO: Import actions/selectors for Units and Tax Types when available
 // import { fetchAllUnits, selectAllUnits } from '@/store/unitSlice'; 
 // import { fetchAllTaxTypes, selectAllTaxTypes } from '@/store/taxTypeSlice';
@@ -589,12 +590,12 @@ export default function AddItemForm({ onClose, onSuccess }: AddItemFormProps) {
                 value={formData.purchaseCostWithoutVAT}
                 onChange={handleInputChange}
                  placeholder="Enter value"
-                className="pl-12"
+                className="pl-16"
                  step="any"
                  min="0"
               />
               <span className="absolute bottom-2 left-3 text-gray-500">
-                 USD
+                {getCurrencyFromStorage()}
               </span>
             </div>
 
@@ -605,10 +606,10 @@ export default function AddItemForm({ onClose, onSuccess }: AddItemFormProps) {
                  type="number"
                 value={formData.purchaseCostWithVAT}
                 disabled
-                className="pl-12 bg-gray-50"
+                className="pl-16 bg-gray-50"
               />
               <span className="absolute bottom-2 left-3 text-gray-500">
-                 USD
+                {getCurrencyFromStorage()}
               </span>
             </div>
 
