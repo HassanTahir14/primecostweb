@@ -380,5 +380,36 @@
       "countriesFound": "البلدان الموجودة",
       "noData": "لم يتم العثور على بيانات بلد المنشأ في العناصر."
     }
+  },
+  "assignOrder": {
+    "title": "تعيين طلب",
+    "totalOrders": "إجمالي الطلبات: {count}",
+    "assignNewOrder": "تعيين طلب جديد",
+    "assignTo": "تعيين إلى",
+    "orderType": "نوع الطلب",
+    "start": "بدء",
+    "finish": "إنهاء",
+    "assign": "تعيين",
+    "assigning": "جاري التعيين...",
+    "cancel": "إلغاء",
+    "loadingOrders": "جاري تحميل الطلبات...",
+    "noOrdersFound": "لم يتم العثور على طلبات. {isAdmin, select, true {قم بتعيين واحد للبدء.} false {لا توجد طلبات معينة بعد.}}",
+    "status": {
+      "pending": "قيد الانتظار",
+      "inProgress": "قيد التنفيذ",
+      "finished": "منتهي",
+      "cancelled": "ملغي"
+    },
+    "duration": {
+      "hoursMinutesSeconds": "{hours}س {minutes}د {seconds}ث",
+      "minutesSeconds": "{minutes}د {seconds}ث",
+      "seconds": "{seconds}ث"
+    },
+    "finishTime": "وقت الانتهاء",
+    "type": "النوع",
+    "branch": "الفرع",
+    "assignedBy": "تم التعيين بواسطة",
+    "assignedTo": "تم التعيين إلى",
+    "notStarted": "لم يبدأ"
   }
-} 
+}

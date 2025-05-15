@@ -248,7 +248,6 @@
       "title": "Sub Recipes",
       "searchPlaceholder": "Search Sub Recipe",
       "createNew": "Create New",
-   
       "tokenStatus": "Token Status",
       "approved": "Approved",
       "pending": "Pending",
@@ -469,5 +468,37 @@
       "countriesFound": "Countries Found",
       "noData": "No country of origin data found in items."
     }
+  },
+  "assignOrder": {
+    "title": "Assign Order",
+    "totalOrders": "Total Orders: {count}",
+    "assignNewOrder": "Assign New Order",
+    "assignTo": "Assign To",
+    "orderType": "Order Type",
+    "start": "Start",
+    "finish": "Finish",
+    "assign": "Assign",
+    "assigning": "Assigning...",
+    "cancel": "Cancel",
+    "loadingOrders": "Loading orders...",
+    "noOrdersFound": "No orders found. {isAdmin, select, true {Assign one to get started.} false {No orders assigned yet.}}",
+    "status": {
+      "title": "Order Status",
+      "pending": "Pending",
+      "inProgress": "In Progress",
+      "finished": "Finished",
+      "cancelled": "Cancelled"
+    },
+    "duration": {
+      "hoursMinutesSeconds": "{hours}h {minutes}m {seconds}s",
+      "minutesSeconds": "{minutes}m {seconds}s",
+      "seconds": "{seconds}s"
+    },
+    "finishTime": "Finish Time",
+    "type": "Type",
+    "branch": "Branch",
+    "assignedBy": "Assigned By",
+    "assignedTo": "Assigned To",
+    "notStarted": "Not started"
   }
-} 
+}
