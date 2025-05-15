@@ -26,7 +26,7 @@ import { fetchAllStorageLocations, StorageLocation } from '@/store/storageLocati
 import { useUnits } from '@/hooks/useUnits';
 import { fetchAllCategories } from '@/store/itemCategorySlice';
 import { useCurrency } from '@/context/CurrencyContext';
-import { formatCurrencyValue } from '@/utils/currencyUtils';
+import { formatCurrencyValue, getCurrencyFromStorage } from '@/utils/currencyUtils';
 
 // Extend the PurchaseOrder type to include createdAt
 interface PurchaseOrder extends PurchaseOrderType {
@@ -844,7 +844,9 @@ export default function PurchaseOrders({ onClose }: PurchaseOrdersProps) {
                 <div>
                     <label className="block text-gray-700 mb-2 font-medium">Purchase Cost</label>
                     <div className="relative">
-                        <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">USD</span>
+                        <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
+                            {getCurrencyFromStorage()}
+                        </span>
                         <Input
                             type="number"
                             name="purchaseCost"
@@ -858,7 +860,9 @@ export default function PurchaseOrders({ onClose }: PurchaseOrdersProps) {
                 <div>
                     <label className="block text-gray-700 mb-2 font-medium">VAT Amount</label>
                     <div className="relative">
-                        <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">USD</span>
+                        <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
+                            {getCurrencyFromStorage()}
+                        </span>
                         <Input
                             type="number"
                             name="vatAmount"
