@@ -34,7 +34,7 @@ export default function InventoryByItems() {
           itemMap.get(item.itemId).storageInfo.push({
             storageLocation: item.storageLocation,
             branchLocation: item.branchLocation,
-            quantity: Math.floor((item.totalQuantity / item.secondaryUnitValue) * 100) / 100,
+            quantity: item.totalQuantity, // Use exact quantity from response
             unitId: item.primaryUnitId,
           });
         });

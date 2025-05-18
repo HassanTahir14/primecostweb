@@ -356,9 +356,9 @@ export default function ItemDetailPage() {
   // Conversion rate (e.g., 1 PLT = 12 LTR)
   const conversionRate = item?.secondaryUnitValue;
 
-  // Calculate total stock using sum of per-branch calculated quantities
-  const totalStock = item && item.branchDetails && item.secondaryUnitValue
-    ? Math.floor(item.branchDetails.reduce((sum, detail) => sum + (detail.quantity / (item.secondaryUnitValue || 1)), 0) * 100) / 100
+  // Calculate total stock as the sum of all ingredient quantities in all branches (raw quantity)
+  const totalStock = item && item.branchDetails
+    ? item.branchDetails.reduce((sum, detail) => sum + (detail.quantity || 0), 0)
     : 0;
 
   // Prepare extra fields for conversion and total stock
@@ -366,7 +366,7 @@ export default function ItemDetailPage() {
   if (primaryUnit && secondaryUnit && conversionRate) {
     extraDetails = {
       conversionInfo: `1 ${primaryUnit.unitName} = ${conversionRate} ${secondaryUnit.unitName}`,
-      totalStockInfo: item && item.secondaryUnitValue
+      totalStockInfo: item && item.branchDetails
         ? `${totalStock} ${primaryUnit ? primaryUnit.unitName : ''}`
         : undefined,
     };
@@ -388,18 +388,12 @@ export default function ItemDetailPage() {
   // Merge item data with extra details
   const detailsData = item ? { ...item, ...extraDetails, taxTypeWithRate } : item;
 
-  // Prepare branch details with calculated quantities for PDF
-  const branchDetailsForPDF = item?.branchDetails?.map(detail => {
-    // Calculate branch stock using only branchDetails and secondaryUnitValue
-    const branchStock = item && item.secondaryUnitValue
-      ? Math.floor((detail.quantity / item.secondaryUnitValue) * 100) / 100
-      : detail.quantity;
-    return {
-      ...detail,
-      calculatedQuantity: branchStock,
-      unitName: primaryUnit ? primaryUnit.unitName : '',
-    };
-  }) || [];
+  // Prepare branch details for PDF and UI with raw quantity (no transformation)
+  const branchDetailsForPDF = item?.branchDetails?.map(detail => ({
+    ...detail,
+    calculatedQuantity: detail.quantity, // Use raw quantity
+    unitName: primaryUnit ? primaryUnit.unitName : '',
+  })) || [];
 
   return (
     <PageLayout title={
@@ -428,29 +422,23 @@ export default function ItemDetailPage() {
             <div className="bg-white bg-opacity-90 rounded-xl shadow-md overflow-hidden">
               <div className="p-4 sm:p-6">
                 <dl className="grid grid-cols-1 gap-y-4">
-                  {item.branchDetails.map((detail) => {
-                    // Calculate branch stock using only branchDetails and secondaryUnitValue
-                    const branchStock = item && item.secondaryUnitValue
-                      ? Math.floor((detail.quantity / item.secondaryUnitValue) * 100) / 100
-                      : detail.quantity;
-                    return (
-                      <div key={detail.branchId + '-' + detail.storageLocationId}>
-                        <dt className="text-lg font-medium text-gray-900">{detail.branchName}</dt>
-                        <dd className="mt-2">
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2">
-                            <div>
-                              <span className="text-sm font-medium text-gray-500">Location</span>
-                              <p className="mt-1 text-sm text-gray-900">{detail.storageLocationName}</p>
-                            </div>
-                            <div>
-                              <span className="text-sm font-medium text-gray-500">Quantity</span>
-                              <p className="mt-1 text-sm text-gray-900">{branchStock} {primaryUnit ? primaryUnit.unitName : ''}</p>
-                            </div>
+                  {item.branchDetails.map((detail) => (
+                    <div key={detail.branchId + '-' + detail.storageLocationId}>
+                      <dt className="text-lg font-medium text-gray-900">{detail.branchName}</dt>
+                      <dd className="mt-2">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2">
+                          <div>
+                            <span className="text-sm font-medium text-gray-500">Location</span>
+                            <p className="mt-1 text-sm text-gray-900">{detail.storageLocationName}</p>
                           </div>
-                        </dd>
-                      </div>
-                    );
-                  })}
+                          <div>
+                            <span className="text-sm font-medium text-gray-500">Quantity</span>
+                            <p className="mt-1 text-sm text-gray-900">{detail.quantity} {primaryUnit ? primaryUnit.unitName : ''}</p>
+                          </div>
+                        </div>
+                      </dd>
+                    </div>
+                  ))}
                 </dl>
               </div>
             </div>
@@ -513,4 +501,4 @@ export default function ItemDetailPage() {
       )}
     </PageLayout>
   );
-} 
+}
