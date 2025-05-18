@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { useTranslation } from '@/context/TranslationContext';
 import Modal from '@/components/common/Modal';
 import Button from '@/components/common/button';
 import { updateBranch } from '@/store/branchSlice';
@@ -49,6 +50,8 @@ export default function BranchEditModal({
     loading: storageLoading, 
     error: storageError 
   } = useSelector((state: RootState) => state.storageLocation);
+
+  const { t } = useTranslation();
 
   const [branchName, setBranchName] = useState('');
   const [branchManager, setBranchManager] = useState('');
@@ -144,18 +147,18 @@ export default function BranchEditModal({
     <Modal 
       isOpen={isOpen} 
       onClose={onClose} 
-      title="Edit Branch"
+      title={t('branches.editBranch')}
       size="lg"
     >
       <div className="space-y-5">
         {/* Branch Details */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
            <div>
-            <label htmlFor="editBranchName" className="block text-gray-700 font-medium mb-1">Branch Name <span className="text-red-500">*</span></label>
+            <label htmlFor="editBranchName" className="block text-gray-700 font-medium mb-1">{t('branches.branchName')} <span className="text-red-500">*</span></label>
             <input
               id="editBranchName"
               type="text"
-              placeholder="Enter Branch Name"
+              placeholder={t('branches.enterBranchName')}
               className={`w-full p-3 border ${errors.branchName ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:outline-none focus:ring-2 ${errors.branchName ? 'focus:ring-red-500' : 'focus:ring-[#00997B]'}`}
               value={branchName}
               onChange={(e) => {
@@ -164,15 +167,15 @@ export default function BranchEditModal({
               }}
               disabled={isLoading}
             />
-            {errors.branchName && <p className="text-red-500 text-xs mt-1">{errors.branchName}</p>}
+            {errors.branchName && <p className="text-red-500 text-xs mt-1">{t(errors.branchName)}</p>}
           </div>
           
           <div>
-            <label htmlFor="editBranchManager" className="block text-gray-700 font-medium mb-1">Branch Manager <span className="text-red-500">*</span></label>
+            <label htmlFor="editBranchManager" className="block text-gray-700 font-medium mb-1">{t('branches.branchManager')} <span className="text-red-500">*</span></label>
             <input
               id="editBranchManager"
               type="text"
-              placeholder="Enter Branch Manager Name"
+              placeholder={t('branches.enterBranchManager')}
               className={`w-full p-3 border ${errors.branchManager ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:outline-none focus:ring-2 ${errors.branchManager ? 'focus:ring-red-500' : 'focus:ring-[#00997B]'}`}
               value={branchManager}
               onChange={(e) => {
@@ -181,15 +184,15 @@ export default function BranchEditModal({
               }}
               disabled={isLoading}
             />
-             {errors.branchManager && <p className="text-red-500 text-xs mt-1">{errors.branchManager}</p>}
+             {errors.branchManager && <p className="text-red-500 text-xs mt-1">{t(errors.branchManager)}</p>}
           </div>
           
           <div className="md:col-span-2">
-            <label htmlFor="editBranchAddress" className="block text-gray-700 font-medium mb-1">Branch Address <span className="text-red-500">*</span></label>
+            <label htmlFor="editBranchAddress" className="block text-gray-700 font-medium mb-1">{t('branches.branchAddress')} <span className="text-red-500">*</span></label>
             <input
               id="editBranchAddress"
               type="text"
-              placeholder="Enter Branch Address"
+              placeholder={t('branches.enterBranchAddress')}
               className={`w-full p-3 border ${errors.branchAddress ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:outline-none focus:ring-2 ${errors.branchAddress ? 'focus:ring-red-500' : 'focus:ring-[#00997B]'}`}
               value={branchAddress}
               onChange={(e) => {
@@ -198,17 +201,17 @@ export default function BranchEditModal({
               }}
               disabled={isLoading}
             />
-            {errors.branchAddress && <p className="text-red-500 text-xs mt-1">{errors.branchAddress}</p>}
+            {errors.branchAddress && <p className="text-red-500 text-xs mt-1">{t(errors.branchAddress)}</p>}
           </div>
         </div>
         
         {/* Storage Locations Selection */}
         <div>
-          <label className="block text-gray-700 font-medium mb-2">Assign Storage Locations <span className="text-red-500">*</span></label>
+          <label className="block text-gray-700 font-medium mb-2">{t('branches.assignStorageLocations')} <span className="text-red-500">*</span></label>
           {storageLoading ? (
-            <div className="text-center text-gray-500">Loading locations...</div>
+            <div className="text-center text-gray-500">{t('branches.loadingLocations')}</div>
           ) : storageError ? (
-             <div className="text-center text-red-500">Error loading locations.</div>
+             <div className="text-center text-red-500">{t('branches.errorLoadingLocations')}</div>
           ) : storageLocations.length > 0 ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
               {storageLocations.map((location: StorageLocation) => (
@@ -227,9 +230,9 @@ export default function BranchEditModal({
               ))}
             </div>
           ) : (
-            <div className="text-center text-gray-500">No storage locations found.</div>
+            <div className="text-center text-gray-500">{t('branches.noStorageLocations')}</div>
           )}
-           {errors.storageLocations && <p className="text-red-500 text-xs mt-1">{errors.storageLocations}</p>}
+           {errors.storageLocations && <p className="text-red-500 text-xs mt-1">{t(errors.storageLocations)}</p>}
         </div>
       </div>
       
@@ -240,15 +243,15 @@ export default function BranchEditModal({
           onClick={onClose}
           disabled={isLoading}
         >
-          Discard
+          {t('common.discard')}
         </Button>
         <Button 
           onClick={handleSubmit}
           disabled={isLoading || storageLoading || !hasChanged} // Disable if loading, no locations, or form hasn't changed
         >
-          {isLoading ? 'Updating...' : 'UPDATE'}
+          {isLoading ? t('branches.updating') : t('branches.update')}
         </Button>
       </div>
     </Modal>
   );
-} 
+}

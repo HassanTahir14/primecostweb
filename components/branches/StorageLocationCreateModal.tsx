@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useDispatch } from 'react-redux';
+import { useTranslation } from '@/context/TranslationContext';
 import Modal from '@/components/common/Modal';
 import Button from '@/components/common/button';
 import { addStorageLocation } from '@/store/storageLocationSlice';
@@ -21,13 +22,14 @@ export default function StorageLocationCreateModal({
   onError,
 }: StorageLocationCreateModalProps) {
   const dispatch = useDispatch<AppDispatch>();
+  const { t } = useTranslation();
   const [locationName, setLocationName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [validationError, setValidationError] = useState('');
 
   const handleValidation = () => {
     if (!locationName.trim()) {
-      setValidationError('Storage location name is required.');
+      setValidationError(t('storageLocation.nameRequired'));
       return false;
     }
     setValidationError('');
@@ -46,19 +48,19 @@ export default function StorageLocationCreateModal({
       // Check if the action was fulfilled
       if (addStorageLocation.fulfilled.match(resultAction)) {
         // Use the description from the API response if available
-        const successMsg = resultAction.payload?.description || 'Storage location added successfully'; 
+        const successMsg = resultAction.payload?.description || t('storageLocation.addSuccess'); 
         onSuccess(successMsg); // Notify parent
         setLocationName('');   // Clear input on success
         onClose();             // Close modal on success
       } else {
         // Handle rejected action
         const errorPayload = resultAction.payload as any; // Type assertion if needed
-        const errorMsg = errorPayload?.description || errorPayload?.message || 'Failed to add storage location';
+        const errorMsg = errorPayload?.description || errorPayload?.message || t('storageLocation.addError');
         onError(errorMsg); // Notify parent of the error
       }
     } catch (error) {
       console.error('Error adding storage location:', error);
-      onError('An unexpected error occurred.'); // Notify parent of unexpected error
+      onError(t('storageLocation.unexpectedError')); // Notify parent of unexpected error
     } finally {
       setIsLoading(false);
     }
@@ -75,15 +77,15 @@ export default function StorageLocationCreateModal({
     <Modal 
       isOpen={isOpen} 
       onClose={handleClose} 
-      title="New Storage Location"
+      title={t('storageLocation.createNew')}
     >
       <div className="space-y-4">
         <div>
-          <label htmlFor="locationName" className="block text-gray-700 font-medium mb-1">Storage Location Name <span className="text-red-500">*</span></label>
+          <label htmlFor="locationName" className="block text-gray-700 font-medium mb-1">{t('storageLocation.name')} <span className="text-red-500">*</span></label>
           <input
             id="locationName"
             type="text"
-            placeholder="Enter Storage Location Name"
+            placeholder={t('storageLocation.enterName')}
             className={`w-full p-3 border ${validationError ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:outline-none focus:ring-2 ${validationError ? 'focus:ring-red-500' : 'focus:ring-[#00997B]'}`}
             value={locationName}
             onChange={(e) => {
@@ -104,15 +106,15 @@ export default function StorageLocationCreateModal({
           onClick={handleClose}
           disabled={isLoading}
         >
-          Discard
+          {t('common.discard')}
         </Button>
         <Button 
           onClick={handleSubmit}
           disabled={isLoading || !locationName.trim()} // Disable if loading or input is empty
         >
-          {isLoading ? 'Adding...' : 'ADD'}
+          {isLoading ? t('storageLocation.adding') : t('storageLocation.add')}
         </Button>
       </div>
     </Modal>
   );
-} 
+}

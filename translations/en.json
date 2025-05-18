@@ -73,7 +73,12 @@
     "categories": {
       "title": "Recipe Categories",
       "createNew": "Create New",
-      "edit": "Edit",
+      "edit": {
+        "title": "Edit Category",
+        "enterName": "Enter Category Name",
+        "discard": "Discard",
+        "update": "Update"
+      },
       "categoryName": "Category Name",
       "categoryType": "Category Type",
       "actions": "Actions",
@@ -281,22 +286,20 @@
       "categories": {
         "title": "Sub Recipe Categories",
         "createNew": "Create New",
-        "edit": "Edit",
-        "delete": "Delete",
-        "noCategoriesFound": "No categories found.",
-        "delete": {
-          "title": "Delete Category",
-          "confirmMessage": "Are you sure you want to delete {name}? This action cannot be undone.",
-          "success": "Category deleted successfully!"
-        },
-        "create": {
-          "title": "Create Category",
+        "edit": {
+          "title": "Edit Category",
           "name": "Category Name",
           "description": "Description",
           "backToCategories": "Back to Categories"
         },
-        "edit": {
-          "title": "Edit Category",
+        "delete": {
+          "title": "Delete",
+          "confirmMessage": "Are you sure you want to delete this category? This action cannot be undone.",
+          "success": "Category deleted successfully!"
+        },
+        "noCategoriesFound": "No categories found.",
+        "create": {
+          "title": "Create Category",
           "name": "Category Name",
           "description": "Description",
           "backToCategories": "Back to Categories"
@@ -500,5 +503,79 @@
     "assignedBy": "Assigned By",
     "assignedTo": "Assigned To",
     "notStarted": "Not started"
+  },
+  "branches": {
+    "title": "Branches",
+    "createNew": "Create New",
+    "storageLocation": "Storage Location",
+    "branchName": "Branch Name",
+    "branchManager": "Branch Manager",
+    "branchAddress": "Branch Address",
+    "storageLocations": "Storage Locations",
+    "actions": "Actions",
+    "editBranch": "Edit Branch",
+    "newBranch": "New Branch",
+    "assignStorageLocations": "Assign Storage Locations",
+    "enterBranchName": "Enter Branch Name",
+    "enterBranchManager": "Enter Branch Manager Name",
+    "enterBranchAddress": "Enter Branch Address",
+    "loading": "Loading branches...",
+    "error": "Error loading branches: {error}",
+    "noBranches": "No branches found. Create your first branch!",
+    "noStorageLocations": "No storage locations found. Please create them first.",
+    "loadingLocations": "Loading locations...",
+    "errorLoadingLocations": "Error loading locations.",
+    "branchNameRequired": "Branch name is required.",
+    "branchManagerRequired": "Branch manager is required.",
+    "branchAddressRequired": "Branch address is required.",
+    "storageLocationsRequired": "At least one storage location must be selected.",
+    "add": "ADD",
+    "adding": "Adding...",
+    "update": "UPDATE",
+    "updating": "Updating...",
+    "branchAddedSuccessfully": "Branch added successfully",
+    "branchUpdatedSuccessfully": "Branch updated successfully",
+    "branchDeletedSuccessfully": "Branch deleted successfully",
+    "failedToAddBranch": "Failed to add branch",
+    "failedToUpdateBranch": "Failed to update branch",
+    "failedToDeleteBranch": "Failed to delete branch",
+    "unexpectedError": "An unexpected error occurred.",
+    "confirmDelete": "Confirm Delete",
+    "confirmDeleteMessage": "Are you sure you want to delete the branch \"{branchName}\"?"
+  },
+  "storageLocation": {
+    "title": "Storage Locations",
+    "createNew": "Create New",
+    "name": "Storage Location Name",
+    "id": "ID",
+    "actions": "Actions",
+    "edit": "Edit",
+    "delete": "Delete",
+    "noLocations": "No storage locations found. Create one!",
+    "add": "Add",
+    "adding": "Adding...",
+    "update": "Update",
+    "updating": "Updating...",
+    "deleteTitle": "Delete Storage Location",
+    "deleteMessage": "Are you sure you want to delete this storage location? This action cannot be undone.",
+    "successAdded": "Storage location added successfully",
+    "successUpdated": "Storage location updated successfully",
+    "successDeleted": "Storage location deleted successfully",
+    "failedAdd": "Failed to add storage location",
+    "failedUpdate": "Failed to update storage location",
+    "failedDelete": "Failed to delete storage location",
+    "unexpectedError": "An unexpected error occurred.",
+    "enterName": "Enter storage location name",
+    "nameRequired": "Storage location name is required."
+  },
+  "chefDashboard": {
+    "title": "Dashboard",
+    "totalPreparedMainRecipes": "Total Prepared Main Recipes",
+    "totalPreparedSubRecipes": "Total Prepared Sub Recipes",
+    "pendingOrders": "Pending Orders",
+    "completedOrders": "Completed Orders",
+    "inProgressOrders": "In Progress Orders",
+    "reports": "Reports",
+    "nonConformanceReport": "Non Conformance Report"
   }
 }

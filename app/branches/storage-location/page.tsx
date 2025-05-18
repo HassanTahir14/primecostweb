@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Edit, Trash2 } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
+import { useTranslation } from '@/context/TranslationContext';
 import PageLayout from '@/components/PageLayout';
 import StorageLocationCreateModal from '@/components/branches/StorageLocationCreateModal';
 import StorageLocationEditModal from '@/components/branches/StorageLocationEditModal';
@@ -25,6 +26,7 @@ interface StorageLocation {
 export default function StorageLocationPage() {
   const dispatch = useDispatch<AppDispatch>();
   const { locations, loading, error } = useSelector((state: RootState) => state.storageLocation);
+  const { t } = useTranslation();
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -98,32 +100,32 @@ export default function StorageLocationPage() {
     try {
       const resultAction = await dispatch(deleteStorageLocation(locationToDeleteId));
       if (deleteStorageLocation.fulfilled.match(resultAction)) {
-        handleOperationSuccess('Storage location deleted successfully');
+        handleOperationSuccess(t('storageLocation.deleteSuccess'));
       } else {
         const errorPayload = resultAction.payload as any;
-        handleOperationError(errorPayload?.description || errorPayload?.message || 'Failed to delete location');
+        handleOperationError(errorPayload?.description || errorPayload?.message || t('storageLocation.deleteFailed'));
       }
     } catch (err) {
       console.error('Delete failed:', err);
-      handleOperationError('An unexpected error occurred during deletion.');
+      handleOperationError(t('storageLocation.deleteUnexpectedError'));
     }
   };
 
   return (
-    <PageLayout title="Storage Locations">
+    <PageLayout title={t('storageLocation.title')}>
       <div className="mb-4">
         <Link href="/branches" className="inline-flex items-center text-gray-600 hover:text-gray-900">
           <ArrowLeft className="w-5 h-5 mr-2" />
-          <span>Back</span>
+          <span>{t('common.back')}</span>
         </Link>
       </div>
       
       <div className="bg-white rounded-lg shadow-sm p-6">
         <div className="flex flex-col space-y-6">
           <div className="flex justify-between items-center">
-            <h1 className="text-2xl font-semibold text-gray-900">Storage Locations</h1>
+            <h1 className="text-2xl font-semibold text-gray-900">{t('storageLocation.title')}</h1>
             <Button onClick={openCreateModal} disabled={loading}>
-              Create New
+              {t('storageLocation.createNew')}
             </Button>
           </div>
           
@@ -136,9 +138,9 @@ export default function StorageLocationPage() {
               <table className="w-full min-w-[500px]">
                 <thead>
                   <tr className="text-left border-b border-gray-200">
-                    <th className="py-3 px-4 font-medium text-gray-500 text-sm">Storage Location Name</th>
-                    <th className="py-3 px-4 font-medium text-gray-500 text-sm">ID</th>
-                    <th className="py-3 px-4 font-medium text-gray-500 text-sm text-right">Actions</th>
+                    <th className="py-3 px-4 font-medium text-gray-500 text-sm">{t('storageLocation.name')}</th>
+                    <th className="py-3 px-4 font-medium text-gray-500 text-sm">{t('storageLocation.id')}</th>
+                    <th className="py-3 px-4 font-medium text-gray-500 text-sm text-right">{t('storageLocation.actions')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
@@ -154,7 +156,7 @@ export default function StorageLocationPage() {
                             onClick={() => openEditModal(location)}
                             disabled={loading}
                           >
-                            Edit
+                            {t('common.edit')}
                           </Button>
                           <Button 
                             variant="destructive"
@@ -162,7 +164,7 @@ export default function StorageLocationPage() {
                             onClick={() => openDeleteConfirmModal(location.storageLocationId)}
                             disabled={loading}
                           >
-                            Delete
+                            {t('common.delete')}
                           </Button>
                         </div>
                       </td>
@@ -171,7 +173,7 @@ export default function StorageLocationPage() {
                   {locations.length === 0 && !loading && (
                     <tr>
                       <td colSpan={3} className="text-center py-6 text-gray-500">
-                        No storage locations found. Create one!
+                        {t('storageLocation.noLocations')}
                       </td>
                     </tr>
                   )}
@@ -208,31 +210,31 @@ export default function StorageLocationPage() {
         isOpen={isDeleteConfirmModalOpen}
         onClose={closeDeleteConfirmModal}
         onConfirm={handleDeleteConfirm}
-        title="Delete Storage Location"
-        message={`Are you sure you want to delete this storage location? This action cannot be undone.`}
-        confirmText="Delete"
-        cancelText="Cancel"
+        title={t('storageLocation.deleteTitle')}
+        message={t('storageLocation.deleteMessage')}
+        confirmText={t('common.delete')}
+        cancelText={t('common.cancel')}
       />
 
       {/* Success Modal */}
       <ConfirmationModal
         isOpen={isSuccessModalOpen}
         onClose={closeSuccessModal}
-        title="Success"
+        title={t('common.success')}
         message={modalMessage}
         isAlert={true}
-        okText="OK"
+        okText={t('common.ok')}
       />
 
       {/* Error Modal */}
       <ConfirmationModal
         isOpen={isErrorModalOpen}
         onClose={closeErrorModal}
-        title="Error"
+        title={t('common.error')}
         message={modalMessage}
         isAlert={true}
-        okText="OK"
+        okText={t('common.ok')}
       />
     </PageLayout>
   );
-} 
+}

@@ -10,6 +10,7 @@ import Button from '@/components/common/button';
 import ConfirmationModal from '@/components/common/ConfirmationModal';
 import { fetchAllBranches, deleteBranch } from '@/store/branchSlice';
 import type { RootState, AppDispatch } from '@/store/store';
+import { useTranslation } from '@/context/TranslationContext';
 
 // Import Branch interface from the slice
 import type { Branch } from '@/store/branchSlice';
@@ -22,6 +23,7 @@ interface StorageLocation {
 export default function BranchesPage() {
   const dispatch = useDispatch<AppDispatch>();
   const { branches, loading, error } = useSelector((state: RootState) => state.branch);
+  const { t } = useTranslation();
   
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -66,13 +68,13 @@ export default function BranchesPage() {
       const resultAction = await dispatch(deleteBranch(selectedBranch.branchId));
       
       if (deleteBranch.fulfilled.match(resultAction)) {
-        handleOperationSuccess('Branch deleted successfully');
+        handleOperationSuccess(t('branches.deleteSuccess'));
       } else {
         const errorPayload = resultAction.payload as any;
-        handleOperationError(errorPayload?.description || 'Failed to delete branch');
+        handleOperationError(errorPayload?.description || t('branches.deleteError'));
       }
     } catch (error) {
-      handleOperationError('An unexpected error occurred');
+      handleOperationError(t('branches.unexpectedError'));
     } finally {
       setIsDeleteModalOpen(false);
       setSelectedBranch(null);
@@ -80,17 +82,17 @@ export default function BranchesPage() {
   };
   
   return (
-    <PageLayout title="Branches">
+    <PageLayout title={t('branches.title')}>
       <div className="bg-white rounded-lg shadow-sm p-6">
         <div className="flex flex-col space-y-6">
           <div className="flex justify-end items-center">
             <div className="flex space-x-4">
               <Button onClick={() => setIsCreateModalOpen(true)}>
-                Create New
+                {t('branches.createNew')}
               </Button>
               <Link href="/branches/storage-location">
                 <Button>
-                  Storage Location
+                  {t('branches.storageLocation')}
                 </Button>
               </Link>
             </div>
@@ -98,20 +100,20 @@ export default function BranchesPage() {
           
           <div className="overflow-x-auto">
             {loading ? (
-              <div className="text-center py-4">Loading branches...</div>
+              <div className="text-center py-4">{t('branches.loading')}</div>
             ) : error ? (
-              <div className="text-center text-red-500 py-4">Error loading branches: {error}</div>
+              <div className="text-center text-red-500 py-4">{t('branches.error', { error })}</div>
             ) : branches.length === 0 ? (
-              <div className="text-center text-gray-500 py-4">No branches found. Create your first branch!</div>
+              <div className="text-center text-gray-500 py-4">{t('branches.noBranches')}</div>
             ) : (
               <table className="w-full">
                 <thead>
                   <tr className="text-left border-b border-gray-200">
-                    <th className="py-4 px-6 font-medium text-gray-600">Branch Name</th>
-                    <th className="py-4 px-6 font-medium text-gray-600">Branch Manager</th>
-                    <th className="py-4 px-6 font-medium text-gray-600">Branch Address</th>
-                    <th className="py-4 px-6 font-medium text-gray-600">Storage Locations</th>
-                    <th className="py-4 px-6 font-medium text-gray-600">Actions</th>
+                    <th className="py-4 px-6 font-medium text-gray-600">{t('branches.branchName')}</th>
+                    <th className="py-4 px-6 font-medium text-gray-600">{t('branches.branchManager')}</th>
+                    <th className="py-4 px-6 font-medium text-gray-600">{t('branches.branchAddress')}</th>
+                    <th className="py-4 px-6 font-medium text-gray-600">{t('branches.storageLocations')}</th>
+                    <th className="py-4 px-6 font-medium text-gray-600">{t('branches.actions')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
@@ -135,14 +137,14 @@ export default function BranchesPage() {
                       <td className="py-4 px-6">
                         <div className="flex space-x-2">
                           <Button size="sm" onClick={() => handleEditClick(branch)}>
-                            Edit
+                            {t('common.edit')}
                           </Button>
                           <Button 
                             variant="destructive" 
                             size="sm"
                             onClick={() => handleDeleteClick(branch)}
                           >
-                            Delete
+                            {t('common.delete')}
                           </Button>
                         </div>
                       </td>
@@ -179,10 +181,10 @@ export default function BranchesPage() {
       <ConfirmationModal
         isOpen={!!confirmationMessage}
         onClose={() => setConfirmationMessage('')}
-        title={isSuccessMessage ? 'Success' : 'Error'}
+        title={isSuccessMessage ? t('common.success') : t('common.error')}
         message={confirmationMessage}
         isAlert={isSuccessMessage}
-        okText="OK"
+        okText={t('common.ok')}
       />
 
       {/* Delete Confirmation Modal */}
@@ -192,10 +194,10 @@ export default function BranchesPage() {
           setIsDeleteModalOpen(false);
           setSelectedBranch(null);
         }}
-        title="Confirm Delete"
-        message={`Are you sure you want to delete the branch "${selectedBranch?.branchName}"?`}
+        title={t('branches.confirmDelete')}
+        message={t('branches.confirmDeleteMessage', { branchName: selectedBranch?.branchName || '' })}
         onConfirm={handleConfirmDelete}
       />
     </PageLayout>
   );
-} 
+}

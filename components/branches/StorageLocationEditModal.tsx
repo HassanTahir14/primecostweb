@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
+import { useTranslation } from '@/context/TranslationContext';
 import Modal from '@/components/common/Modal';
 import Button from '@/components/common/button';
 import { updateStorageLocation } from '@/store/storageLocationSlice';
@@ -28,6 +29,7 @@ export default function StorageLocationEditModal({
   onError,
 }: StorageLocationEditModalProps) {
   const dispatch = useDispatch<AppDispatch>();
+  const { t } = useTranslation();
   const [locationName, setLocationName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [validationError, setValidationError] = useState('');
@@ -47,7 +49,7 @@ export default function StorageLocationEditModal({
 
   const handleValidation = () => {
     if (!locationName.trim()) {
-      setValidationError('Storage location name is required.');
+      setValidationError(t('storageLocation.nameRequired'));
       return false;
     }
     setValidationError('');
@@ -70,17 +72,17 @@ export default function StorageLocationEditModal({
          // Use the description from the API response if available, otherwise use a default
          // Note: updateStorageLocation thunk currently returns the input payload.
          // If the API returns a specific success message, adjust slice/API service.
-        const successMsg = resultAction.payload?.description || 'Storage location updated successfully'; 
+        const successMsg = resultAction.payload?.description || t('storageLocation.updatedSuccessfully'); 
         onSuccess(successMsg); // Notify parent
         onClose();             // Close modal on success
       } else {
         const errorPayload = resultAction.payload as any;
-        const errorMsg = errorPayload?.description || errorPayload?.message || 'Failed to update storage location';
+        const errorMsg = errorPayload?.description || errorPayload?.message || t('storageLocation.updateFailed');
         onError(errorMsg); // Notify parent of the error
       }
     } catch (error) {
       console.error('Error updating storage location:', error);
-      onError('An unexpected error occurred.'); // Notify parent of unexpected error
+      onError(t('storageLocation.unexpectedError')); // Notify parent of unexpected error
     } finally {
       setIsLoading(false);
     }
@@ -95,15 +97,15 @@ export default function StorageLocationEditModal({
     <Modal 
       isOpen={isOpen} 
       onClose={handleClose} 
-      title="Edit Storage Location"
+      title={t('storageLocation.edit')}
     >
       <div className="space-y-4">
         <div>
-          <label htmlFor="editLocationName" className="block text-gray-700 font-medium mb-1">Storage Location Name <span className="text-red-500">*</span></label>
+          <label htmlFor="editLocationName" className="block text-gray-700 font-medium mb-1">{t('storageLocation.name')} <span className="text-red-500">*</span></label>
           <input
             id="editLocationName"
             type="text"
-            placeholder="Enter Storage Location Name"
+            placeholder={t('storageLocation.enterName')}
             className={`w-full p-3 border ${validationError ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:outline-none focus:ring-2 ${validationError ? 'focus:ring-red-500' : 'focus:ring-[#00997B]'}`}
             value={locationName}
             onChange={(e) => {
@@ -124,15 +126,15 @@ export default function StorageLocationEditModal({
           onClick={handleClose}
           disabled={isLoading}
         >
-          Discard
+          {t('common.discard')}
         </Button>
         <Button 
           onClick={handleSubmit}
           disabled={isLoading || !locationName.trim() || locationName.trim() === location?.storageLocationName} // Disable if loading, empty, or unchanged
         >
-          {isLoading ? 'Updating...' : 'UPDATE'}
+          {isLoading ? t('storageLocation.updating') : t('storageLocation.update')}
         </Button>
       </div>
     </Modal>
   );
-} 
+}

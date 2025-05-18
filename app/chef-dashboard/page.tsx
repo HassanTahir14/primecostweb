@@ -9,6 +9,7 @@ import api from '@/store/api';
 import AssignOrder from '@/components/AssignOrder';
 import Loader from '@/components/common/Loader';
 import Link from 'next/link';
+import { useTranslation } from '@/context/TranslationContext';
 
 interface DashboardStats {
   totalPreparedMainRecipes: number;
@@ -33,6 +34,7 @@ interface AssignedOrder {
 export default function ChefDashboard() {
   const router = useRouter();
   const currentUser = useSelector(selectCurrentUser);
+  const { t } = useTranslation();
   const [stats, setStats] = useState<DashboardStats>({
     totalPreparedMainRecipes: 0,
     totalPreparedSubRecipes: 0,
@@ -108,7 +110,7 @@ export default function ChefDashboard() {
   }
 
   return (
-    <PageLayout title="Dashboard">
+    <PageLayout title={t('chefDashboard.title')}>
       <div className="space-y-6">
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -117,7 +119,7 @@ export default function ChefDashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-3xl font-bold">{stats.totalPreparedMainRecipes}</h3>
-                <p className="text-gray-600">Total Prepared Main Recipes</p>
+                <p className="text-gray-600">{t('chefDashboard.totalPreparedMainRecipes')}</p>
               </div>
               <div className="bg-pink-200 p-3 rounded-full">
                 <svg className="w-6 h-6 text-pink-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -132,7 +134,7 @@ export default function ChefDashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-3xl font-bold">{stats.totalPreparedSubRecipes}</h3>
-                <p className="text-gray-600">Total Prepared Sub Recipes</p>
+                <p className="text-gray-600">{t('chefDashboard.totalPreparedSubRecipes')}</p>
               </div>
               <div className="bg-purple-200 p-3 rounded-full">
                 <svg className="w-6 h-6 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -147,7 +149,7 @@ export default function ChefDashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-3xl font-bold">{stats.pendingOrders}</h3>
-                <p className="text-gray-600">Pending Orders</p>
+                <p className="text-gray-600">{t('chefDashboard.pendingOrders')}</p>
               </div>
               <div className="bg-yellow-200 p-3 rounded-full">
                 <svg className="w-6 h-6 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -162,7 +164,7 @@ export default function ChefDashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-3xl font-bold">{stats.completedOrders}</h3>
-                <p className="text-gray-600">Completed Orders</p>
+                <p className="text-gray-600">{t('chefDashboard.completedOrders')}</p>
               </div>
               <div className="bg-green-200 p-3 rounded-full">
                 <svg className="w-6 h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -177,7 +179,7 @@ export default function ChefDashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-3xl font-bold">{stats.inProgressOrders}</h3>
-                <p className="text-gray-600">In Progress Orders</p>
+                <p className="text-gray-600">{t('chefDashboard.inProgressOrders')}</p>
               </div>
               <div className="bg-purple-200 p-3 rounded-full">
                 <svg className="w-6 h-6 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -192,11 +194,11 @@ export default function ChefDashboard() {
         {currentUser?.role === 'HEAD_CHEF' && (
           <div className="bg-white p-4 sm:p-6 md:p-8 rounded-2xl shadow-sm mb-6">
             <h2 className="text-base md:text-lg font-bold mb-4 md:mb-6">
-              Reports
+              {t('chefDashboard.reports')}
             </h2>
             <div className="flex flex-wrap gap-2 md:gap-4">
               {[
-                { name: "Non Conformance Report", path: "/non-conformance" },
+                { name: t('chefDashboard.nonConformanceReport'), path: "/non-conformance" },
               ].map((report) => (
                 <Link
                   key={report.path}
@@ -220,4 +222,4 @@ export default function ChefDashboard() {
       </div>
     </PageLayout>
   );
-} 
+}
