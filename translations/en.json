@@ -21,7 +21,8 @@
     "error": "Error",
     "success": "Success",
     "ok": "OK",
-    "close": "Close"
+    "close": "Close",
+    "backToEmployees": "Back to Employees"
   },
   "auth": {
     "email": "Email",
@@ -577,5 +578,120 @@
     "inProgressOrders": "In Progress Orders",
     "reports": "Reports",
     "nonConformanceReport": "Non Conformance Report"
+  },
+  "employees": {
+    "title": "Employees",
+    "otherPayrollTitle": "Other Payroll",
+    "position": "Position",
+    "iqamaId":"Iqama ID",
+    "addExpense": "Add Expense",
+    "iqamaExpiryDate":"Iqama Expiry",
+    "addExpenseTitle": "Add Employee Expense",
+    "employeeName": "Employee Name",
+    "userId": "User ID",
+    "type": "Type",
+    "date": "Date",
+    "amount": "Amount",
+    "noOtherPayrollData": "No other payroll data found.",
+    "loadingPayroll": "Loading payroll...",
+    "errorLoadingPayroll": "Error loading payroll.",
+    "notifyAdmin": "Notify Admin",
+    "steps": {
+      "details": "Details",
+      "duty_schedule": "Duty Schedule",
+      "salary": "Salary"
+    },
+    "details": {
+      "title": "Employee Details",
+      "name": "Name",
+      "familyName": "Family Name",
+      "nationality": "Nationality",
+      "position": "Position",
+      "iqamaId": "Iqama ID",
+      "iqamaExpiryDate": "Iqama Expiry",
+      "email": "Email",
+      "healthCardNum": "Health Card Number",
+      "mobileNumber": "Mobile Number",
+      "healthCardNumber": "Health Card Number",
+      "healthCardExpiry": "Health Card Expiry",
+      "dateOfBirth": "Date of Birth",
+      "password": "Password",
+      "enterValue": "Enter value"
+    },
+    "dutySchedule": {
+      "title": "Duty Schedule",
+      "addButton": "Add Duty Schedule",
+      "time": "Time",
+      "modal": {
+        "title": "Apply Time to Days",
+        "saveButton": "Save",
+        "shift": "Shift",
+        "applyToAll": "Apply to all selected days"
+      },
+      "days": {
+      "monday": "Monday",
+      "tuesday": "Tuesday",
+      "wednesday": "Wednesday",
+      "thursday": "Thursday",
+      "friday": "Friday",
+      "saturday": "Saturday",
+      "sunday": "Sunday"
+    },
+      "slots": {
+        "Opening": "Opening",
+        "Break": "Break",
+        "Closing": "Closing"
+      },
+      "previousButton": "Previous",
+      "nextButton": "Next"
+    },
+    "salary": {
+      "title": "Salary",
+      "basicSalary": "Basic Salary",
+      "enterBasicSalary": "Enter basic salary",
+      "foodAllowance": "Food Allowance",
+      "enterFoodAllowance": "Enter food allowance",
+      "accommodationAllowance": "Accommodation Allowance",
+      "enterAccommodationAllowance": "Enter accommodation allowance",
+      "transportAllowance": "Transport Allowance",
+      "enterTransportAllowance": "Enter transport allowance",
+      "otherAllowance": "Other Allowance",
+      "enterOtherAllowance": "Enter other allowance",
+      "mobileAllowance": "Mobile Allowance",
+      "telephoneAllowance": "Mobile Allowance",
+      "enterTelephoneAllowance": "Enter mobile allowance",
+      "totalSalary": "Total Salary",
+      "employeeImages": "Employee Images",
+      "addNewImages": "Add New Images",
+      "saveChanges": "Save Changes",
+      "previous": "Previous"
+    },
+    "status": {
+      "title": "Status",
+      "status": "Status",
+      "current": "Current",
+      "ex": "Ex Employee"
+    },
+    "otherPayroll": "Other Payroll",
+    "createNew": "Create new employee",
+    "loading": "Loading employees...",
+    "noEmployees": "No employees found.",
+    "errorLoading": "Error loading data.",
+    "totalEmployees": "Total Employees",
+    "totalPayroll": "Total Payroll",
+    "nA": "N/A",
+    "createTitle": "Add Employee",
+    "selectEmployee": "Select Employee",
+    "expenseType": "Expense Type",
+    "expenseTypePlaceholder": "Enter expense type",
+    "ticketType": "Ticket Type",
+    "ticketTypePlaceholder": "Enter ticket type",
+    "amountPaid": "Amount Paid",
+    "detailsTitle": "Employee Details",
+    "salaryTitle": "Salary Details",
+    "dutyScheduleTitle": "Duty Schedule",
+    "employeeImages": "Employee Images",
+    "addNewImages": "Add New Images",
+    "enterTelephoneAllowance": "Enter mobile allowance"
   }
 }

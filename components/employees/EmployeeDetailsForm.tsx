@@ -6,6 +6,7 @@ import Input from '../common/input'; // Assuming SelectField component
 import Select from '../common/select';
 import { fetchCountries, formatCountryOptions } from '@/utils/countryUtils';
 import { formatPositionName } from '@/utils/formatters';
+import { useTranslation } from '@/context/TranslationContext';
 
 interface EmployeeDetailsFormProps {
   onNext: (data: any) => void;
@@ -50,6 +51,7 @@ const positionOptions = [
 ];
 
 export default function EmployeeDetailsForm({ onNext, initialData, onSave, errors }: EmployeeDetailsFormProps) {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState({
     firstname: initialData?.firstname || '',
     familyName: initialData?.familyName || '',
@@ -312,26 +314,26 @@ export default function EmployeeDetailsForm({ onNext, initialData, onSave, error
 
   return (
     <div className="space-y-6">
-       <h2 className="text-2xl font-semibold text-gray-800 mb-6">Employee Details</h2>
+       <h2 className="text-2xl font-semibold text-gray-800 mb-6">{t('employees.details.title')}</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
         <Input 
-          label="Name" 
+          label={t('employees.details.name')} 
           name="firstname" 
           value={formData.firstname} 
           onChange={handleChange} 
-          placeholder="Enter value" 
+          placeholder={t('employees.details.enterValue')} 
           error={getFieldError('firstname')} 
         />
         <Input 
-          label="Family Name" 
+          label={t('employees.details.familyName')} 
           name="familyName" 
           value={formData.familyName} 
           onChange={handleChange} 
-          placeholder="Enter value" 
+          placeholder={t('employees.details.enterValue')} 
           error={getFieldError('familyName')} 
         />
         <Select 
-          label="Nationality" 
+          label={t('employees.details.nationality')} 
           name="nationality" 
           value={formData.nationality} 
           onChange={handleChange} 
@@ -339,16 +341,16 @@ export default function EmployeeDetailsForm({ onNext, initialData, onSave, error
           error={getFieldError('nationality')} 
         />
         <Input 
-          label="Mobile Number" 
+          label={t('employees.details.mobileNumber')} 
           name="mobileNumber" 
           value={formData.mobileNumber} 
           onChange={handleChange} 
-          placeholder="Enter value" 
+          placeholder={t('employees.details.enterValue')} 
           type="tel" 
           error={getFieldError('mobileNumber')} 
         />
         <Select 
-          label="Position" 
+          label={t('employees.details.position')} 
           name="position" 
           value={formData.position} 
           onChange={handleChange} 
@@ -356,23 +358,23 @@ export default function EmployeeDetailsForm({ onNext, initialData, onSave, error
           error={getFieldError('position')} 
         />
         <Input 
-          label="Health Card Number" 
+          label={t('employees.details.healthCardNumber')} 
           name="healthCardNumber" 
           value={formData.healthCardNumber} 
           onChange={handleChange} 
-          placeholder="Health Card Num" 
+          placeholder={t('employees.details.healthCardNum')} 
           error={getFieldError('healthCardNumber')} 
         />
         <Input 
-          label="Iqama ID" 
+          label={t('employees.details.iqamaId')} 
           name="iqamaId" 
           value={formData.iqamaId} 
           onChange={handleChange} 
-          placeholder="Enter value" 
+          placeholder={t('employees.details.enterValue')} 
           error={getFieldError('iqamaId')} 
         />
         <Input 
-          label="Health Card Expiry" 
+          label={t('employees.details.healthCardExpiry')} 
           name="healthCardExpiry" 
           value={formData.healthCardExpiry} 
           onChange={handleChange} 
@@ -380,7 +382,7 @@ export default function EmployeeDetailsForm({ onNext, initialData, onSave, error
           error={getFieldError('healthCardExpiry')} 
         />
         <Input 
-          label="Iqama ID Expiry Date" 
+          label={t('employees.details.iqamaExpiryDate')} 
           name="iqamaExpiryDate" 
           value={formData.iqamaExpiryDate} 
           onChange={handleChange} 
@@ -388,7 +390,7 @@ export default function EmployeeDetailsForm({ onNext, initialData, onSave, error
           error={getFieldError('iqamaExpiryDate')} 
         />
         <Input 
-          label="Date of Birth" 
+          label={t('employees.details.dateOfBirth')} 
           name="dateOfBirth" 
           value={formData.dateOfBirth} 
           onChange={handleChange} 
@@ -396,20 +398,20 @@ export default function EmployeeDetailsForm({ onNext, initialData, onSave, error
           error={getFieldError('dateOfBirth')} 
         />
         <Input 
-          label="Email" 
+          label={t('employees.details.email')} 
           name="loginId" 
           value={formData.loginId} 
           onChange={handleChange} 
-          placeholder="Enter value" 
+          placeholder={t('employees.details.enterValue')} 
           type="email" 
           error={getFieldError('loginId')} 
         />
         <Input 
-          label="Password" 
+          label={t('employees.details.password')} 
           name="password" 
           value={formData.password} 
           onChange={handleChange} 
-          placeholder="Enter value" 
+          placeholder={t('employees.details.enterValue')} 
           type="password" 
           error={getFieldError('password')} 
         />
@@ -417,8 +419,8 @@ export default function EmployeeDetailsForm({ onNext, initialData, onSave, error
       
       {/* Action Button */}
       <div className="flex justify-end pt-4">
-        <Button onClick={handleNextClick} size="lg" >Next</Button>
+        <Button onClick={handleNextClick} size="lg" >{t('employees.details.next')}</Button>
       </div>
     </div>
   );
-} 
+}

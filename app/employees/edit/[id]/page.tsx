@@ -8,6 +8,7 @@ import Button from '@/components/common/button';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import ConfirmationModal from '@/components/common/ConfirmationModal';
+import { useTranslation } from '@/context/TranslationContext';
 
 // Import form components
 import EmployeeDetailsForm from '@/components/employees/EmployeeDetailsForm';
@@ -30,6 +31,7 @@ type Step = 'Details' | 'Duty Schedule' | 'Salary';
 const steps: Step[] = ['Details', 'Duty Schedule', 'Salary'];
 
 export default function EditEmployeePage() {
+  const { t } = useTranslation();
   const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
   const params = useParams();
@@ -218,7 +220,7 @@ export default function EditEmployeePage() {
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center">
             <div className="w-16 h-16 border-4 border-[#00997B] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading employee data...</p>
+            <p className="text-gray-600">{t('common.loading')}...</p>
           </div>
         </div>
       );
@@ -227,7 +229,7 @@ export default function EditEmployeePage() {
     if (employeeError) {
       return (
         <div className="text-center p-10 text-red-500">
-          Failed to load employee data. {employeeError}
+          {t('common.loadError')} {employeeError}
         </div>
       );
     }
@@ -235,7 +237,7 @@ export default function EditEmployeePage() {
     if (!selectedEmployee) {
       return (
         <div className="text-center p-10 text-orange-500">
-          Employee data not found. Please select an employee from the list.
+          {t('common.noData')}
         </div>
       );
     }
@@ -273,7 +275,7 @@ export default function EditEmployeePage() {
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center">
             <div className="w-16 h-16 border-4 border-[#00997B] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading employee data...</p>
+            <p className="text-gray-600">{t('common.loading')}...</p>
           </div>
         </div>
       );
@@ -282,7 +284,7 @@ export default function EditEmployeePage() {
     if (employeeError) {
       return (
         <div className="text-center p-10 text-red-500">
-          Failed to load employee data. {employeeError}
+          {t('common.loadError')} {employeeError}
         </div>
       );
     }
@@ -290,7 +292,7 @@ export default function EditEmployeePage() {
     if (!selectedEmployee) {
       return (
         <div className="text-center p-10 text-orange-500">
-          Employee data not found. Please select an employee from the list.
+          {t('common.noData')}
         </div>
       );
     }
@@ -308,7 +310,7 @@ export default function EditEmployeePage() {
                   : 'text-gray-500 hover:text-gray-700'
                 }`}
             >
-              {step}
+              {t(`employees.editTabs.${step}`)}
             </button>
           ))}
         </div>
@@ -321,12 +323,12 @@ export default function EditEmployeePage() {
   };
 
   return (
-    <PageLayout title={`Edit Employee #${employeeId}`}>
+    <PageLayout title={t('employees.editTitle', { id: String(employeeId) })}>
       <div className="bg-white rounded-lg shadow-sm p-6">
         <div className="mb-6">
           <Link href="/employees" className="text-gray-500 hover:text-gray-700 flex items-center gap-2 w-fit">
             <ArrowLeft size={20} />
-            <span>Back to Employees</span>
+            <span>{t('common.back')}</span>
           </Link>
         </div>
 
@@ -336,11 +338,11 @@ export default function EditEmployeePage() {
       <ConfirmationModal
         isOpen={isModalOpen}
         onClose={handleCloseModal}
-        title={isSuccess ? 'Success' : 'Error'}
+        title={isSuccess ? t('common.success') : t('common.error')}
         message={modalMessage}
         isAlert={true}
-        okText="OK"
+        okText={t('common.ok')}
       />
     </PageLayout>
   );
-} 
+}

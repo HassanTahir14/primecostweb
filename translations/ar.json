@@ -21,7 +21,8 @@
     "error": "خطأ",
     "success": "نجاح",
     "ok": "موافق",
-    "close": "إغلاق"
+    "close": "إغلاق",
+    "backToEmployees": "العودة إلى الموظفين"
   },
   "auth": {
     "email": "البريد الإلكتروني",
@@ -423,5 +424,129 @@
     "inProgressOrders": "طلبات قيد التنفيذ",
     "reports": "التقارير",
     "nonConformanceReport": "تقرير عدم المطابقة"
+  },
+  "employees": {
+    "title": "الموظفون",
+    "otherPayrollTitle": "رواتب أخرى",
+    "addExpense": "إضافة مصروف",
+    "addExpenseTitle": "إضافة مصروف موظف",
+    "iqamaExpiryDate":"تاريخ انتهاء الإقامة",
+    "position": "الوظيفة",
+    "iqamaId": "رقم الإقامة",
+    "employeeName": "اسم الموظف",
+    "userId": "معرف المستخدم",
+    "type": "النوع",
+    "date": "التاريخ",
+    "amount": "المبلغ",
+    "noOtherPayrollData": "لا توجد بيانات رواتب أخرى.",
+    "loadingPayroll": "جاري تحميل الرواتب...",
+    "errorLoadingPayroll": "حدث خطأ أثناء تحميل الرواتب.",
+    "notifyAdmin": "إخطار المدير",
+    "salary": {
+      "title": "الراتب",
+      "basicSalary": "الراتب الأساسي",
+      "foodAllowance": "بدل طعام",
+      "accommodationAllowance": "بدل سكن",
+      "transportAllowance": "بدل نقل",
+      "otherAllowance": "بدلات أخرى",
+      "mobileAllowance": "بدل جوال",
+      "telephoneAllowance": "بدل جوال",
+      "totalSalary": "إجمالي الراتب",
+      "enterBasicSalary": "أدخل الراتب الأساسي",
+      "enterFoodAllowance": "أدخل بدل الطعام",
+      "enterAccommodationAllowance": "أدخل بدل السكن",
+      "enterTransportAllowance": "أدخل بدل النقل",
+      "enterOtherAllowance": "أدخل البدلات الأخرى",
+      "enterMobileAllowance": "أدخل بدل الجوال",
+      "enterTelephoneAllowance": "أدخل بدل الجوال",
+      "calculatedTotal": "إجمالي الراتب المحسوب",
+      "employeeImages": "صور الموظف",
+      "addNewImages": "إضافة صور جديدة",
+      "saveChanges": "حفظ التغييرات",
+      "previous": "السابق",
+      "saving": "جاري الحفظ..."
+    },
+    "dutySchedule": {
+      "title": "جدول الدوام",
+      "addButton": "إضافة جدول دوام",
+      "time": "الوقت",
+      "modal": {
+        "title": "تطبيق الوقت على الأيام",
+        "saveButton": "حفظ",
+        "shift": "الوردية",
+        "applyToAll": "تطبيق على جميع الأيام المحددة"
+      },
+      "days": {
+      "monday": "الاثنين",
+      "tuesday": "الثلاثاء",
+      "wednesday": "الأربعاء",
+      "thursday": "الخميس",
+      "friday": "الجمعة",
+      "saturday": "السبت",
+      "sunday": "الأحد"
+    },
+      "slots": {
+        "Opening": "بداية الدوام",
+        "Break": "استراحة",
+        "Closing": "نهاية الدوام"
+      },
+      "previousButton": "السابق",
+      "nextButton": "التالي"
+    },
+    "details": {
+      "title": "تفاصيل الموظف",
+      "name": "الاسم",
+      "familyName": "اسم العائلة",
+      "nationality": "الجنسية",
+      "position": "الوظيفة",
+      "healthCardNum": "رقم البطاقة الصحية",
+      "iqamaId": "رقم الإقامة",
+      "next": "التالي",
+      "iqamaExpiryDate": "تاريخ انتهاء الإقامة",
+      "status": {
+        "status": "الحالة",
+        "current": "حالي",
+        "ex": "موظف سابق"
+      },
+      "email": "البريد الإلكتروني",
+      "mobileNumber": "رقم الجوال",
+      "healthCardNumber": "رقم بطاقة الصحة",
+      "healthCardExpiry": "تاريخ انتهاء بطاقة الصحة",
+      "dateOfBirth": "تاريخ الميلاد",
+      "password": "كلمة المرور",
+      "enterValue": "أدخل القيمة"
+    },
+    "status": {
+      "title": "حالة الموظف",
+      "current": "حالي",
+      "ex": "موظف سابق"
+    },
+    "otherPayroll": "رواتب أخرى",
+    "createNew": "إضافة موظف جديد",
+    "loading": "جاري تحميل الموظفين...",
+    "noEmployees": "لم يتم العثور على موظفين.",
+    "errorLoading": "حدث خطأ أثناء تحميل البيانات.",
+    "totalEmployees": "إجمالي الموظفين",
+    "totalPayroll": "إجمالي الرواتب",
+    "nA": "غير متوفر",
+    "createTitle": "إضافة موظف",
+    "selectEmployee": "اختر الموظف",
+    "expenseType": "نوع المصروف",
+    "expenseTypePlaceholder": "أدخل نوع المصروف",
+    "ticketType": "نوع التذكرة",
+    "ticketTypePlaceholder": "أدخل نوع التذكرة",
+    "amountPaid": "المبلغ المدفوع",
+    "detailsTitle": "تفاصيل الموظف",
+    "salaryTitle": "تفاصيل الراتب",
+    "dutyScheduleTitle": "جدول الدوام",
+    "employeeImages": "صور الموظف",
+    "addNewImages": "إضافة صور جديدة",
+    "enterTelephoneAllowance": "أدخل بدل الجوال",
+    "backToEmployees": "العودة إلى الموظفين",
+    "steps": {
+      "details": "التفاصيل",
+      "duty_schedule": "جدول الدوام",
+      "salary": "الراتب"
+    }
   }
 }

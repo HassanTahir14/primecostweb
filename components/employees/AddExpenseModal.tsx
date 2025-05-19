@@ -6,6 +6,7 @@ import Input from '@/components/common/input'; // Assuming Input component exist
 import Select from '@/components/common/select'; // Assuming Select component exists
 import Button from '@/components/common/button';
 import { Employee } from '@/store/employeeSlice'; // For employee selection
+import { useTranslation } from '@/context/TranslationContext';
 
 interface AddExpenseModalProps {
   isOpen: boolean;
@@ -34,6 +35,7 @@ const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
   loading,
   error
 }) => {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState<ExpenseFormData>({
     userId: 0,
     expenseType: '',
@@ -126,21 +128,19 @@ const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
     <Modal 
       isOpen={isOpen}
       onClose={() => !loading && onClose()}
-      title="Add New Expense"
+      title={t('employees.addExpenseTitle')}
       size="md"
     >
       <form onSubmit={handleSubmit} className="w-full">
         <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-2">
             {/* Display API Error */}
             {error && (
-                <div className="p-3 bg-red-100 border border-red-300 text-red-700 rounded-md text-sm">
-                    {error}
-                </div>
+              <div className="text-red-500 text-sm">{error}</div>
             )}
 
             {/* Form Fields */}
             <div>
-                <label className="block text-gray-700 mb-1 font-medium text-sm">Employee</label>
+                <label className="block text-gray-700 mb-1 font-medium text-sm">{t('employees.selectEmployee')}</label>
                 <Select 
                     name="employeeId" 
                     value={String(formData.employeeId)} 
@@ -153,13 +153,13 @@ const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
             </div>
 
             <div>
-                <label className="block text-gray-700 mb-1 font-medium text-sm">Expense Type</label>
+                <label className="block text-gray-700 mb-1 font-medium text-sm">{t('employees.expenseType')}</label>
                 <Input 
                     type="text" 
                     name="expenseType" 
                     value={formData.expenseType} 
                     onChange={handleInputChange} 
-                    placeholder="e.g., Travel, Uniform, Supplies"
+                    placeholder={t('employees.expenseTypePlaceholder')}
                     className={`w-full bg-white ${formErrors.expenseType ? 'border-red-500' : ''}`}
                     disabled={loading}
                 />
@@ -167,13 +167,13 @@ const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
             </div>
             
             <div>
-                <label className="block text-gray-700 mb-1 font-medium text-sm">Ticket Type</label>
+                <label className="block text-gray-700 mb-1 font-medium text-sm">{t('employees.ticketType')}</label>
                 <Input 
                     type="text" 
                     name="ticketType" 
                     value={formData.ticketType} 
                     onChange={handleInputChange} 
-                    placeholder="Enter ticket type"
+                    placeholder={t('employees.ticketTypePlaceholder')}
                     className={`w-full bg-white ${formErrors.ticketType ? 'border-red-500' : ''}`}
                     disabled={loading}
                 />
@@ -181,7 +181,7 @@ const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
             </div>
             
             <div>
-                <label className="block text-gray-700 mb-1 font-medium text-sm">Amount Paid</label>
+                <label className="block text-gray-700 mb-1 font-medium text-sm">{t('employees.amountPaid')}</label>
                 <Input 
                     type="number" 
                     name="amountPaid" 
@@ -204,7 +204,7 @@ const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
                     className="h-4 w-4 text-[#00997B] focus:ring-[#00997B] border-gray-300 rounded"
                 />
                 <label className="ml-2 block text-sm text-gray-700">
-                    Notify Admin
+                    {t('employees.notifyAdmin')}
                 </label>
             </div>
         </div>
@@ -218,14 +218,14 @@ const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
             className="border-gray-300 bg-white text-gray-700 hover:bg-gray-50 px-4"
             disabled={loading}
           >
-            Cancel
+            {t('common.cancel')}
           </Button>
           <Button
             type="submit"
             className="bg-[#05A49D] text-white hover:bg-[#048c86] px-4"
             disabled={loading}
           >
-            {loading ? 'Adding Expense...' : 'Add Expense'}
+            {loading ? t('employees.addingExpense') : t('employees.addExpense')}
           </Button>
         </div>
       </form>
@@ -233,4 +233,4 @@ const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
   );
 };
 
-export default AddExpenseModal; 
+export default AddExpenseModal;

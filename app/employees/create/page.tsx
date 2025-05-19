@@ -8,6 +8,7 @@ import Button from '@/components/common/button';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import ConfirmationModal from '@/components/common/ConfirmationModal'; // Import the modal
+import { useTranslation } from '@/context/TranslationContext';
 
 // Import form components
 import EmployeeDetailsForm from '@/components/employees/EmployeeDetailsForm';
@@ -23,6 +24,7 @@ type Step = 'Details' | 'Duty Schedule' | 'Salary';
 const steps: Step[] = ['Details', 'Duty Schedule', 'Salary'];
 
 export default function CreateEmployeePage() {
+  const { t } = useTranslation();
   const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
   const { loading: employeeLoading, error: employeeError } = useSelector((state: RootState) => state.employee);
@@ -70,14 +72,11 @@ export default function CreateEmployeePage() {
   const handleSubmit = async (finalSalaryData: any) => {
     const completeData = { ...employeeData, ...finalSalaryData };
     const images = completeData.newImages || [];
-    const imageIdsToRemove = completeData.imageIdsToRemove || [];
-    
+    // Remove imageIdsToRemove from payload if not in AddEmployeePayload type
     delete completeData.newImages;
-    delete completeData.imageIdsToRemove;
     
     console.log("Creating Employee Data:", completeData);
     console.log("New Images:", images);
-    console.log("Image IDs to Remove:", imageIdsToRemove);
     
     dispatch(clearError());
     setIsSuccess(false);
@@ -87,7 +86,6 @@ export default function CreateEmployeePage() {
         const resultAction = await dispatch(addEmployee({ 
             employeeData: completeData, 
             images, 
-            imageIdsToRemove 
         }));
 
         if (addEmployee.fulfilled.match(resultAction)) {
@@ -167,13 +165,13 @@ export default function CreateEmployeePage() {
   };
 
   return (
-    <PageLayout title="Create New Employee">
+    <PageLayout title={t('employees.createTitle')}>
       <div className="bg-white rounded-lg shadow-sm p-6">
         {/* Back Link */}
         <div className="mb-6">
           <Link href="/employees" className="text-gray-500 hover:text-gray-700 flex items-center gap-2 w-fit">
             <ArrowLeft size={20} />
-            <span>Back to Employees</span>
+            <span>{t('common.backToEmployees')}</span>
           </Link>
         </div>
 
@@ -189,7 +187,7 @@ export default function CreateEmployeePage() {
                   : 'text-gray-500 hover:text-gray-700'
                 }`}
             >
-              {step}
+              {t(`employees.steps.${step.toLowerCase().replace(' ', '_')}`)}
             </button>
           ))}
         </div>
@@ -204,11 +202,11 @@ export default function CreateEmployeePage() {
       <ConfirmationModal
         isOpen={isModalOpen}
         onClose={handleCloseModal}
-        title={isSuccess ? 'Success' : 'Error'}
+        title={isSuccess ? t('common.success') : t('common.error')}
         message={modalMessage}
         isAlert={true}
-        okText="OK"
+        okText={t('common.ok')}
       />
     </PageLayout>
   );
-} 
+}

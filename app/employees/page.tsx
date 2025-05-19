@@ -11,17 +11,18 @@ import ConfirmationModal from '@/components/common/ConfirmationModal';
 import { formatPositionName } from '@/utils/formatters';
 import { useCurrency } from '@/context/CurrencyContext';
 import { formatCurrencyValue } from '@/utils/currencyUtils';
+import { useTranslation } from '@/context/TranslationContext';
 
 // Import Redux stuff
 import { AppDispatch, RootState } from '@/store/store';
 import { fetchAllEmployees, clearError as clearEmployeeError, deleteEmployee, setSelectedEmployeeForEdit, Employee } from '@/store/employeeSlice'; // Import deleteEmployee and setSelectedEmployeeForEdit
 
 // Remove mock data
-// const mockEmployees = [...];
 // const totalEmployeesCount = ...;
 // const totalPayrollSum = ...;
 
 export default function EmployeesPage() {
+  const { t } = useTranslation();
   const dispatch = useDispatch<AppDispatch>();
   const router = useRouter(); // Initialize router
   const { 
@@ -171,15 +172,15 @@ export default function EmployeesPage() {
   }, 0);
 
   return (
-    <PageLayout title="Kitchen Employees">
+    <PageLayout title={t('employees.title')}>
       {/* Summary Cards - Updated with Redux data */} 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
         <div className="bg-[#00997B] text-white p-5 rounded-lg shadow flex justify-between items-center">
-          <span className="font-medium">Total Employees</span>
+          <span className="font-medium">{t('employees.totalEmployees')}</span>
           <span className="text-3xl font-semibold">{employeesLoading ? '...' : totalEmployeesCount}</span>
         </div>
         <div className="bg-white border border-gray-200 p-5 rounded-lg shadow flex justify-between items-center">
-          <span className="font-medium text-gray-700">Total Payroll</span>
+          <span className="font-medium text-gray-700">{t('employees.totalPayroll')}</span>
           <span className="text-xl font-semibold text-[#00997B]">
             {employeesLoading ? '...' : formattedSalaries['total'] || 'N/A'}
           </span>
@@ -192,11 +193,11 @@ export default function EmployeesPage() {
           <div className="flex gap-2 flex-shrink-0">
             {/* Other Payroll Button */} 
             <Link href="/employees/other-payroll">
-              <Button variant="secondary">Other payroll</Button>
+              <Button variant="secondary">{t('employees.otherPayrollTitle')}</Button>
             </Link>
             {/* Create Employee Button */}
             <Link href="/employees/create">
-              <Button>Create new employee</Button>
+              <Button>{t('employees.createNew')}</Button>
             </Link>
           </div>
         </div>
@@ -209,12 +210,12 @@ export default function EmployeesPage() {
             <table className="w-full text-left">
               <thead>
                 <tr className="bg-gray-50 border-b border-gray-200">
-                  <th className="py-4 px-6 font-medium text-sm text-gray-500">Employee Name</th>
-                  <th className="py-4 px-6 font-medium text-sm text-gray-500">Position</th>
-                  <th className="py-4 px-6 font-medium text-sm text-gray-500">Iqama ID</th>
-                  <th className="py-4 px-6 font-medium text-sm text-gray-500">Iqama Expiry</th>
-                  <th className="py-4 px-6 font-medium text-sm text-gray-500">Total Salary</th>
-                  <th className="py-4 px-6 font-medium text-sm text-gray-500">Status</th>
+                  <th className="py-4 px-6 font-medium text-sm text-gray-500">{t('employees.employeeName')}</th>
+                  <th className="py-4 px-6 font-medium text-sm text-gray-500">{t('employees.position')}</th>
+                  <th className="py-4 px-6 font-medium text-sm text-gray-500">{t('employees.iqamaId')}</th>
+                  <th className="py-4 px-6 font-medium text-sm text-gray-500">{t('employees.iqamaExpiryDate')}</th>
+                  <th className="py-4 px-6 font-medium text-sm text-gray-500">{t('employees.salary.totalSalary')}</th>
+                  <th className="py-4 px-6 font-medium text-sm text-gray-500">{t('employees.status.title')}</th>
                   {/* <th className="py-4 px-6 font-medium text-sm text-gray-500 text-center">Actions</th> */}
                 </tr>
               </thead>
@@ -245,7 +246,7 @@ export default function EmployeesPage() {
                             ? 'bg-green-100 text-green-800' 
                             : 'bg-red-100 text-red-800'
                         }`}>
-                          {employee.employeeDetailsDTO?.active === true ? 'Current' : 'Ex Employee'}
+                          {employee.employeeDetailsDTO?.active === true ? t('employees.status.current') : t('employees.status.ex')}
                         </span>
                       </td>
                       <td className="py-4 px-6 text-center">
@@ -302,7 +303,7 @@ export default function EmployeesPage() {
                 ) : (
                   <tr>
                     <td colSpan={6} className="text-center py-10 text-gray-500">
-                     {employeesError ? 'Error loading data.' : 'No employees found.'}
+                     {employeesError ? t('employees.errorLoading') : t('employees.noEmployees')}
                     </td>
                   </tr>
                 )}
@@ -316,14 +317,14 @@ export default function EmployeesPage() {
       <ConfirmationModal
         isOpen={isEmployeeModalOpen}
         onClose={handleEmployeeModalClose}
-        onConfirm={isConfirmModal ? confirmDelete : undefined} // Only pass confirm handler for confirm modals
-        title={isConfirmModal ? 'Confirm Deletion' : (isDeleteSuccess ? 'Success' : 'Error')}
+        onConfirm={isConfirmModal ? confirmDelete : undefined}
+        title={isConfirmModal ? t('common.confirmDeletion') : (isDeleteSuccess ? t('common.success') : t('common.error'))}
         message={employeeModalMessage}
-        isAlert={!isConfirmModal} // Use alert if not confirm
-        confirmText="Delete"
-        cancelText="Cancel"
-        okText="OK"
+        isAlert={!isConfirmModal}
+        confirmText={t('common.delete')}
+        cancelText={t('common.cancel')}
+        okText={t('common.ok')}
       />
     </PageLayout>
   );
-} 
+}

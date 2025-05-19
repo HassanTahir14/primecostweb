@@ -9,6 +9,7 @@ import ConfirmationModal from '@/components/common/ConfirmationModal';
 import OtherPayrollTable from '@/components/employees/OtherPayrollTable';
 import AddExpenseModal from '@/components/employees/AddExpenseModal';
 import { Button } from '@/components/common/button';
+import { useTranslation } from '@/context/TranslationContext';
 
 // Import Redux stuff
 import { AppDispatch, RootState } from '@/store/store';
@@ -16,6 +17,7 @@ import { fetchOtherPayrolls, clearError, OtherPayrollItem } from '@/store/otherP
 import { addExpense, clearError as clearExpenseError } from '@/store/expenseSlice';
 
 export default function OtherPayrollPage() {
+  const { t } = useTranslation();
   const dispatch = useDispatch<AppDispatch>();
   const { 
     payrolls, 
@@ -105,19 +107,19 @@ export default function OtherPayrollPage() {
   };
 
   return (
-    <PageLayout title="Other Payroll Data">
+    <PageLayout title={t('employees.otherPayrollTitle')}>
       <div className="bg-white rounded-lg shadow-sm p-6 space-y-6">
         {/* Navigation and Actions */}
         <div className="flex justify-between items-center mb-6">
           <Link href="/employees" className="text-gray-500 hover:text-gray-700 flex items-center gap-2 w-fit">
             <ArrowLeft size={20} />
-            <span>Back to Employees</span>
+            <span>{t('common.backToEmployees')}</span>
           </Link>
           
           {/* Add Expense Button */}
           <Button variant="outline" onClick={handleOpenExpenseModal}>
             <Plus className="w-4 h-4 mr-2" />
-            Add Expense
+            {t('employees.addExpense')}
           </Button>
         </div>
 
@@ -133,10 +135,10 @@ export default function OtherPayrollPage() {
       <ConfirmationModal
         isOpen={isModalOpen}
         onClose={handleCloseModal}
-        title={'Error'}
+        title={t('common.error')}
         message={modalMessage}
         isAlert={true}
-        okText="OK"
+        okText={t('common.ok')}
       />
 
       {/* Add Expense Modal */}
@@ -150,4 +152,4 @@ export default function OtherPayrollPage() {
       />
     </PageLayout>
   );
-} 
+}

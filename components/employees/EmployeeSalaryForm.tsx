@@ -6,6 +6,7 @@ import Input from '@/components/common/input'; // Assuming InputField component
 import { Upload, X } from 'lucide-react'; // Import icons
 import { getImageUrlWithAuth } from '@/utils/imageUtils';
 import AuthImage from '@/components/common/AuthImage';
+import { useTranslation } from '@/context/TranslationContext';
 
 // Interface for existing image data passed as prop
 interface ExistingImage {
@@ -33,6 +34,7 @@ export default function EmployeeSalaryForm({
   onSave,
   errors
 }: EmployeeSalaryFormProps) {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState({
     basicSalary: initialData?.basicSalary || '',
     foodAllowance: initialData?.foodAllowance || '',
@@ -187,50 +189,50 @@ export default function EmployeeSalaryForm({
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-semibold text-gray-800 mb-6">Salary & Images</h2>
+      <h2 className="text-2xl font-semibold text-gray-800 mb-6">{t('employees.salary.title')}</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
         {/* Left Column - Allowances */}
         <div className="space-y-4">
           <Input 
-            label="Basic Salary" 
+            label={t('employees.salary.basicSalary')} 
             name="basicSalary" 
             value={formData.basicSalary} 
             onChange={handleChange} 
-            placeholder="Enter basic salary" 
+            placeholder={t('employees.salary.enterBasicSalary')} 
             type="number" 
             prefix="USD" 
             error={getFieldError('basicSalary')}
           />
           <Input 
-            label="Food Allowance" 
+            label={t('employees.salary.foodAllowance')} 
             name="foodAllowance" 
             value={formData.foodAllowance} 
             onChange={handleChange} 
-            placeholder="Enter food allowance" 
+            placeholder={t('employees.salary.enterFoodAllowance')} 
             type="number" 
           />
           <Input 
-            label="Accommodation Allowance" 
+            label={t('employees.salary.accommodationAllowance')} 
             name="accommodationAllowance" 
             value={formData.accommodationAllowance} 
             onChange={handleChange} 
-            placeholder="Enter accommodation allowance" 
+            placeholder={t('employees.salary.enterAccommodationAllowance')} 
             type="number" 
           />
           <Input 
-            label="Transport Allowance" 
+            label={t('employees.salary.transportAllowance')} 
             name="transportAllowance" 
             value={formData.transportAllowance} 
             onChange={handleChange} 
-            placeholder="Enter transport allowance" 
+            placeholder={t('employees.salary.enterTransportAllowance')} 
             type="number" 
           />
           <Input 
-            label="Telephone or Mobile Allowance" 
+            label={t('employees.salary.telephoneAllowance')} 
             name="telephoneAllowance" 
             value={formData.telephoneAllowance} 
             onChange={handleChange} 
-            placeholder="Enter telephone allowance" 
+            placeholder={t('employees.salary.enterTelephoneAllowance')} 
             type="number" 
           />
         </div>
@@ -238,11 +240,11 @@ export default function EmployeeSalaryForm({
         {/* Right Column - Image Upload, Other Allowance, Total */}
         <div className="space-y-4">
           <div>
-             <label className="block text-sm font-medium text-gray-700 mb-1">Employee Images</label>
+             <label className="block text-sm font-medium text-gray-700 mb-1">{t('employees.salary.employeeImages')}</label>
              {/* Existing Images Preview */} 
              {existingImages.length > 0 && (
                  <div className="mb-4 p-3 border border-dashed border-gray-300 rounded-md">
-                     <p className="text-xs font-medium text-gray-500 mb-2">Existing Images:</p>
+                     <p className="text-xs font-medium text-gray-500 mb-2">{t('employees.salary.existingImages')}:</p>
                      <div className="grid grid-cols-3 gap-2">
                          {existingImages.map((image) => (
                              !isImageMarkedForRemoval(image.imageId) && (
@@ -256,7 +258,7 @@ export default function EmployeeSalaryForm({
                                      <button
                                          onClick={() => handleRemoveExistingImage(image.imageId)}
                                          className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
-                                         aria-label="Remove existing image"
+                                         aria-label={t('employees.salary.removeExistingImage')}
                                       >
                                          <X size={12} />
                                      </button>
@@ -278,7 +280,7 @@ export default function EmployeeSalaryForm({
              />
              <Button variant="outline" onClick={handleImageUploadClick} className="w-full justify-center">
                <Upload size={16} className="mr-2" />
-               Add New Image(s)
+               {t('employees.salary.addNewImages')}
              </Button>
              
              {/* New Images Preview */} 
@@ -294,7 +296,7 @@ export default function EmployeeSalaryForm({
                              <button
                                  onClick={() => handleRemoveNewImage(index)}
                                  className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
-                                 aria-label="Remove new image"
+                                 aria-label={t('employees.salary.removeNewImage')}
                               >
                                  <X size={12} />
                              </button>
@@ -304,19 +306,19 @@ export default function EmployeeSalaryForm({
              )}
           </div>
           <Input 
-            label="Other Allowance" 
+            label={t('employees.salary.otherAllowance')} 
             name="otherAllowance" 
             value={formData.otherAllowance} 
             onChange={handleChange} 
-            placeholder="Any other allowances" 
+            placeholder={t('employees.salary.enterOtherAllowance')} 
             type="number" 
           />
           <Input 
-            label="Total Salary" 
+            label={t('employees.salary.totalSalary')} 
             name="totalSalary" 
             value={totalSalary} 
             readOnly 
-            placeholder="Calculated total" 
+            placeholder={t('employees.salary.calculatedTotal')} 
             prefix="USD" 
             error={getFieldError('totalSalary')}
           />
@@ -325,11 +327,11 @@ export default function EmployeeSalaryForm({
 
       {/* Action Buttons */} 
       <div className="flex justify-between pt-4">
-        <Button variant="secondary" onClick={onPrevious} disabled={isLoading}>Previous</Button>
+        <Button variant="secondary" onClick={onPrevious} disabled={isLoading}>{t('employees.salary.previous')}</Button>
         <Button onClick={handleSubmitClick} disabled={isLoading}>
-            {isLoading ? 'Saving...' : 'Save Changes'} 
+            {isLoading ? t('employees.salary.saving') : t('employees.salary.saveChanges')} 
         </Button>
       </div>
     </div>
   );
-} 
+}
