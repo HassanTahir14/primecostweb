@@ -356,9 +356,23 @@ export default function ItemDetailPage() {
   // Conversion rate (e.g., 1 PLT = 12 LTR)
   const conversionRate = item?.secondaryUnitValue;
 
-  // Calculate total stock as the sum of all ingredient quantities in all branches (raw quantity)
-  const totalStock = item && item.branchDetails
-    ? item.branchDetails.reduce((sum, detail) => sum + (detail.quantity || 0), 0)
+  // Calculate total stock as the sum of all ingredient quantities in all branches (convert to primary unit if needed)
+  const totalStock = item && item.branchDetails && primaryUnit && secondaryUnit && item.secondaryUnitValue
+    ? item.branchDetails.reduce((sum, detail) => {
+        // @ts-ignore: calculationMethod may exist in API response but not in type
+        const calculationMethod = (detail.calculationMethod || '').toUpperCase();
+        if (calculationMethod.includes('SECONDARY')) {
+          // Actually in primary unit, add as is
+          return sum + (detail.quantity || 0);
+        } else if (calculationMethod.includes('PRIMARY')) {
+          // Actually in secondary unit, convert to primary
+          const secValue = item.secondaryUnitValue || 1;
+          return sum + ((detail.quantity || 0) / secValue);
+        } else {
+          // Default: treat as primary
+          return sum + (detail.quantity || 0);
+        }
+      }, 0)
     : 0;
 
   // Prepare extra fields for conversion and total stock
@@ -422,23 +436,35 @@ export default function ItemDetailPage() {
             <div className="bg-white bg-opacity-90 rounded-xl shadow-md overflow-hidden">
               <div className="p-4 sm:p-6">
                 <dl className="grid grid-cols-1 gap-y-4">
-                  {item.branchDetails.map((detail) => (
-                    <div key={detail.branchId + '-' + detail.storageLocationId}>
-                      <dt className="text-lg font-medium text-gray-900">{detail.branchName}</dt>
-                      <dd className="mt-2">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2">
-                          <div>
-                            <span className="text-sm font-medium text-gray-500">Location</span>
-                            <p className="mt-1 text-sm text-gray-900">{detail.storageLocationName}</p>
+                  {item.branchDetails.map((detail) => {
+                    let showUnit = '';
+                    // @ts-ignore: calculationMethod may exist in API response but not in type
+                    const calculationMethod = (detail.calculationMethod || '').toUpperCase();
+                    if (calculationMethod.includes('PRIMARY')) {
+                      showUnit = secondaryUnit ? secondaryUnit.unitName : '';
+                    } else if (calculationMethod.includes('SECONDARY')) {
+                      showUnit = primaryUnit ? primaryUnit.unitName : '';
+                    } else {
+                      showUnit = primaryUnit ? primaryUnit.unitName : '';
+                    }
+                    return (
+                      <div key={detail.branchId + '-' + detail.storageLocationId}>
+                        <dt className="text-lg font-medium text-gray-900">{detail.branchName}</dt>
+                        <dd className="mt-2">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2">
+                            <div>
+                              <span className="text-sm font-medium text-gray-500">Location</span>
+                              <p className="mt-1 text-sm text-gray-900">{detail.storageLocationName}</p>
+                            </div>
+                            <div>
+                              <span className="text-sm font-medium text-gray-500">Quantity</span>
+                              <p className="mt-1 text-sm text-gray-900">{detail.quantity} {showUnit}</p>
+                            </div>
                           </div>
-                          <div>
-                            <span className="text-sm font-medium text-gray-500">Quantity</span>
-                            <p className="mt-1 text-sm text-gray-900">{detail.quantity} {primaryUnit ? primaryUnit.unitName : ''}</p>
-                          </div>
-                        </div>
-                      </dd>
-                    </div>
-                  ))}
+                        </dd>
+                      </div>
+                    );
+                  })}
                 </dl>
               </div>
             </div>
