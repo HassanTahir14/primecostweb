@@ -19,10 +19,12 @@ import { ArrowLeft } from 'lucide-react';
 import { getDefaultDateRange } from '@/utils/dateUtils';
 import { useCurrency } from '@/context/CurrencyContext';
 import { formatCurrencyValue } from '@/utils/currencyUtils';
+import { useTranslation } from '@/context/TranslationContext';
 
 export default function FoodCostReportPage() {
     const dispatch = useDispatch<AppDispatch>();
     const { currency } = useCurrency();
+    const { t } = useTranslation();
     const [formattedCosts, setFormattedCosts] = useState<any>({});
     const { startDate: defaultStartDate, endDate: defaultEndDate } = getDefaultDateRange();
     const [startDate, setStartDate] = useState(defaultStartDate);
@@ -73,62 +75,62 @@ export default function FoodCostReportPage() {
 
     // Column definitions moved inside component to access formattedCosts
     const foodCostColumns: ColumnDefinition<any>[] = [
-        { header: 'Recipe Name', accessorKey: 'recipeName' },
+        { header: t('recipeFoodCost.colRecipeName'), accessorKey: 'recipeName' },
         { 
-            header: 'Budget Food Cost', 
+            header: t('recipeFoodCost.colBudgetFoodCost'), 
             accessorKey: 'foodCostBudget',
             cell: (v) => v // Keep as is since it's already a percentage
         },
         { 
-            header: 'Actual Food Cost', 
+            header: t('recipeFoodCost.colActualFoodCost'), 
             accessorKey: 'foodCostActual',
             cell: (v) => v // Keep as is since it's already a percentage
         },
         { 
-            header: 'Ideal Selling Price', 
+            header: t('recipeFoodCost.colIdealSellingPrice'), 
             accessorKey: 'idealSellingPrice',
-            cell: (value, record) => formattedCosts[record.recipeName] || 'N/A'
+            cell: (value, record) => formattedCosts[record.recipeName] || t('recipeFoodCost.na')
         }
     ];
 
     return (
-        <PageLayout title="Food Cost Report">
+        <PageLayout title={t('recipeFoodCost.pageTitle')}>
             <div className="mb-4">
                 <Link href="/reports/recipe" className="text-gray-500 hover:text-gray-700 flex items-center gap-2 w-fit">
                     <ArrowLeft size={20} />
-                    <span>Back to Recipe Reports</span>
+                    <span>{t('recipeFoodCost.backToRecipeReports')}</span>
                 </Link>
             </div>
             {/* Filters Section */}
              <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 mb-6">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
                     <Input 
-                        label="Start Date" type="date" name="startDate"
+                        label={t('recipeFoodCost.labelStartDate')} type="date" name="startDate"
                         value={startDate} onChange={(e) => setStartDate(e.target.value)}
                     />
                     <Input 
-                        label="End Date" type="date" name="endDate"
+                        label={t('recipeFoodCost.labelEndDate')} type="date" name="endDate"
                         value={endDate} onChange={(e) => setEndDate(e.target.value)}
                     />
                     <Button onClick={handleFetchReport} disabled={loading}>
-                        {loading ? 'Loading...' : 'Fetch Report'}
+                        {loading ? t('recipeFoodCost.loading') : t('recipeFoodCost.fetchReport')}
                     </Button>
                 </div>
                  {validationError && (<p className="mt-2 text-sm text-red-600">{validationError}</p>)}
             </div>
             {/* Report Table Section */}
             <ReportTypeTable
-                title="Food Cost Details"
+                title={t('recipeFoodCost.tableTitle')}
                 data={Array.isArray(data) ? data : (data && typeof data === 'object' && 'details' in data ? data.details : [])}
                 columns={foodCostColumns}
                 isLoading={loading}
             />
              {/* Error Modal */}
             <ConfirmationModal
-                isOpen={!!error} onClose={handleCloseErrorModal} title="Error"
-                message={typeof error === 'string' ? error : (error as any)?.message || 'An error occurred fetching the report.'}
-                isAlert={true} okText="OK"
+                isOpen={!!error} onClose={handleCloseErrorModal} title={t('recipeFoodCost.errorTitle')}
+                message={typeof error === 'string' ? error : (error as any)?.message || t('recipeFoodCost.errorMsg')}
+                isAlert={true} okText={t('recipeFoodCost.ok')}
             />
         </PageLayout>
     );
-} 
+}

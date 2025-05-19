@@ -19,6 +19,7 @@ import { ArrowLeft } from 'lucide-react';
 import { getDefaultDateRange } from '@/utils/dateUtils';
 import { useCurrency } from '@/context/CurrencyContext';
 import { formatCurrencyValue } from '@/utils/currencyUtils';
+import { useTranslation } from '@/context/TranslationContext';
 
 // --- !!! PLACEHOLDER COLUMN DEFINITION !!! ---
 // --- Update this based on the actual API response for Profit Margin ---
@@ -46,6 +47,7 @@ const profitMarginColumns: ColumnDefinition<any>[] = [
 export default function ProfitMarginReportPage() {
     const dispatch = useDispatch<AppDispatch>();
     const { currency } = useCurrency();
+    const { t } = useTranslation();
     const [formattedCosts, setFormattedCosts] = useState<any>({});
     const { startDate: defaultStartDate, endDate: defaultEndDate } = getDefaultDateRange();
     const [startDate, setStartDate] = useState(defaultStartDate);
@@ -98,62 +100,62 @@ export default function ProfitMarginReportPage() {
 
     // Column definitions moved inside component to access formattedCosts
     const profitMarginColumns: ColumnDefinition<any>[] = [
-        { header: 'Recipe Name', accessorKey: 'recipeName' },
+        { header: t('recipeProfitMargin.colRecipeName'), accessorKey: 'recipeName' },
         { 
-            header: 'Cost Per Recipe', 
+            header: t('recipeProfitMargin.colCostPerRecipe'), 
             accessorKey: 'costPerRecipe',
-            cell: (value, record) => formattedCosts[`${record.recipeName}-${record.preparedDate}-recipe`] || 'N/A'
+            cell: (value, record) => formattedCosts[`${record.recipeName}-${record.preparedDate}-recipe`] || t('recipeProfitMargin.na')
         },
         { 
-            header: 'Cost Per Portion', 
+            header: t('recipeProfitMargin.colCostPerPortion'), 
             accessorKey: 'costPerPortion',
-            cell: (value, record) => formattedCosts[`${record.recipeName}-${record.preparedDate}-portion`] || 'N/A'
+            cell: (value, record) => formattedCosts[`${record.recipeName}-${record.preparedDate}-portion`] || t('recipeProfitMargin.na')
         },
         { 
-            header: 'Profit Margin Per Portion', 
+            header: t('recipeProfitMargin.colProfitMarginPerPortion'), 
             accessorKey: 'profitMarginPerPortion',
-            cell: (value, record) => formattedCosts[`${record.recipeName}-${record.preparedDate}-profit`] || 'N/A'
+            cell: (value, record) => formattedCosts[`${record.recipeName}-${record.preparedDate}-profit`] || t('recipeProfitMargin.na')
         }
     ];
 
     return (
-        <PageLayout title="Profit Margin Report">
+        <PageLayout title={t('recipeProfitMargin.pageTitle')}>
              <div className="mb-4">
                 <Link href="/reports/recipe" className="text-gray-500 hover:text-gray-700 flex items-center gap-2 w-fit">
                     <ArrowLeft size={20} />
-                    <span>Back to Recipe Reports</span>
+                    <span>{t('recipeProfitMargin.backToRecipeReports')}</span>
                 </Link>
             </div>
             {/* Filters Section */}
              <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 mb-6">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
                     <Input 
-                        label="Start Date" type="date" name="startDate"
+                        label={t('recipeProfitMargin.labelStartDate')} type="date" name="startDate"
                         value={startDate} onChange={(e) => setStartDate(e.target.value)}
                     />
                     <Input 
-                        label="End Date" type="date" name="endDate"
+                        label={t('recipeProfitMargin.labelEndDate')} type="date" name="endDate"
                         value={endDate} onChange={(e) => setEndDate(e.target.value)}
                     />
                     <Button onClick={handleFetchReport} disabled={loading}>
-                        {loading ? 'Loading...' : 'Fetch Report'}
+                        {loading ? t('recipeProfitMargin.loading') : t('recipeProfitMargin.fetchReport')}
                     </Button>
                 </div>
                  {validationError && (<p className="mt-2 text-sm text-red-600">{validationError}</p>)}
             </div>
             {/* Report Table Section */}
             <ReportTypeTable
-                title="Profit Margin Details"
+                title={t('recipeProfitMargin.tableTitle')}
                 data={Array.isArray(data) ? data : (data && typeof data === 'object' && 'details' in data ? data.details : [])}
                 columns={profitMarginColumns}
                 isLoading={loading}
             />
              {/* Error Modal */}
             <ConfirmationModal
-                isOpen={!!error} onClose={handleCloseErrorModal} title="Error"
-                message={typeof error === 'string' ? error : (error as any)?.message || 'An error occurred fetching the report.'}
-                isAlert={true} okText="OK"
+                isOpen={!!error} onClose={handleCloseErrorModal} title={t('recipeProfitMargin.errorTitle')}
+                message={typeof error === 'string' ? error : (error as any)?.message || t('recipeProfitMargin.errorMsg')}
+                isAlert={true} okText={t('recipeProfitMargin.ok')}
             />
         </PageLayout>
     );
-} 
+}

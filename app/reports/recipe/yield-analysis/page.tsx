@@ -19,10 +19,12 @@ import { ArrowLeft } from 'lucide-react';
 import { getDefaultDateRange } from '@/utils/dateUtils';
 import { useCurrency } from '@/context/CurrencyContext';
 import { formatCurrencyValue } from '@/utils/currencyUtils';
+import { useTranslation } from '@/context/TranslationContext';
 
 export default function YieldAnalysisReportPage() {
     const dispatch = useDispatch<AppDispatch>();
     const { currency } = useCurrency();
+    const { t } = useTranslation();
     const [formattedCosts, setFormattedCosts] = useState<any>({});
     const { startDate: defaultStartDate, endDate: defaultEndDate } = getDefaultDateRange();
     const [startDate, setStartDate] = useState(defaultStartDate);
@@ -74,64 +76,64 @@ export default function YieldAnalysisReportPage() {
 
     // Column definitions moved inside component to access formattedCosts
     const yieldAnalysisColumns: ColumnDefinition<any>[] = [
-        { header: 'Item Name', accessorKey: 'itemName' },
-        { header: 'Quantity Used', accessorKey: 'quantityUsed' },
-        { header: 'Yield %', accessorKey: 'percentageYield' },
-        { header: 'Waste %', accessorKey: 'wastePercentage' },
-        { header: 'Yield Quantity', accessorKey: 'yieldQuantity' },
+        { header: t('recipeYieldAnalysis.colItemName'), accessorKey: 'itemName' },
+        { header: t('recipeYieldAnalysis.colQuantityUsed'), accessorKey: 'quantityUsed' },
+        { header: t('recipeYieldAnalysis.colYieldPercent'), accessorKey: 'percentageYield' },
+        { header: t('recipeYieldAnalysis.colWastePercent'), accessorKey: 'wastePercentage' },
+        { header: t('recipeYieldAnalysis.colYieldQuantity'), accessorKey: 'yieldQuantity' },
         { 
-            header: 'Yield Cost', 
+            header: t('recipeYieldAnalysis.colYieldCost'), 
             accessorKey: 'yieldCost',
             cellClassName: 'text-right',
-            cell: (value, record) => formattedCosts[`${record.itemName}-${record.preparedDate}-yield`] || 'N/A'
+            cell: (value, record) => formattedCosts[`${record.itemName}-${record.preparedDate}-yield`] || t('recipeYieldAnalysis.na')
         },
-        { header: 'Waste Quantity', accessorKey: 'wasteQuantity' },
+        { header: t('recipeYieldAnalysis.colWasteQuantity'), accessorKey: 'wasteQuantity' },
         { 
-            header: 'Waste Cost', 
+            header: t('recipeYieldAnalysis.colWasteCost'), 
             accessorKey: 'wasteCost',
             cellClassName: 'text-right',
-            cell: (value, record) => formattedCosts[`${record.itemName}-${record.preparedDate}-waste`] || 'N/A'
+            cell: (value, record) => formattedCosts[`${record.itemName}-${record.preparedDate}-waste`] || t('recipeYieldAnalysis.na')
         }
     ];
 
     return (
-        <PageLayout title="Yield Analysis Report">
+        <PageLayout title={t('recipeYieldAnalysis.pageTitle')}>
              <div className="mb-4">
                 <Link href="/reports/recipe" className="text-gray-500 hover:text-gray-700 flex items-center gap-2 w-fit">
                     <ArrowLeft size={20} />
-                    <span>Back to Recipe Reports</span>
+                    <span>{t('recipeYieldAnalysis.backToRecipeReports')}</span>
                 </Link>
             </div>
             {/* Filters Section */}
             <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 mb-6">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
                     <Input 
-                        label="Start Date" type="date" name="startDate"
+                        label={t('recipeYieldAnalysis.labelStartDate')} type="date" name="startDate"
                         value={startDate} onChange={(e) => setStartDate(e.target.value)}
                     />
                     <Input 
-                        label="End Date" type="date" name="endDate"
+                        label={t('recipeYieldAnalysis.labelEndDate')} type="date" name="endDate"
                         value={endDate} onChange={(e) => setEndDate(e.target.value)}
                     />
                     <Button onClick={handleFetchReport} disabled={loading}>
-                        {loading ? 'Loading...' : 'Fetch Report'}
+                        {loading ? t('recipeYieldAnalysis.loading') : t('recipeYieldAnalysis.fetchReport')}
                     </Button>
                 </div>
                  {validationError && (<p className="mt-2 text-sm text-red-600">{validationError}</p>)}
             </div>
             {/* Report Table Section */}
             <ReportTypeTable
-                title="Yield Analysis"
+                title={t('recipeYieldAnalysis.tableTitle')}
                 data={Array.isArray(data) ? data : (data && typeof data === 'object' && 'details' in data ? data.details : [])}
                 columns={yieldAnalysisColumns}
                 isLoading={loading}
             />
             {/* Error Modal */}
             <ConfirmationModal
-                isOpen={!!error} onClose={handleCloseErrorModal} title="Error"
-                message={typeof error === 'string' ? error : (error as any)?.message || 'An error occurred fetching the report.'}
-                isAlert={true} okText="OK"
+                isOpen={!!error} onClose={handleCloseErrorModal} title={t('recipeYieldAnalysis.errorTitle')}
+                message={typeof error === 'string' ? error : (error as any)?.message || t('recipeYieldAnalysis.errorMsg')}
+                isAlert={true} okText={t('recipeYieldAnalysis.ok')}
             />
         </PageLayout>
     );
-} 
+}
