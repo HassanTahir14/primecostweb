@@ -12,6 +12,7 @@ import ConfirmationModal from '@/components/common/ConfirmationModal';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { getDefaultDateRange } from '@/utils/dateUtils';
+import { useTranslation } from '@/context/TranslationContext';
 
 // Updated data structure based on API response
 interface HealthCardExpiryRecord {
@@ -22,14 +23,6 @@ interface HealthCardExpiryRecord {
   // Removed: employeeId, position, daysUntilExpiry
 }
 
-// Updated Column Definitions based on API response
-const healthCardExpiryColumns: ColumnDefinition<HealthCardExpiryRecord>[] = [
-    { header: 'Employee Name', accessorKey: 'employeeName' },
-    { header: 'Health Card ID', accessorKey: 'healthCardId' }, // Updated header and key
-    { header: 'Expiry Date', accessorKey: 'cardExpiry' }, // Updated key
-    { header: 'Status', accessorKey: 'status' }, // Added status
-];
-
 const HealthCardExpiryReportPage: React.FC = () => {
   const dispatch: AppDispatch = useDispatch();
   const { data: healthCardExpiryData, loading, error } = useSelector((state: RootState) => state.employeeReports.healthCardExpiry);
@@ -38,6 +31,7 @@ const HealthCardExpiryReportPage: React.FC = () => {
   const [startDate, setStartDate] = useState<string>(defaultStartDate);
   const [endDate, setEndDate] = useState<string>(defaultEndDate);
   const [validationError, setValidationError] = useState<string | null>(null);
+  const { t } = useTranslation();
 
   // Fetch data on first load
   useEffect(() => {
@@ -62,14 +56,21 @@ const HealthCardExpiryReportPage: React.FC = () => {
   };
 
   // Placeholder title
-  const tableTitle = "Upcoming Health Card Expiries";
+  const tableTitle = t('employeeReportHealthCard.tableTitle');
+
+  const healthCardExpiryColumns: ColumnDefinition<HealthCardExpiryRecord>[] = [
+    { header: t('employeeReportHealthCard.colEmployeeName'), accessorKey: 'employeeName' },
+    { header: t('employeeReportHealthCard.colHealthCardId'), accessorKey: 'healthCardId' },
+    { header: t('employeeReportHealthCard.colExpiryDate'), accessorKey: 'cardExpiry' },
+    { header: t('employeeReportHealthCard.colStatus'), accessorKey: 'status' },
+  ];
 
   return (
-    <PageLayout title="Health Card Expiry Report">
+    <PageLayout title={t('employeeReportHealthCard.pageTitle')}>
       <div className="mb-4">
         <Link href="/reports/employee" className="text-gray-500 hover:text-gray-700 flex items-center gap-2 w-fit">
           <ArrowLeft size={20} />
-          <span>Back to Employee Reports</span>
+          <span>{t('employeeReportHealthCard.backToEmployeeReports')}</span>
         </Link>
       </div>
 
@@ -77,25 +78,25 @@ const HealthCardExpiryReportPage: React.FC = () => {
       <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 mb-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
           <Input
-            label="Expiry After (Start Date)"
+            label={t('employeeReportHealthCard.labelStartDate')}
             type="date"
             name="startDate"
             value={startDate}
             onChange={(e) => setStartDate(e.target.value)}
           />
           <Input
-            label="Expiry Before (End Date)"
+            label={t('employeeReportHealthCard.labelEndDate')}
             type="date"
             name="endDate"
             value={endDate}
             onChange={(e) => setEndDate(e.target.value)}
           />
           <Button onClick={handleFetchReport} disabled={loading}>
-            {loading ? 'Fetching...' : 'Fetch Report'}
+            {loading ? t('employeeReportHealthCard.fetching') : t('employeeReportHealthCard.fetchReport')}
           </Button>
         </div>
         {validationError && (
-          <p className="mt-2 text-sm text-red-600">{validationError}</p>
+          <p className="mt-2 text-sm text-red-600">{t('employeeReportHealthCard.validationError')}</p>
         )}
       </div>
 
@@ -112,13 +113,13 @@ const HealthCardExpiryReportPage: React.FC = () => {
       <ConfirmationModal
         isOpen={!!error}
         onClose={handleCloseErrorModal}
-        title="Error"
-        message={typeof error === 'string' ? error : (error as any)?.message || 'An error occurred fetching the report.'}
+        title={t('employeeReportHealthCard.errorTitle')}
+        message={typeof error === 'string' ? error : (error as any)?.message || t('employeeReportHealthCard.errorMsg')}
         isAlert={true}
-        okText="OK"
+        okText={t('employeeReportHealthCard.ok')}
       />
     </PageLayout>
   );
 };
 
-export default HealthCardExpiryReportPage; 
+export default HealthCardExpiryReportPage;

@@ -5,6 +5,7 @@ import PageLayout from '@/components/PageLayout';
 import Button from '@/components/common/button';
 import Link from 'next/link';
 import { ChevronRight } from 'lucide-react';
+import { useTranslation } from '@/context/TranslationContext';
 
 interface ReportLink {
   name: string;
@@ -18,6 +19,7 @@ interface ReportIndexPageProps {
 }
 
 const ReportIndexPage: React.FC<ReportIndexPageProps> = ({ title, reportLinks }) => {
+  const { t } = useTranslation();
   return (
     <PageLayout title={title}>
       <div className="bg-white rounded-lg shadow-sm p-6 space-y-4">
@@ -29,18 +31,18 @@ const ReportIndexPage: React.FC<ReportIndexPageProps> = ({ title, reportLinks })
             <span className="text-gray-700 font-medium">{link.name}</span>
             <Link href={link.path}>
               <Button variant="secondary" size="sm" className="bg-[#00997B] hover:bg-[#007d63] text-white">
-                View All Reports
+                {t('reportIndex.viewAllReports')}
                 <ChevronRight size={16} className="ml-1" />
               </Button>
             </Link>
           </div>
         ))}
         {reportLinks.length === 0 && (
-            <p className="text-center text-gray-500 py-6">No report types available.</p>
+            <p className="text-center text-gray-500 py-6">{t('reportIndex.noReportTypes')}</p>
         )}
       </div>
     </PageLayout>
   );
 };
 
-export default ReportIndexPage; 
+export default ReportIndexPage;

@@ -12,6 +12,7 @@ import ConfirmationModal from '@/components/common/ConfirmationModal';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { getDefaultDateRange } from '@/utils/dateUtils';
+import { useTranslation } from '@/context/TranslationContext';
 
 // Updated data structure based on API response
 interface IqamaExpiryRecord {
@@ -22,14 +23,6 @@ interface IqamaExpiryRecord {
   // Removed: employeeId, position, daysUntilExpiry
 }
 
-// Updated Column Definitions based on API response
-const iqamaExpiryColumns: ColumnDefinition<IqamaExpiryRecord>[] = [
-    { header: 'Employee Name', accessorKey: 'employeeName' },
-    { header: 'Iqama ID', accessorKey: 'iqamaId' },
-    { header: 'Iqama Expiry', accessorKey: 'iqamaExpiry' },
-    { header: 'Status', accessorKey: 'status' }, // Added status
-];
-
 const IqamaExpiryReportPage: React.FC = () => {
   const dispatch: AppDispatch = useDispatch();
   const { data: iqamaExpiryData, loading, error } = useSelector((state: RootState) => state.employeeReports.iqamaExpiry);
@@ -38,6 +31,7 @@ const IqamaExpiryReportPage: React.FC = () => {
   const [startDate, setStartDate] = useState<string>(defaultStartDate);
   const [endDate, setEndDate] = useState<string>(defaultEndDate);
   const [validationError, setValidationError] = useState<string | null>(null);
+  const { t } = useTranslation();
 
   // Fetch data on first load
   useEffect(() => {
@@ -62,14 +56,21 @@ const IqamaExpiryReportPage: React.FC = () => {
   };
 
   // Placeholder title
-  const tableTitle = "Upcoming Iqama Expiries";
+  const tableTitle = t('employeeReportIqama.tableTitle');
+
+  const iqamaExpiryColumns: ColumnDefinition<IqamaExpiryRecord>[] = [
+    { header: t('employeeReportIqama.colEmployeeName'), accessorKey: 'employeeName' },
+    { header: t('employeeReportIqama.colIqamaId'), accessorKey: 'iqamaId' },
+    { header: t('employeeReportIqama.colIqamaExpiry'), accessorKey: 'iqamaExpiry' },
+    { header: t('employeeReportIqama.colStatus'), accessorKey: 'status' },
+  ];
 
   return (
-    <PageLayout title="Iqama Expiry Report">
+    <PageLayout title={t('employeeReportIqama.pageTitle')}>
       <div className="mb-4">
         <Link href="/reports/employee" className="text-gray-500 hover:text-gray-700 flex items-center gap-2 w-fit">
           <ArrowLeft size={20} />
-          <span>Back to Employee Reports</span>
+          <span>{t('employeeReportIqama.backToEmployeeReports')}</span>
         </Link>
       </div>
 
@@ -77,48 +78,45 @@ const IqamaExpiryReportPage: React.FC = () => {
       <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 mb-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
           <Input
-            label="Expiry After (Start Date)"
+            label={t('employeeReportIqama.labelStartDate')}
             type="date"
             name="startDate"
             value={startDate}
             onChange={(e) => setStartDate(e.target.value)}
           />
           <Input
-            label="Expiry Before (End Date)"
+            label={t('employeeReportIqama.labelEndDate')}
             type="date"
             name="endDate"
             value={endDate}
             onChange={(e) => setEndDate(e.target.value)}
           />
           <Button onClick={handleFetchReport} disabled={loading}>
-            {loading ? 'Fetching...' : 'Fetch Report'}
+            {loading ? t('employeeReportIqama.fetching') : t('employeeReportIqama.fetchReport')}
           </Button>
         </div>
         {validationError && (
-          <p className="mt-2 text-sm text-red-600">{validationError}</p>
+          <p className="mt-2 text-sm text-red-600">{t('employeeReportIqama.validationError')}</p>
         )}
       </div>
 
-      {/* Report Table Section - Access nested array */}
       <ReportTypeTable<IqamaExpiryRecord>
         title={tableTitle}
-        // Access the iqamaExpiryDetails array within the data object
         data={iqamaExpiryData?.iqamaExpiryDetails || []}
         columns={iqamaExpiryColumns}
         isLoading={loading}
       />
 
-      {/* Error Modal */}
       <ConfirmationModal
         isOpen={!!error}
         onClose={handleCloseErrorModal}
-        title="Error"
-        message={typeof error === 'string' ? error : (error as any)?.message || 'An error occurred fetching the report.'}
+        title={t('employeeReportIqama.errorTitle')}
+        message={typeof error === 'string' ? error : (error as any)?.message || t('employeeReportIqama.errorMsg')}
         isAlert={true}
-        okText="OK"
+        okText={t('employeeReportIqama.ok')}
       />
     </PageLayout>
   );
 };
 
-export default IqamaExpiryReportPage; 
+export default IqamaExpiryReportPage;

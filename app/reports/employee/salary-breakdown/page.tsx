@@ -14,6 +14,7 @@ import { ArrowLeft } from 'lucide-react';
 import { getDefaultDateRange } from '@/utils/dateUtils';
 import { useCurrency } from '@/context/CurrencyContext';
 import { formatCurrencyValue } from '@/utils/currencyUtils';
+import { useTranslation } from '@/context/TranslationContext';
 
 // Updated data structure based on API response
 interface SalaryBreakdownRecord {
@@ -31,6 +32,7 @@ const SalaryBreakdownReportPage: React.FC = () => {
   const dispatch: AppDispatch = useDispatch();
   const { data: salaryBreakdownData, loading, error } = useSelector((state: RootState) => state.employeeReports.salaryBreakdown);
   const { currency } = useCurrency();
+  const { t } = useTranslation();
   const [formattedPayrolls, setFormattedPayrolls] = useState<any>({});
 
   const { startDate: defaultStartDate, endDate: defaultEndDate } = getDefaultDateRange();
@@ -80,54 +82,53 @@ const SalaryBreakdownReportPage: React.FC = () => {
     dispatch(clearEmployeeReportError('salaryBreakdown'));
   };
 
-  const tableTitle = "Salary Breakdown Report Results";
+  const tableTitle = t('employeeReportSalary.tableTitle');
 
-  // Update the column definition to use formatted values
   const salaryBreakdownColumns: ColumnDefinition<SalaryBreakdownRecord>[] = [
-    { header: 'Employee Name', accessorKey: 'employeeName' },
-    { header: 'Position', accessorKey: 'position' },
-    { header: 'Iqama ID', accessorKey: 'iqamaId' },
-    { header: 'Iqama Expiry', accessorKey: 'iqamaExpiry' },
-    { header: 'Health Card ID', accessorKey: 'healthCardId' },
-    { header: 'Health Card Expiry', accessorKey: 'healthCardExpiry' },
+    { header: t('employeeReportSalary.colEmployeeName'), accessorKey: 'employeeName' },
+    { header: t('employeeReportSalary.colPosition'), accessorKey: 'position' },
+    { header: t('employeeReportSalary.colIqamaId'), accessorKey: 'iqamaId' },
+    { header: t('employeeReportSalary.colIqamaExpiry'), accessorKey: 'iqamaExpiry' },
+    { header: t('employeeReportSalary.colHealthCardId'), accessorKey: 'healthCardId' },
+    { header: t('employeeReportSalary.colHealthCardExpiry'), accessorKey: 'healthCardExpiry' },
     { 
-      header: 'Total Payroll', 
+      header: t('employeeReportSalary.colTotalPayroll'), 
       accessorKey: 'totalPayroll',
-      cell: (value, record) => formattedPayrolls[record.employeeName] || 'N/A'
+      cell: (value, record) => formattedPayrolls[record.employeeName] || t('employeeReportSalary.na')
     },
   ];
 
   return (
-    <PageLayout title="Salary Breakdown Report">
+    <PageLayout title={t('employeeReportSalary.pageTitle')}>
       <div className="mb-4">
         <Link href="/reports/employee" className="text-gray-500 hover:text-gray-700 flex items-center gap-2 w-fit">
           <ArrowLeft size={20} />
-          <span>Back to Employee Reports</span>
+          <span>{t('employeeReportSalary.backToEmployeeReports')}</span>
         </Link>
       </div>
 
       <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 mb-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
           <Input
-            label="Start Date"
+            label={t('employeeReportSalary.labelStartDate')}
             type="date"
             name="startDate"
             value={startDate}
             onChange={(e) => setStartDate(e.target.value)}
           />
           <Input
-            label="End Date"
+            label={t('employeeReportSalary.labelEndDate')}
             type="date"
             name="endDate"
             value={endDate}
             onChange={(e) => setEndDate(e.target.value)}
           />
           <Button onClick={handleFetchReport} disabled={loading}>
-            {loading ? 'Generating...' : 'Generate Report'}
+            {loading ? t('employeeReportSalary.generating') : t('employeeReportSalary.generateReport')}
           </Button>
         </div>
         {validationError && (
-          <p className="mt-2 text-sm text-red-600">{validationError}</p>
+          <p className="mt-2 text-sm text-red-600">{t('employeeReportSalary.validationError')}</p>
         )}
       </div>
 
@@ -141,13 +142,13 @@ const SalaryBreakdownReportPage: React.FC = () => {
       <ConfirmationModal
         isOpen={!!error}
         onClose={handleCloseErrorModal}
-        title="Error"
-        message={typeof error === 'string' ? error : (error as any)?.message || 'An error occurred fetching the report.'}
+        title={t('employeeReportSalary.errorTitle')}
+        message={typeof error === 'string' ? error : (error as any)?.message || t('employeeReportSalary.errorMsg')}
         isAlert={true}
-        okText="OK"
+        okText={t('employeeReportSalary.ok')}
       />
     </PageLayout>
   );
 };
 
-export default SalaryBreakdownReportPage; 
+export default SalaryBreakdownReportPage;

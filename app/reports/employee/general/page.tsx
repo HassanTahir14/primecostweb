@@ -14,6 +14,7 @@ import { ArrowLeft } from 'lucide-react';
 import { getDefaultDateRange } from '@/utils/dateUtils';
 import { useCurrency } from '@/context/CurrencyContext';
 import { formatCurrencyValue } from '@/utils/currencyUtils';
+import { useTranslation } from '@/context/TranslationContext';
 
 // Updated data structure based on API response
 interface GeneralEmployeeRecord {
@@ -34,6 +35,7 @@ const GeneralEmployeeReportPage: React.FC = () => {
   const dispatch: AppDispatch = useDispatch();
   const { data: generalReportData, loading, error } = useSelector((state: RootState) => state.employeeReports.general);
   const { currency } = useCurrency();
+  const { t } = useTranslation();
   const [formattedSalaries, setFormattedSalaries] = useState<any>({});
 
   const { startDate: defaultStartDate, endDate: defaultEndDate } = getDefaultDateRange();
@@ -43,25 +45,23 @@ const GeneralEmployeeReportPage: React.FC = () => {
 
   // Column definitions moved inside component to access formattedSalaries
   const generalColumns: ColumnDefinition<GeneralEmployeeRecord>[] = [
-    { header: 'Name', accessorKey: 'employeeName' },
-    { header: 'DOB', accessorKey: 'dob' },
-    { header: 'Iqama ID', accessorKey: 'iqamaId' },
-    { header: 'Iqama Expiry', accessorKey: 'iqamaExpiry' },
-    { header: 'Health Card #', accessorKey: 'healthCardNumber' },
-    { header: 'Health Card Expiry', accessorKey: 'healthCardExpiry' },
+    { header: t('employeeReportGeneral.colName'), accessorKey: 'employeeName' },
+    { header: t('employeeReportGeneral.colDob'), accessorKey: 'dob' },
+    { header: t('employeeReportGeneral.colIqamaId'), accessorKey: 'iqamaId' },
+    { header: t('employeeReportGeneral.colIqamaExpiry'), accessorKey: 'iqamaExpiry' },
+    { header: t('employeeReportGeneral.colHealthCardNumber'), accessorKey: 'healthCardNumber' },
+    { header: t('employeeReportGeneral.colHealthCardExpiry'), accessorKey: 'healthCardExpiry' },
     { 
-      header: 'Basic Salary', 
+      header: t('employeeReportGeneral.colBasicSalary'), 
       accessorKey: 'basicSalary',
-      cell: (value, record) => formattedSalaries[record.employeeName]?.basic || 'N/A'
+      cell: (value, record) => formattedSalaries[record.employeeName]?.basic || t('employeeReportGeneral.na')
     },
     { 
-      header: 'Other Allowances', 
+      header: t('employeeReportGeneral.colOtherAllowances'), 
       accessorKey: 'otherAllowances',
-      cell: (value, record) => formattedSalaries[record.employeeName]?.allowances || 'N/A'
+      cell: (value, record) => formattedSalaries[record.employeeName]?.allowances || t('employeeReportGeneral.na')
     },
-    { header: 'Items Prepared', accessorKey: 'totalItemsPrepared' },
-    // Removed: Employee ID, Position, Department, Nationality, Mobile, Hire Date, Status
-    // Note: Images are not typically displayed directly in a table column
+    { header: t('employeeReportGeneral.colItemsPrepared'), accessorKey: 'totalItemsPrepared' },
   ];
 
   // Fetch data on first load
@@ -108,14 +108,14 @@ const GeneralEmployeeReportPage: React.FC = () => {
   };
 
   // Placeholder title
-  const tableTitle = "General Employee Report Results";
+  const tableTitle = t('employeeReportGeneral.tableTitle');
 
   return (
-    <PageLayout title="General Employee Report">
+    <PageLayout title={t('employeeReportGeneral.pageTitle')}>
       <div className="mb-4">
         <Link href="/reports/employee" className="text-gray-500 hover:text-gray-700 flex items-center gap-2 w-fit">
           <ArrowLeft size={20} />
-          <span>Back to Employee Reports</span>
+          <span>{t('employeeReportGeneral.backToEmployeeReports')}</span>
         </Link>
       </div>
 
@@ -123,32 +123,31 @@ const GeneralEmployeeReportPage: React.FC = () => {
       <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 mb-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
           <Input
-            label="Start Date (e.g., Hire Date)"
+            label={t('employeeReportGeneral.labelStartDate')}
             type="date"
             name="startDate"
             value={startDate}
             onChange={(e) => setStartDate(e.target.value)}
           />
           <Input
-            label="End Date (e.g., Hire Date)"
+            label={t('employeeReportGeneral.labelEndDate')}
             type="date"
             name="endDate"
             value={endDate}
             onChange={(e) => setEndDate(e.target.value)}
           />
           <Button onClick={handleFetchReport} disabled={loading}>
-            {loading ? 'Generating...' : 'Generate Report'}
+            {loading ? t('employeeReportGeneral.generating') : t('employeeReportGeneral.generateReport')}
           </Button>
         </div>
         {validationError && (
-          <p className="mt-2 text-sm text-red-600">{validationError}</p>
+          <p className="mt-2 text-sm text-red-600">{t('employeeReportGeneral.validationError')}</p>
         )}
       </div>
 
-      {/* Report Table Section - Access nested array */}
+      {/* Report Table Section */}
       <ReportTypeTable<GeneralEmployeeRecord>
         title={tableTitle}
-        // Access the employees array within the data object
         data={generalReportData?.employees || []}
         columns={generalColumns}
         isLoading={loading}
@@ -158,13 +157,13 @@ const GeneralEmployeeReportPage: React.FC = () => {
       <ConfirmationModal
         isOpen={!!error}
         onClose={handleCloseErrorModal}
-        title="Error"
-        message={typeof error === 'string' ? error : (error as any)?.message || 'An error occurred fetching the report.'}
+        title={t('employeeReportGeneral.errorTitle')}
+        message={typeof error === 'string' ? error : (error as any)?.message || t('employeeReportGeneral.errorMsg')}
         isAlert={true}
-        okText="OK"
+        okText={t('employeeReportGeneral.ok')}
       />
     </PageLayout>
   );
 };
 
-export default GeneralEmployeeReportPage; 
+export default GeneralEmployeeReportPage;
