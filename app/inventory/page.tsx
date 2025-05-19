@@ -1,22 +1,24 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslation } from '@/context/TranslationContext';
 import PageLayout from '@/components/PageLayout';
 import InventoryByItems from '@/components/inventory/InventoryByItems';
 import InventoryByRecipe from '@/components/inventory/InventoryByRecipe';
 import InventoryBySubRecipe from '@/components/inventory/InventoryBySubRecipe';
 
 export default function Inventory() {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState('items');
 
   const tabs = [
-    { id: 'items', name: 'View Inventory by Items' },
-    { id: 'recipe', name: 'View Inventory by Recipe' },
-    { id: 'subrecipe', name: 'View Inventory by Sub Recipe' }
+    { id: 'items', name: t('inventory.tabs.items') },
+    { id: 'recipe', name: t('inventory.tabs.recipe') },
+    { id: 'subrecipe', name: t('inventory.tabs.subrecipe') }
   ];
 
   return (
-    <PageLayout title="Inventory">
+    <PageLayout title={t('inventory.pageTitle')}>
       <div className="mb-6">
         <div className="flex space-x-2">
           {tabs.map(tab => (
@@ -42,4 +44,4 @@ export default function Inventory() {
       </div>
     </PageLayout>
   );
-} 
+}

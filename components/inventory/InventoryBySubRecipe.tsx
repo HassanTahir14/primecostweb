@@ -7,6 +7,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { fetchAllEmployees } from '@/store/employeeSlice';
 import type { AppDispatch } from '@/store/store';
 import { useUnits } from '@/hooks/useUnits';
+import { useTranslation } from '@/context/TranslationContext';
 
 interface InventoryLocation {
   inventoryId: number;
@@ -18,6 +19,7 @@ interface InventoryLocation {
 }
 
 export default function InventoryBySubRecipe() {
+  const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
   const [subRecipes, setSubRecipes] = useState([]);
   const [employees, setEmployees] = useState<any[]>([]);
@@ -93,13 +95,13 @@ export default function InventoryBySubRecipe() {
         <table className="w-full">
           <thead className="bg-[#00997B] text-white text-sm">
             <tr>
-              <th className="px-6 py-4 text-left">Prepared Date</th>
-              <th className="px-6 py-4 text-left">Recipe Name & Description</th>
-              <th className="px-6 py-4 text-left">Prepared By</th>
-              <th className="px-6 py-4 text-left">Storage Location, Branch</th>
-              <th className="px-6 py-4 text-left">In Stock</th>
-              <th className="px-6 py-4 text-left">Expiration Date</th>
-              <th className="px-6 py-4 text-left">Batch Number</th>
+              <th className="px-6 py-4 text-left">{t('inventory.subrecipe.header.preparedDate')}</th>
+              <th className="px-6 py-4 text-left">{t('inventory.subrecipe.header.name')}</th>
+              <th className="px-6 py-4 text-left">{t('inventory.subrecipe.header.preparedBy')}</th>
+              <th className="px-6 py-4 text-left">{t('inventory.subrecipe.header.storage')}</th>
+              <th className="px-6 py-4 text-left">{t('inventory.subrecipe.header.inStock')}</th>
+              <th className="px-6 py-4 text-left">{t('inventory.subrecipe.header.expirationDate')}</th>
+              <th className="px-6 py-4 text-left">{t('inventory.subrecipe.header.batchNumber')}</th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">

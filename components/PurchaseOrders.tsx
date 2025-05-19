@@ -27,6 +27,7 @@ import { useUnits } from '@/hooks/useUnits';
 import { fetchAllCategories } from '@/store/itemCategorySlice';
 import { useCurrency } from '@/context/CurrencyContext';
 import { formatCurrencyValue, getCurrencyFromStorage } from '@/utils/currencyUtils';
+import { useTranslation } from '@/context/TranslationContext';
 
 // Extend the PurchaseOrder type to include createdAt
 interface PurchaseOrder extends PurchaseOrderType {
@@ -115,6 +116,7 @@ function formatOrderStatus(status: string) {
 }
 
 export default function PurchaseOrders({ onClose }: PurchaseOrdersProps) {
+  const { t } = useTranslation();
   const dispatch = useDispatch<AppDispatch>();
   const { 
     orders: purchaseOrders, 
@@ -216,13 +218,13 @@ export default function PurchaseOrders({ onClose }: PurchaseOrdersProps) {
     }, [] as Supplier[]);
     
     return [
-      { label: "Select Supplier", value: "", disabled: true },
+      { label: t('purchaseOrders.selectSupplier'), value: '', disabled: true },
       ...uniqueSuppliers.map((supplier: Supplier) => ({
         label: supplier.name,
         value: String(supplier.supplierId)
       }))
     ];
-  }, [suppliers]);
+  }, [suppliers, t]);
 
   // Update unit options based on selected item and unit type
   const unitOptions = useMemo(() => {
@@ -643,7 +645,7 @@ export default function PurchaseOrders({ onClose }: PurchaseOrdersProps) {
           <button onClick={onClose} className="text-gray-600 hover:text-gray-800" disabled={poLoading}>
             <ArrowLeft className="w-5 h-5" />
           </button>
-          <h1 className="text-xl sm:text-2xl font-bold">Purchase Orders</h1>
+          <h1 className="text-xl sm:text-2xl font-bold">{t('purchaseOrders.title')}</h1>
         </div>
 
         <div className="flex items-center gap-2">
@@ -656,13 +658,13 @@ export default function PurchaseOrders({ onClose }: PurchaseOrdersProps) {
             className="rounded-full bg-[#05A49D] text-white text-xs sm:text-sm px-3 py-1.5 sm:px-4 sm:py-2"
             disabled={poLoading}
           >
-            Create Order
+            {t('purchaseOrders.createOrder')}
           </Button>
           <Button
             onClick={() => setIsDateAsc((prev) => !prev)}
             className="rounded-full bg-[#28addb] text-white text-xs sm:text-sm px-3 py-1.5 sm:px-4 sm:py-2"
           >
-            Sort by Date: {isDateAsc ? 'Oldest First' : 'Newest First'}
+            {t('purchaseOrders.sortByDate', { order: isDateAsc ? t('common.oldestFirst') : t('common.newestFirst') })}
           </Button>
         </div>
       </div>
@@ -670,20 +672,20 @@ export default function PurchaseOrders({ onClose }: PurchaseOrdersProps) {
       <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6 flex-1">
         <div className="overflow-x-auto">
           {poLoading ? (
-            <div className="text-center py-10 text-gray-500">Loading purchase orders...</div>
+            <div className="text-center py-10 text-gray-500">{t('purchaseOrders.loading')}</div>
           ) : (
             <table className="w-full text-left">
               <thead>
                 <tr className="border-b border-gray-200">
-                  <th className="py-4 px-6 font-medium text-sm text-gray-500">PO ID</th>
-                  <th className="py-4 px-6 font-medium text-sm text-gray-500">Item Name</th>
-                  <th className="py-4 px-6 font-medium text-sm text-gray-500">Quantity</th>
-                  <th className="py-4 px-6 font-medium text-sm text-gray-500">Unit</th>
-                  <th className="py-4 px-6 font-medium text-sm text-gray-500">Order Date</th>
-                  <th className="py-4 px-6 font-medium text-sm text-gray-500">Cost with VAT</th>
-                  <th className="py-4 px-6 font-medium text-sm text-gray-500">Token Status</th>
-                  <th className="py-4 px-6 font-medium text-sm text-gray-500">Order Status</th>
-                  <th className="py-4 px-6 font-medium text-sm text-gray-500 text-center">Action</th>
+                  <th className="py-4 px-6 font-medium text-sm text-gray-500">{t('purchaseOrders.poId')}</th>
+                  <th className="py-4 px-6 font-medium text-sm text-gray-500">{t('purchaseOrders.itemName')}</th>
+                  <th className="py-4 px-6 font-medium text-sm text-gray-500">{t('purchaseOrders.quantity')}</th>
+                  <th className="py-4 px-6 font-medium text-sm text-gray-500">{t('purchaseOrders.unit')}</th>
+                  <th className="py-4 px-6 font-medium text-sm text-gray-500">{t('purchaseOrders.orderDate')}</th>
+                  <th className="py-4 px-6 font-medium text-sm text-gray-500">{t('purchaseOrders.costWithVat')}</th>
+                  <th className="py-4 px-6 font-medium text-sm text-gray-500">{t('purchaseOrders.tokenStatus')}</th>
+                  <th className="py-4 px-6 font-medium text-sm text-gray-500">{t('purchaseOrders.orderStatus')}</th>
+                  <th className="py-4 px-6 font-medium text-sm text-gray-500 text-center">{t('common.action')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -708,7 +710,7 @@ export default function PurchaseOrders({ onClose }: PurchaseOrdersProps) {
                               {order.tokenStatus.charAt(0).toUpperCase() + order.tokenStatus.slice(1).toLowerCase()}
                             </span>
                             {order.tokenStatus === 'PENDING' && (
-                              <div className="text-red-600 font-bold">Approve the Token</div>
+                              <div className="text-red-600 font-bold">{t('purchaseOrders.approveTheToken')}</div>
                             )}
                           </td>
                           <td className="py-4 px-6 text-sm">{formatOrderStatus(order.purchaseOrderStatus)}</td>
@@ -721,7 +723,7 @@ export default function PurchaseOrders({ onClose }: PurchaseOrdersProps) {
                                 onClick={() => handleEditClick(order)}
                                 disabled={poLoading}
                               >
-                                Update
+                                {t('common.update')}
                               </Button>
                               <Button 
                                 variant="default" 
@@ -730,7 +732,7 @@ export default function PurchaseOrders({ onClose }: PurchaseOrdersProps) {
                                 onClick={() => handleReceiveClick(order)}
                                 disabled={poLoading || order.purchaseOrderStatus === 'RECEIVED' || order.purchaseOrderStatus === 'CANCELLED'}
                               >
-                                Order Received?
+                                {t('purchaseOrders.orderReceived')}
                               </Button>
                             </div>
                           </td>
@@ -740,7 +742,7 @@ export default function PurchaseOrders({ onClose }: PurchaseOrdersProps) {
                 ) : (
                   <tr>
                     <td colSpan={9} className="text-center py-10 text-gray-500">
-                      {poError ? 'Error loading data.' : 'No purchase orders found.'}
+                      {poError ? t('common.errorLoadingData') : t('common.noDataFound')}
                     </td>
                   </tr>
                 )}
@@ -753,13 +755,13 @@ export default function PurchaseOrders({ onClose }: PurchaseOrdersProps) {
       <Modal 
         isOpen={isModalOpen}
         onClose={() => !poLoading && resetFormAndCloseModal()}
-        title={editingOrder ? `Edit Order #${editingOrder.id}` : 'Create New Order'}
+        title={editingOrder ? `${t('purchaseOrders.editOrder')} #${editingOrder.id}` : t('purchaseOrders.createNewOrder')}
         size="lg"
       >
         <form onSubmit={handleFormSubmit} className="w-full">
           <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
             <div>
-                <label className="block text-gray-700 mb-2 font-medium">Item Name</label>
+                <label className="block text-gray-700 mb-2 font-medium">{t('purchaseOrders.itemName')}</label>
                 <Select
                     name="itemId"
                     value={formData.itemId}
@@ -772,7 +774,7 @@ export default function PurchaseOrders({ onClose }: PurchaseOrdersProps) {
             </div>
 
             <div>
-                <label className="block text-gray-700 mb-2 font-medium">Category</label>
+                <label className="block text-gray-700 mb-2 font-medium">{t('purchaseOrders.category')}</label>
                 <Input
                     type="text"
                     name="categoryId"
@@ -785,7 +787,7 @@ export default function PurchaseOrders({ onClose }: PurchaseOrdersProps) {
             </div>
             
             <div>
-                <label className="block text-gray-700 mb-2 font-medium">Supplier Name</label>
+                <label className="block text-gray-700 mb-2 font-medium">{t('purchaseOrders.supplierName')}</label>
                 <Select
                     name="supplierId"
                     value={formData.supplierId}
@@ -799,14 +801,14 @@ export default function PurchaseOrders({ onClose }: PurchaseOrdersProps) {
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                    <label className="block text-gray-700 mb-2 font-medium">Unit Type</label>
+                    <label className="block text-gray-700 mb-2 font-medium">{t('purchaseOrders.unitType')}</label>
                     <Select
                         name="unitType"
                         value={formData.unitType}
                         onChange={handleInputChange}
                         options={[
-                          { label: "Primary Unit", value: "primary" },
-                          { label: "Secondary Unit", value: "secondary" }
+                          { label: t('common.primaryUnit'), value: "primary" },
+                          { label: t('common.secondaryUnit'), value: "secondary" }
                         ]}
                         className={`w-full bg-white ${formErrors.unitType ? 'border-red-500' : ''}`}
                         disabled={poLoading}
@@ -814,7 +816,7 @@ export default function PurchaseOrders({ onClose }: PurchaseOrdersProps) {
                     {formErrors.unitType && <p className="mt-1 text-red-500 text-sm">{formErrors.unitType}</p>}
                 </div>
                 <div>
-                    <label className="block text-gray-700 mb-2 font-medium">Unit</label>
+                    <label className="block text-gray-700 mb-2 font-medium">{t('purchaseOrders.unit')}</label>
                     <Select
                         name="unitId"
                         value={formData.unitId}
@@ -829,20 +831,20 @@ export default function PurchaseOrders({ onClose }: PurchaseOrdersProps) {
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                  <div>
-                    <label className="block text-gray-700 mb-2 font-medium">Quantity</label>
+                    <label className="block text-gray-700 mb-2 font-medium">{t('purchaseOrders.quantity')}</label>
                     <Input
                         type="number"
                         name="quantity"
                         value={formData.quantity}
                         onChange={handleInputChange}
-                        placeholder="Enter quantity"
+                        placeholder={t('purchaseOrders.enterQuantity')}
                         className={`w-full bg-white ${formErrors.quantity ? 'border-red-500' : ''}`}
                         disabled={poLoading}
                     />
                     {formErrors.quantity && <p className="mt-1 text-red-500 text-sm">{formErrors.quantity}</p>}
                 </div>
                 <div>
-                    <label className="block text-gray-700 mb-2 font-medium">Purchase Cost</label>
+                    <label className="block text-gray-700 mb-2 font-medium">{t('purchaseOrders.purchaseCost')}</label>
                     <div className="relative">
                         <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
                             {getCurrencyFromStorage()}
@@ -858,7 +860,7 @@ export default function PurchaseOrders({ onClose }: PurchaseOrdersProps) {
                     </div>
                 </div>
                 <div>
-                    <label className="block text-gray-700 mb-2 font-medium">VAT Amount</label>
+                    <label className="block text-gray-700 mb-2 font-medium">{t('purchaseOrders.vatAmount')}</label>
                     <div className="relative">
                         <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
                             {getCurrencyFromStorage()}
@@ -884,14 +886,14 @@ export default function PurchaseOrders({ onClose }: PurchaseOrdersProps) {
               className="border-gray-300 bg-white text-gray-700 hover:bg-gray-50 px-4 sm:px-6 w-full sm:w-auto"
               disabled={poLoading}
             >
-              Discard
+              {t('common.discard')}
             </Button>
             <Button
               type="submit"
               className="bg-[#05A49D] text-white hover:bg-[#048c86] px-4 sm:px-6 w-full sm:w-auto"
               disabled={poLoading}
             >
-              {poLoading ? 'Processing...' : (editingOrder ? 'Update Order' : 'Create Order')}
+              {poLoading ? t('common.processing') : (editingOrder ? t('common.updateOrder') : t('common.createOrder'))}
             </Button>
           </div>
         </form>
@@ -903,24 +905,24 @@ export default function PurchaseOrders({ onClose }: PurchaseOrdersProps) {
            isOpen={isReceiveModalOpen}
            onClose={() => setIsReceiveModalOpen(false)}
            onSubmit={handleReceiveSubmit}
-           orderData={selectedOrderForReceive} 
-           branches={branches} 
-           storageLocations={storageLocations} 
-           loading={poLoading} // Use main loading state for now
+           orderData={selectedOrderForReceive}
+           branches={branches}
+           storageLocations={storageLocations}
+           loading={poLoading}
          />
        )}
 
        <ConfirmationModal
             isOpen={feedbackModalOpen}
             onClose={handleFeedbackModalClose}
-            title={isConfirmDeleteModal ? 'Confirm Deletion' : (isSuccess ? 'Success' : 'Error')}
+            title={isConfirmDeleteModal ? t('purchaseOrders.confirmDeleteTitle') : (isSuccess ? t('common.success') : t('common.error'))}
             message={feedbackMessage}
             isAlert={isFeedbackAlert}
-            confirmText="Delete"
+            confirmText={t('purchaseOrders.delete')}
             onConfirm={isConfirmDeleteModal ? confirmDelete : undefined}
-            okText="OK"
+            okText={t('common.ok')}
        />
 
     </div>
   );
-} 
+}

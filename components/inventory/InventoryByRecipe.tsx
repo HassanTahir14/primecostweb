@@ -7,6 +7,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { fetchAllEmployees } from '@/store/employeeSlice';
 import type { AppDispatch } from '@/store/store';
 import { useUnits } from '@/hooks/useUnits';
+import { useTranslation } from '@/context/TranslationContext';
 
 interface InventoryLocation {
   inventoryId: number;
@@ -18,6 +19,7 @@ interface InventoryLocation {
 }
 
 export default function InventoryByRecipe() {
+  const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
   const [recipes, setRecipes] = useState([]);
   const [employees, setEmployees] = useState<any[]>([]);
@@ -96,15 +98,13 @@ export default function InventoryByRecipe() {
         <table className="w-full">
           <thead className="bg-[#00997B] text-white text-sm">
             <tr>
-              <th className="px-6 py-4 text-left">Prepared Date</th>
-              <th className="px-6 py-4 text-left">Recipe Name & Description</th>
-              <th className="px-6 py-4 text-left">Prepared By</th>
-              <th className="px-6 py-4 text-left">Storage Location, Branch</th>
-              <th className="px-6 py-4 text-left">In Stock</th>
-             
-              <th className="px-6 py-4 text-left">Expiration Date</th>
-              {/* <th className="px-6 py-4 text-left">Status</th> */}
-              <th className="px-6 py-4 text-left">Batch Number</th>
+              <th className="px-6 py-4 text-left">{t('inventory.recipe.header.preparedDate')}</th>
+              <th className="px-6 py-4 text-left">{t('inventory.recipe.header.name')}</th>
+              <th className="px-6 py-4 text-left">{t('inventory.recipe.header.preparedBy')}</th>
+              <th className="px-6 py-4 text-left">{t('inventory.recipe.header.storage')}</th>
+              <th className="px-6 py-4 text-left">{t('inventory.recipe.header.inStock')}</th>
+              <th className="px-6 py-4 text-left">{t('inventory.recipe.header.expirationDate')}</th>
+              <th className="px-6 py-4 text-left">{t('inventory.recipe.header.batchNumber')}</th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
@@ -115,9 +115,7 @@ export default function InventoryByRecipe() {
                 <td className="px-6 py-4">{getEmployeeName(recipe.preparedBy)}</td>
                 <td className="px-6 py-4">{recipe.storageAndBranch}</td>
                 <td className="px-6 py-4">{getFormattedQuantity(recipe.uom, recipe.quantity)}</td>
-               
                 <td className="px-6 py-4">{recipe.expirationDate}</td>
-                {/* <td className="px-6 py-4">{recipe.status}</td> */}
                 <td className="px-6 py-4">{recipe.batchNumber}</td>
               </tr>
             ))}

@@ -3,8 +3,10 @@
 import api from '@/store/api';
 import { useEffect, useState } from 'react';
 import { useUnits } from '@/hooks/useUnits';
+import { useTranslation } from '@/context/TranslationContext';
 
 export default function InventoryByItems() {
+  const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
   const [groupedItems, setGroupedItems] = useState<any[]>([]);
   const { units } = useUnits();
@@ -63,11 +65,11 @@ export default function InventoryByItems() {
         <table className="w-full">
           <thead className="bg-[#00997B] text-white text-sm">
             <tr>
-              <th className="px-6 py-4 text-left">Item Code</th>
-              <th className="px-6 py-4 text-left">Item Name & Description</th>
-              <th className="px-6 py-4 text-left">Branch</th>
-              <th className="px-6 py-4 text-left">In Stock With Storage Location</th>
-              <th className="px-6 py-4 text-left">UOM</th>
+              <th className="px-6 py-4 text-left">{t('inventory.items.header.code')}</th>
+              <th className="px-6 py-4 text-left">{t('inventory.items.header.name')}</th>
+              <th className="px-6 py-4 text-left">{t('inventory.items.header.branch')}</th>
+              <th className="px-6 py-4 text-left">{t('inventory.items.header.storage')}</th>
+              <th className="px-6 py-4 text-left">{t('inventory.items.header.uom')}</th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
@@ -92,7 +94,7 @@ export default function InventoryByItems() {
             ) : (
               <tr>
                 <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
-                  No inventory items found.
+                  {t('inventory.items.noItems')}
                 </td>
               </tr>
             )}

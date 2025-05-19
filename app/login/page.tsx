@@ -11,10 +11,12 @@ import ConfirmationModal from '@/components/common/ConfirmationModal';
 import { toast } from 'react-hot-toast';
 import Loader from '@/components/common/Loader';
 import { useAuth } from '@/hooks/useAuth';
+import { useTranslation } from '@/context/TranslationContext';
 
 type LoginView = 'login' | 'forgotPasswordEmail' | 'forgotPasswordReset';
 
 export default function LoginPage() {
+  const { t, isRTL } = useTranslation();
   useAuth({ redirectIfFound: true });
 
   const [view, setView] = useState<LoginView>('login');
@@ -53,8 +55,8 @@ export default function LoginPage() {
       console.error("Login failed:", err);
       setModalState({
         isOpen: true,
-        title: 'Login Failed',
-        message: err || 'Login failed. Please check your credentials or try again later.',
+        title: t('login.failedTitle'),
+        message: err || t('login.failedMessage'),
         isAlert: true,
       });
     }
@@ -67,8 +69,8 @@ export default function LoginPage() {
       console.log("Forgot password request result:", result);
       setModalState({
         isOpen: true,
-        title: 'Reset Code Sent',
-        message: result?.message || 'A reset code has been sent to your email (if the email exists in our system). Please check your inbox.',
+        title: t('login.resetCodeSentTitle'),
+        message: result?.message || t('login.resetCodeSentMessage'),
         isAlert: true,
         onConfirm: () => {
           setModalState({ isOpen: false, title: '', message: '', isAlert: false });
@@ -79,8 +81,8 @@ export default function LoginPage() {
       console.error("Forgot password failed:", err);
       setModalState({
         isOpen: true,
-        title: 'Request Failed',
-        message: err || 'Failed to send reset code. Please check the email and try again.',
+        title: t('login.requestFailedTitle'),
+        message: err || t('login.requestFailedMessage'),
         isAlert: true,
       });
     }
@@ -93,8 +95,8 @@ export default function LoginPage() {
       console.log("Reset password result:", result);
       setModalState({
         isOpen: true,
-        title: 'Password Reset Successful',
-        message: result?.message || 'Your password has been successfully reset. You can now log in with your new password.',
+        title: t('login.passwordResetSuccessfulTitle'),
+        message: result?.message || t('login.passwordResetSuccessfulMessage'),
         isAlert: true,
         onConfirm: () => {
           setModalState({ isOpen: false, title: '', message: '', isAlert: false });
@@ -109,8 +111,8 @@ export default function LoginPage() {
       console.error("Reset password failed:", err);
       setModalState({
         isOpen: true,
-        title: 'Reset Failed',
-        message: err || 'Failed to reset password. Please check the code and try again.',
+        title: t('login.resetFailedTitle'),
+        message: err || t('login.resetFailedMessage'),
         isAlert: true,
       });
     }
@@ -122,7 +124,7 @@ export default function LoginPage() {
     <form onSubmit={handleLoginSubmit} className="space-y-4 sm:space-y-6">
       <div>
         <label htmlFor="email" className="block text-gray-700 text-sm mb-1.5 sm:mb-2">
-          Email
+          {t('login.emailLabel')}
         </label>
         <input
           type="email"
@@ -130,7 +132,7 @@ export default function LoginPage() {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#339A89] focus:border-transparent text-sm sm:text-base disabled:opacity-50"
-          placeholder="Enter email"
+          placeholder={t('login.emailPlaceholder')}
           required
           disabled={isLoading}
         />
@@ -138,7 +140,7 @@ export default function LoginPage() {
 
       <div>
         <label htmlFor="password" className="block text-gray-700 text-sm mb-1.5 sm:mb-2">
-          Password
+          {t('login.passwordLabel')}
         </label>
         <div className="relative">
           <input
@@ -147,14 +149,14 @@ export default function LoginPage() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#339A89] focus:border-transparent text-sm sm:text-base disabled:opacity-50"
-            placeholder="Enter password"
+            placeholder={t('login.passwordPlaceholder')}
             required
             disabled={isLoading}
           />
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors disabled:opacity-50"
+            className={`absolute ${isRTL ? 'left-3' : 'right-3'} top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors disabled:opacity-50`}
             disabled={isLoading}
           >
             {showPassword ? (
@@ -171,7 +173,7 @@ export default function LoginPage() {
         className="w-full bg-[#339A89] text-white py-2.5 sm:py-3 rounded-lg font-medium text-sm sm:text-base hover:bg-[#2b8274] transition-colors disabled:opacity-75 disabled:cursor-not-allowed"
         disabled={isLoading}
       >
-        {isLoading ? 'SIGNING IN...' : 'SIGN IN'}
+        {isLoading ? t('login.signingIn') : t('login.signIn')}
       </button>
 
       <div className="text-center pt-1">
@@ -181,7 +183,7 @@ export default function LoginPage() {
           className="text-[#339A89] text-xs sm:text-sm hover:underline hover:text-[#2b8274] transition-colors disabled:opacity-50"
           disabled={isLoading}
         >
-          Forgot Password?
+          {t('login.forgotPassword')}
         </button>
       </div>
     </form>
@@ -191,7 +193,7 @@ export default function LoginPage() {
      <form onSubmit={handleForgotPasswordEmailSubmit} className="space-y-4 sm:space-y-6">
       <div>
         <label htmlFor="forgot-email" className="block text-gray-700 text-sm mb-1.5 sm:mb-2">
-          Enter Your Email ID
+          {t('login.enterEmail')}
         </label>
         <input
           type="email"
@@ -199,18 +201,18 @@ export default function LoginPage() {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#339A89] focus:border-transparent text-sm sm:text-base disabled:opacity-50"
-          placeholder="example@gmail.com"
+          placeholder={t('login.emailExample')}
           required
           disabled={isLoading}
         />
       </div>
-       <p className="text-center text-xs sm:text-sm text-gray-600 pt-1">You will receive a reset code on your ID</p>
+       <p className="text-center text-xs sm:text-sm text-gray-600 pt-1">{t('login.resetCodeInfo')}</p>
       <button
         type="submit"
         className="w-full bg-[#339A89] text-white py-2.5 sm:py-3 rounded-lg font-medium text-sm sm:text-base hover:bg-[#2b8274] transition-colors disabled:opacity-75 disabled:cursor-not-allowed"
         disabled={isLoading}
       >
-         {isLoading ? 'SENDING...' : 'Submit'}
+         {isLoading ? t('login.sending') : t('login.submit')}
       </button>
        <div className="text-center pt-1">
         <button 
@@ -219,7 +221,7 @@ export default function LoginPage() {
           className="text-[#339A89] text-xs sm:text-sm hover:underline hover:text-[#2b8274] transition-colors disabled:opacity-50"
            disabled={isLoading}
         >
-          Back to Login
+          {t('login.backToLogin')}
         </button>
       </div>
     </form>
@@ -229,7 +231,7 @@ export default function LoginPage() {
     <form onSubmit={handleResetPasswordSubmit} className="space-y-4 sm:space-y-6">
       <div>
         <label htmlFor="reset-code" className="block text-gray-700 text-sm mb-1.5 sm:mb-2">
-          Enter the Code
+          {t('login.enterCode')}
         </label>
         <input
           type="text"
@@ -237,14 +239,14 @@ export default function LoginPage() {
           value={resetCode}
           onChange={(e) => setResetCode(e.target.value)}
           className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#339A89] focus:border-transparent text-sm sm:text-base disabled:opacity-50"
-          placeholder="Enter the code"
+          placeholder={t('login.codePlaceholder')}
           required
           disabled={isLoading}
         />
       </div>
       <div>
         <label htmlFor="new-password" className="block text-gray-700 text-sm mb-1.5 sm:mb-2">
-          Enter the New Password
+          {t('login.enterNewPassword')}
         </label>
         <input
           type="password" 
@@ -252,7 +254,7 @@ export default function LoginPage() {
           value={newPassword}
           onChange={(e) => setNewPassword(e.target.value)}
           className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#339A89] focus:border-transparent text-sm sm:text-base disabled:opacity-50"
-          placeholder="Enter the new Password"
+          placeholder={t('login.newPasswordPlaceholder')}
           required
           disabled={isLoading}
         />
@@ -262,7 +264,7 @@ export default function LoginPage() {
         className="w-full bg-[#339A89] text-white py-2.5 sm:py-3 rounded-lg font-medium text-sm sm:text-base hover:bg-[#2b8274] transition-colors disabled:opacity-75 disabled:cursor-not-allowed"
          disabled={isLoading}
       >
-        {isLoading ? 'RESETTING...' : 'Submit'}
+        {isLoading ? t('login.resetting') : t('login.submit')}
       </button>
        <div className="text-center pt-1">
         <button 
@@ -271,7 +273,7 @@ export default function LoginPage() {
           className="text-[#339A89] text-xs sm:text-sm hover:underline hover:text-[#2b8274] transition-colors disabled:opacity-50"
            disabled={isLoading}
         >
-          Back to Login
+          {t('login.backToLogin')}
         </button>
       </div>
     </form>

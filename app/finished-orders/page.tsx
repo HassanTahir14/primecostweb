@@ -9,6 +9,7 @@ import { generateRecipeLabel } from '@/utils/pdfUtils';
 import { useSelector } from 'react-redux';
 import { selectCurrentUser } from '@/store/authSlice';
 import { getUserIdFromToken } from '@/utils/authUtils';
+import { useTranslation } from '@/context/TranslationContext';
 
 interface InventoryLocation {
   inventoryId: number;
@@ -67,11 +68,12 @@ export default function FinishedOrdersPage() {
   const [error, setError] = useState<string | null>(null);
   const currentUser = useSelector(selectCurrentUser);
   const userId = getUserIdFromToken();
+  const { t } = useTranslation();
 
   useEffect(() => {
     const fetchPreparedRecipes = async () => {
       if (!userId) {
-        setError('User ID not found');
+        setError(t('finishedOrders.userIdNotFound'));
         setLoading(false);
         return;
       }
@@ -105,18 +107,18 @@ export default function FinishedOrdersPage() {
           setMainRecipes(filteredMainRecipes);
           setSubRecipes(filteredSubRecipes);
         } else {
-          setError('Failed to fetch recipes');
+          setError(t('finishedOrders.failedToFetch'));
         }
       } catch (error) {
         console.error('Error fetching prepared recipes:', error);
-        setError('Error fetching recipes');
+        setError(t('finishedOrders.errorFetching'));
       } finally {
         setLoading(false);
       }
     };
 
     fetchPreparedRecipes();
-  }, [userId]);
+  }, [userId, t]);
 
   const handlePrintLabel = async (recipe: PreparedRecipe | PreparedSubRecipe) => {
     try {
@@ -139,9 +141,9 @@ export default function FinishedOrdersPage() {
 
   if (loading) {
     return (
-      <PageLayout title="Prepared Recipes">
+      <PageLayout title={t('finishedOrders.pageTitle')}>
         <div className="flex justify-center items-center h-64">
-          <p>Loading recipes...</p>
+          <p>{t('finishedOrders.loading')}</p>
         </div>
       </PageLayout>
     );
@@ -149,7 +151,7 @@ export default function FinishedOrdersPage() {
 
   if (error) {
     return (
-      <PageLayout title="Prepared Recipes">
+      <PageLayout title={t('finishedOrders.pageTitle')}>
         <div className="flex justify-center items-center h-64">
           <p className="text-red-500">{error}</p>
         </div>
@@ -158,24 +160,24 @@ export default function FinishedOrdersPage() {
   }
 
   return (
-    <PageLayout title="Prepared Recipes">
+    <PageLayout title={t('finishedOrders.pageTitle')}>
       <div className="container mx-auto">
         <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-xl font-semibold mb-4">My Prepared Recipes</h2>
+          <h2 className="text-xl font-semibold mb-4">{t('finishedOrders.myPreparedRecipes')}</h2>
           
           {mainRecipes.length === 0 && subRecipes.length === 0 ? (
-            <p className="text-gray-500">No prepared recipes found.</p>
+            <p className="text-gray-500">{t('finishedOrders.noPreparedRecipes')}</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Recipe Name</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Batch Number</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Storage Location, Branch</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Prepared Date</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('finishedOrders.recipeName')}</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('finishedOrders.batchNumber')}</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('finishedOrders.quantity')}</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('finishedOrders.storageLocation')}</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('finishedOrders.preparedDate')}</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('finishedOrders.actions')}</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -206,7 +208,7 @@ export default function FinishedOrdersPage() {
                             onClick={() => handlePrintLabel(recipe)}
                           >
                             <Printer size={16} className="mr-1" />
-                            Print Label
+                            {t('finishedOrders.printLabel')}
                           </Button>
                         </td>
                       </tr>
@@ -239,7 +241,7 @@ export default function FinishedOrdersPage() {
                             onClick={() => handlePrintLabel(recipe)}
                           >
                             <Printer size={16} className="mr-1" />
-                            Print Label
+                            {t('finishedOrders.printLabel')}
                           </Button>
                         </td>
                       </tr>
@@ -253,4 +255,4 @@ export default function FinishedOrdersPage() {
       </div>
     </PageLayout>
   );
-} 
+}
