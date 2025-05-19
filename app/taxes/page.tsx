@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { useTranslation } from '@/context/TranslationContext';
 import PageLayout from '@/components/PageLayout';
 import Taxes from '@/components/Taxes';
 import { fetchAllTaxes, clearError } from '@/store/taxSlice';
@@ -9,6 +10,7 @@ import type { RootState } from '@/store/store';
 import ConfirmationModal from '@/components/common/ConfirmationModal';
 
 export default function TaxesPage() {
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const { error } = useSelector((state: RootState) => state.tax);
   const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
@@ -29,18 +31,18 @@ export default function TaxesPage() {
   };
 
   return (
-    <PageLayout title="Taxes">
+    <PageLayout title={t('taxes.title')}>
       <Taxes onClose={() => {}} />
       
       {/* Error Modal */}
       <ConfirmationModal
         isOpen={isErrorModalOpen}
         onClose={handleCloseErrorModal}
-        title="Error"
-        message={error || "An error occurred"}
+        title={t('common.error')}
+        message={error || t('taxes.errorOccurred')}
         isAlert={true}
-        okText="OK"
+        okText={t('common.ok')}
       />
     </PageLayout>
   );
-} 
+}

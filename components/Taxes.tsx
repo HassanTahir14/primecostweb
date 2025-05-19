@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { useTranslation } from '@/context/TranslationContext';
 import Button from '@/components/common/button';
 import Modal from './common/Modal';
 import Input from './common/input';
@@ -16,6 +17,7 @@ interface TaxesProps {
 }
 
 export default function Taxes({ onClose }: TaxesProps) {
+  const { t } = useTranslation();
   const router = useRouter();
   const dispatch = useDispatch();
   const { taxes, loading } = useSelector((state: RootState) => state.tax);
@@ -52,12 +54,10 @@ export default function Taxes({ onClose }: TaxesProps) {
 
   const handleAddTax = async () => {
     if (!validateForm()) return;
-    
     try {
       if (isEditMode && editingTaxId) {
         const tax = taxes.find(t => t.taxId === editingTaxId);
         if (!tax) return;
-
         await dispatch(updateTax({
           ...tax,
           taxCode,
@@ -65,7 +65,7 @@ export default function Taxes({ onClose }: TaxesProps) {
           taxRate: parseFloat(taxRate),
           taxGroup
         }) as any);
-        setModalMessage('Tax updated successfully');
+        setModalMessage(t('taxes.updated'));
         setIsSuccessModalOpen(true);
       } else {
         await dispatch(addTax({
@@ -74,14 +74,13 @@ export default function Taxes({ onClose }: TaxesProps) {
           taxRate: parseFloat(taxRate),
           taxGroup
         }) as any);
-        setModalMessage('Tax added successfully');
+        setModalMessage(t('taxes.added'));
         setIsSuccessModalOpen(true);
       }
-      
       setIsCreateModalOpen(false);
       resetForm();
     } catch (error) {
-      setModalMessage('Failed to process tax data');
+      setModalMessage(t('taxes.failedProcess'));
       setIsErrorModalOpen(true);
     }
   };
@@ -106,55 +105,47 @@ export default function Taxes({ onClose }: TaxesProps) {
 
   const handleDeleteConfirm = async () => {
     if (!selectedTaxId) return;
-
     try {
       await dispatch(deleteTax(selectedTaxId) as any);
       setIsDeleteModalOpen(false);
-      setModalMessage('Tax deleted successfully');
+      setModalMessage(t('taxes.deleted'));
       setIsSuccessModalOpen(true);
     } catch (error) {
-      setModalMessage('Failed to delete tax');
+      setModalMessage(t('taxes.failedDelete'));
       setIsErrorModalOpen(true);
     }
   };
 
   const validateForm = () => {
     if (!taxCode) {
-      showErrorMessage('Tax code is required');
+      showErrorMessage(t('taxes.codeRequired'));
       return false;
     }
-    
     if (!taxName) {
-      showErrorMessage('Tax name is required');
+      showErrorMessage(t('taxes.nameRequired'));
       return false;
     }
-    
     if (!taxRate) {
-      showErrorMessage('Tax rate is required');
+      showErrorMessage(t('taxes.rateRequired'));
       return false;
     }
-
     const taxRateNum = parseFloat(taxRate);
     if (isNaN(taxRateNum)) {
-      showErrorMessage('Tax rate must be a valid number');
+      showErrorMessage(t('taxes.rateNumber'));
       return false;
     }
-
     if (taxRateNum < 0) {
-      showErrorMessage('Tax rate cannot be negative');
+      showErrorMessage(t('taxes.rateNegative'));
       return false;
     }
-
     if (taxRateNum > 100) {
-      showErrorMessage('Tax rate cannot be greater than 100%');
+      showErrorMessage(t('taxes.rateTooHigh'));
       return false;
     }
-    
     if (!taxGroup) {
-      showErrorMessage('Tax group is required');
+      showErrorMessage(t('taxes.groupRequired'));
       return false;
     }
-    
     return true;
   };
 
@@ -174,28 +165,26 @@ export default function Taxes({ onClose }: TaxesProps) {
           <button onClick={onClose} className="text-gray-600 hover:text-gray-800">
             <ArrowLeft className="w-5 h-5" />
           </button>
-          <h1 className="text-xl sm:text-2xl font-bold">Tax List</h1>
+          <h1 className="text-xl sm:text-2xl font-bold">{t('taxes.title')}</h1>
         </div>
-
         <Button 
           onClick={handleCreateNew}
           className="rounded-full bg-[#05A49D] text-white text-xs sm:text-sm px-3 py-1.5 sm:px-4 sm:py-2"
           disabled={loading}
         >
-          Create New
+          {t('taxes.createNew')}
         </Button>
       </div>
-
       <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6 flex-1">
         <div className="overflow-x-auto">
           <table className="w-full min-w-[650px]">
             <thead>
               <tr className="border-b">
-                <th className="text-left pb-3 sm:pb-4 text-gray-500 text-xs sm:text-sm font-normal">Tax code</th>
-                <th className="text-left pb-3 sm:pb-4 text-gray-500 text-xs sm:text-sm font-normal">Tax Name</th>
-                <th className="text-left pb-3 sm:pb-4 text-gray-500 text-xs sm:text-sm font-normal">Tax Rate %</th>
-                <th className="text-left pb-3 sm:pb-4 text-gray-500 text-xs sm:text-sm font-normal">Tax Group</th>
-                <th className="text-right pb-3 sm:pb-4 text-gray-500 text-xs sm:text-sm font-normal">Actions</th>
+                <th className="text-left pb-3 sm:pb-4 text-gray-500 text-xs sm:text-sm font-normal">{t('taxes.code')}</th>
+                <th className="text-left pb-3 sm:pb-4 text-gray-500 text-xs sm:text-sm font-normal">{t('taxes.name')}</th>
+                <th className="text-left pb-3 sm:pb-4 text-gray-500 text-xs sm:text-sm font-normal">{t('taxes.rate')}</th>
+                <th className="text-left pb-3 sm:pb-4 text-gray-500 text-xs sm:text-sm font-normal">{t('taxes.group')}</th>
+                <th className="text-right pb-3 sm:pb-4 text-gray-500 text-xs sm:text-sm font-normal">{t('common.action')}</th>
               </tr>
             </thead>
             <tbody>
@@ -214,7 +203,7 @@ export default function Taxes({ onClose }: TaxesProps) {
                         onClick={() => handleEditClick(tax.taxId)}
                         disabled={loading}
                       >
-                        Edit
+                        {t('common.edit')}
                       </Button>
                       <Button 
                         variant="destructive" 
@@ -223,7 +212,7 @@ export default function Taxes({ onClose }: TaxesProps) {
                         onClick={() => handleDeleteClick(tax.taxId)}
                         disabled={loading}
                       >
-                        Delete
+                        {t('common.delete')}
                       </Button>
                     </div>
                   </td>
@@ -233,12 +222,11 @@ export default function Taxes({ onClose }: TaxesProps) {
           </table>
         </div>
       </div>
-
       {/* Create/Edit Tax Modal */}
       <Modal 
         isOpen={isCreateModalOpen}
         onClose={() => !loading && setIsCreateModalOpen(false)}
-        title={isEditMode ? "Edit Tax" : "New Tax"}
+        title={isEditMode ? t('taxes.editTitle') : t('taxes.newTitle')}
         size="md"
       >
         <form onSubmit={(e) => {
@@ -247,54 +235,50 @@ export default function Taxes({ onClose }: TaxesProps) {
         }} className="w-full">
           <div className="space-y-4">
             <div>
-              <label className="block text-gray-700 mb-2 font-medium">TAX Code</label>
+              <label className="block text-gray-700 mb-2 font-medium">{t('taxes.code')}</label>
               <Input
                 type="text"
                 value={taxCode}
                 onChange={(e) => setTaxCode(e.target.value)}
-                placeholder="Enter TAX Code"
+                placeholder={t('taxes.codePlaceholder')}
                 className="w-full bg-white"
                 disabled={loading}
               />
             </div>
-            
             <div>
-              <label className="block text-gray-700 mb-2 font-medium">TAX Name</label>
+              <label className="block text-gray-700 mb-2 font-medium">{t('taxes.name')}</label>
               <Input
                 type="text"
                 value={taxName}
                 onChange={(e) => setTaxName(e.target.value)}
-                placeholder="Enter TAX Name"
+                placeholder={t('taxes.namePlaceholder')}
                 className="w-full bg-white"
                 disabled={loading}
               />
             </div>
-            
             <div>
-              <label className="block text-gray-700 mb-2 font-medium">TAX Rate %</label>
+              <label className="block text-gray-700 mb-2 font-medium">{t('taxes.rate')}</label>
               <Input
                 type="number"
                 value={taxRate}
                 onChange={(e) => setTaxRate(e.target.value)}
-                placeholder="Enter TAX Rate %"
+                placeholder={t('taxes.ratePlaceholder')}
                 className="w-full bg-white"
                 disabled={loading}
               />
             </div>
-            
             <div>
-              <label className="block text-gray-700 mb-2 font-medium">TAX Group</label>
+              <label className="block text-gray-700 mb-2 font-medium">{t('taxes.group')}</label>
               <Input
                 type="text"
                 value={taxGroup}
                 onChange={(e) => setTaxGroup(e.target.value)}
-                placeholder="Enter TAX Group"
+                placeholder={t('taxes.groupPlaceholder')}
                 className="w-full bg-white"
                 disabled={loading}
               />
             </div>
           </div>
-          
           <div className="flex justify-between gap-3 mt-6">
             <Button
               type="button"
@@ -308,31 +292,28 @@ export default function Taxes({ onClose }: TaxesProps) {
               className="border-gray-300 bg-white text-gray-700 hover:bg-gray-50 px-4 sm:px-6"
               disabled={loading}
             >
-              Discard
+              {t('common.discard')}
             </Button>
-            
             <Button
               type="submit"
               className="bg-[#05A49D] text-white hover:bg-[#048c86] px-4 sm:px-6"
               disabled={loading}
             >
-              {loading ? 'Processing...' : isEditMode ? 'UPDATE' : 'ADD'}
+              {loading ? t('taxes.processing') : isEditMode ? t('common.update') : t('taxes.add')}
             </Button>
           </div>
         </form>
       </Modal>
-
       {/* Delete Confirmation Modal */}
       <ConfirmationModal
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
         onConfirm={handleDeleteConfirm}
-        title="Delete Tax"
-        message="Are you sure you want to delete this tax? This action cannot be undone."
-        confirmText="Delete"
-        cancelText="Cancel"
+        title={t('taxes.deleteTitle')}
+        message={t('taxes.deleteMessage')}
+        confirmText={t('common.delete')}
+        cancelText={t('common.cancel')}
       />
-
       {/* Success Modal */}
       <ConfirmationModal
         isOpen={isSuccessModalOpen}
@@ -342,12 +323,11 @@ export default function Taxes({ onClose }: TaxesProps) {
             window.location.reload();
           }
         }}
-        title={modalMessage.includes('successfully') ? "Success" : "Error"}
+        title={modalMessage.includes('successfully') ? t('common.success') : t('common.error')}
         message={modalMessage}
         isAlert={true}
-        okText="OK"
+        okText={t('common.ok')}
       />
-
       {/* Error Modal */}
       <ConfirmationModal
         isOpen={isErrorModalOpen}
@@ -357,11 +337,11 @@ export default function Taxes({ onClose }: TaxesProps) {
             window.location.reload();
           }
         }}
-        title={modalMessage.includes('successfully') ? "Success" : "Error"}
+        title={modalMessage.includes('successfully') ? t('common.success') : t('common.error')}
         message={modalMessage}
         isAlert={true}
-        okText="OK"
+        okText={t('common.ok')}
       />
     </div>
   );
-} 
+}
