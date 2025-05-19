@@ -5,6 +5,7 @@ import Button from '@/components/common/button';
 import Input from '@/components/common/input';
 import Select from '@/components/common/select';
 import { Plus, Trash2 } from 'lucide-react';
+import { useTranslation } from '@/context/TranslationContext';
 
 // Define interfaces for better type safety
 interface UnitOfMeasurement {
@@ -50,6 +51,7 @@ export default function TransferInventoryItemsTable({
   targetBranchId,
   units
 }: TransferInventoryItemsTableProps) {
+  const { t } = useTranslation();
   
   // Prepare options for Select component
   const itemOptions = useMemo(() => {
@@ -57,7 +59,7 @@ export default function TransferInventoryItemsTable({
     if (sourceBranchId === targetBranchId && sourceBranchId !== '') {
       return [{ 
         value: '', 
-        label: 'Select an item', 
+        label: t('transfers.selectItem'), 
         disabled: true 
       }];
     }
@@ -73,12 +75,12 @@ export default function TransferInventoryItemsTable({
         disabled: false
     }));
     return [ ...options];
-  }, [allItems, sourceBranchId, targetBranchId]);
+  }, [allItems, sourceBranchId, targetBranchId, t]);
 
   // Prepare unit options based on selected item
   const getUnitOptions = (selectedItemId: string) => {
     const selectedItem = allItems.find(item => String(item.itemId) === selectedItemId);
-    if (!selectedItem) return [{ value: '', label: 'Select Unit...', disabled: true }];
+    if (!selectedItem) return [{ value: '', label: t('transfers.selectUnit'), disabled: true }];
 
     // Get all available units for this item
     const availableUnits = units.filter(unit => {
@@ -98,7 +100,7 @@ export default function TransferInventoryItemsTable({
 
     // If no units found, return default option
     if (unitOptions.length === 0) {
-      return [{ value: '', label: 'No units available', disabled: true }];
+      return [{ value: '', label: t('transfers.noUnits'), disabled: true }];
     }
 
     return unitOptions;
@@ -198,25 +200,25 @@ export default function TransferInventoryItemsTable({
       {/* Show available quantity in the top right, outside the table, as in the screenshot */}
       {items && items[0] && items[0].availableQuantity !== undefined && (
         <div className="absolute right-4 top-2 text-base font-semibold text-black">
-          Available Quantity: <span className="font-bold">{items[0].availableQuantity}</span> {items[0].primaryUnitName}
+          {t('transfers.availableQuantity')}: <span className="font-bold">{items[0].availableQuantity}</span> {items[0].primaryUnitName}
         </div>
       )}
-      <h3 className="text-lg font-semibold p-4 border-b">Inventory Items</h3>
+      <h3 className="text-lg font-semibold p-4 border-b">{t('transfers.inventoryItems')}</h3>
       {sourceBranchId === targetBranchId && sourceBranchId !== '' && (
         <div className="px-4 py-2 text-red-600 text-sm font-medium">
-          Cannot transfer items to the same branch
+          {t('transfers.cannotTransferSameBranchItems')}
         </div>
       )}
       <div className="w-full">
         <table className="w-full">
             <thead className="bg-[#00997B] text-white">
                 <tr>
-                    <th className="p-3 text-left text-sm font-semibold">Item</th>
-                    <th className="p-3 text-left text-sm font-semibold w-24">Code</th>
-                    {/* <th className="p-3 text-left text-sm font-semibold w-24">Available</th> */}
-                    <th className="p-3 text-left text-sm font-semibold w-24">Quantity</th>
-                    <th className="p-3 text-left text-sm font-semibold w-32">UOM</th>
-                    <th className="p-3 text-left text-sm font-semibold w-24">Cost</th>
+                    <th className="p-3 text-left text-sm font-semibold">{t('transfers.item')}</th>
+                    <th className="p-3 text-left text-sm font-semibold w-24">{t('transfers.code')}</th>
+                    {/* <th className="p-3 text-left text-sm font-semibold w-24">{t('transfers.available')}</th> */}
+                    <th className="p-3 text-left text-sm font-semibold w-24">{t('transfers.quantity')}</th>
+                    <th className="p-3 text-left text-sm font-semibold w-32">{t('transfers.uom')}</th>
+                    <th className="p-3 text-left text-sm font-semibold w-24">{t('transfers.cost')}</th>
                     <th className="p-3 text-left text-sm font-semibold w-16"></th>
                 </tr>
             </thead>
@@ -295,9 +297,9 @@ export default function TransferInventoryItemsTable({
         </div>
         <div className="p-3 bg-gray-50 border-t">
             <Button variant="outline" size="sm" onClick={addItem} className="text-[#00997B] border-[#00997B] hover:bg-[#E8FFFE]">
-                <Plus size={16} className="mr-1" /> Add Item
+                <Plus size={16} className="mr-1" /> {t('transfers.addItem')}
             </Button>
         </div>
     </div>
   );
-} 
+}

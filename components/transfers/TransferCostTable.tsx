@@ -1,6 +1,7 @@
 'use client';
 
 import Input from '@/components/common/input';
+import { useTranslation } from '@/context/TranslationContext';
 
 interface TransferCostTableProps {
   costs: {
@@ -20,7 +21,8 @@ const costTypes = [
 ];
 
 export default function TransferCostTable({ costs, onChange, totalItemCost }: TransferCostTableProps) {
-  
+  const { t } = useTranslation();
+
   const handleCostChange = (key: string, value: number) => {
     // Ensure value is between 0 and 100
     const validatedValue = Math.min(Math.max(isNaN(value) ? 0 : value, 0), 100);
@@ -53,20 +55,25 @@ export default function TransferCostTable({ costs, onChange, totalItemCost }: Tr
   // Grand total is the sum of item costs plus all calculated tax amounts
   const grandTotal = (totalItemCost + parseFloat(totalCalculatedTaxes)).toFixed(2);
 
+  const costTypeTranslations = [
+    { name: t('transfers.storageCost'), key: 'storageCostPercent' },
+    { name: t('transfers.shipping'), key: 'shippingCostPercent' },
+    { name: t('transfers.otherLogistics'), key: 'otherLogisticsPercent' },
+  ];
+
   return (
     <div className="bg-white rounded-lg shadow-sm p-0 overflow-hidden">
       <div className="overflow-x-auto">
         <table className="w-full min-w-[600px]">
           <thead className="bg-[#00997B] text-white">
             <tr>
-              <th className="p-3 text-left text-sm font-semibold">Cost Type</th>
-              <th className="p-3 text-left text-sm font-semibold w-24">% Value</th>
-              <th className="p-3 text-left text-sm font-semibold w-32">Taxes Amount (USD)</th>
-              {/* <th className="p-3 text-left text-sm font-semibold w-32">Total with Taxes (USD)</th> -- Removing this column as it seems redundant with Taxes Amount */}
+              <th className="p-3 text-left text-sm font-semibold">{t('transfers.costType')}</th>
+              <th className="p-3 text-left text-sm font-semibold w-24">% {t('transfers.value')}</th>
+              <th className="p-3 text-left text-sm font-semibold w-32">{t('transfers.taxesAmount')}</th>
             </tr>
           </thead>
           <tbody>
-            {costTypes.map((type) => (
+            {costTypeTranslations.map((type) => (
               <tr key={type.key} className="border-b">
                 <td className="p-3 text-sm font-medium text-gray-700">{type.name}</td>
                 <td className="p-2 align-top">
@@ -93,30 +100,19 @@ export default function TransferCostTable({ costs, onChange, totalItemCost }: Tr
                     className="bg-gray-100"
                   />
                 </td>
-                 {/* Removing the seemingly redundant "Total with Taxes" column
-                 <td className="p-2 align-top">
-                   <Input 
-                    value={calculateTotalWithTaxes(costs[type.key as keyof typeof costs] || 0)}
-                    readOnly 
-                    placeholder="0.00"
-                    // prefix="USD" 
-                     className="bg-gray-100"
-                  />
-                </td> 
-                */}
               </tr>
             ))}
             {/* Footer Row Updated */}
             <tr className="bg-gray-100 font-semibold">
-                <td colSpan={2} className="p-3 text-right text-sm text-gray-800">Total Item Cost:</td>
+                <td colSpan={2} className="p-3 text-right text-sm text-gray-800">{t('transfers.totalItemCost')}:</td>
                 <td className="p-3 text-right text-sm text-gray-800">{totalItemCost.toFixed(2)}</td>
             </tr>
              <tr className="bg-gray-100 font-semibold">
-                <td colSpan={2} className="p-3 text-right text-sm text-gray-800">Total Transfer Taxes:</td>
+                <td colSpan={2} className="p-3 text-right text-sm text-gray-800">{t('transfers.totalTransferTaxes')}:</td>
                 <td className="p-3 text-right text-sm text-gray-800">{totalCalculatedTaxes}</td>
             </tr>
              <tr className="bg-gray-50 font-bold border-t-2 border-gray-300">
-                <td colSpan={2} className="p-3 text-right text-sm text-gray-900">Grand Total:</td>
+                <td colSpan={2} className="p-3 text-right text-sm text-gray-900">{t('transfers.grandTotal')}:</td>
                 <td className="p-3 text-right text-sm text-gray-900">{grandTotal}</td>
             </tr>
           </tbody>
@@ -124,4 +120,4 @@ export default function TransferCostTable({ costs, onChange, totalItemCost }: Tr
       </div>
     </div>
   );
-} 
+}

@@ -9,6 +9,8 @@ import api from '@/store/api';
 import Loader from '@/components/common/Loader';
 import { useCurrency } from '@/context/CurrencyContext';
 import { formatCurrencyValue } from '@/utils/currencyUtils';
+import { useTranslation } from '@/context/TranslationContext';
+
 type TransferTab = 'Inventory Items' | 'Recipe' | 'Sub Recipe';
 
 const tabs: { name: TransferTab; param: string }[] = [
@@ -25,6 +27,7 @@ const DEFAULT_PAYLOAD = {
 };
 
 export default function TransfersPage() {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<TransferTab>('Inventory Items');
   const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -103,32 +106,29 @@ export default function TransfersPage() {
         {/* Create New Button - Always visible */}
         <div className="flex justify-end p-4 border-b">
           <Link href={`/transfers/create?type=${tabs.find(tab => tab.name === activeTab)?.param}`}>
-            <Button>Create New</Button>
+            <Button>{t('transfersList.btnCreate')}</Button>
           </Link>
         </div>
-
         {/* Loading State */}
         {loading ? (
           <div className="text-center py-4">
             <Loader size="medium" />
           </div>
         ) : !data.length ? (
-          <div className="text-center py-4 text-gray-500">No transfers found</div>
+          <div className="text-center py-4 text-gray-500">{t('transfersList.noResults')}</div>
         ) : (
           /* Table Content */
           <div className="overflow-x-auto">
             <table className="w-full min-w-[1000px]">
               <thead className="bg-[#00997B] text-white">
                 <tr>
-                <th className="p-3 text-left text-sm font-semibold">Item Name</th>
-                  {/* <th className="p-3 text-left text-sm font-semibold">Reference No.</th> */}
-                  <th className="p-3 text-left text-sm font-semibold">Transfer Date</th>
-                  <th className="p-3 text-left text-sm font-semibold">Status</th>
-                  <th className="p-3 text-left text-sm font-semibold">Transferred By</th>
-                  {/* <th className="p-3 text-left text-sm font-semibold">Approved By</th> */}
-                  <th className="p-3 text-left text-sm font-semibold">Quantity</th>
-                  <th className="p-3 text-left text-sm font-semibold">UOM</th>
-                  <th className="p-3 text-left text-sm font-semibold">Cost</th>
+                  <th className="p-3 text-left text-sm font-semibold">{t('transfersList.colItemName')}</th>
+                  <th className="p-3 text-left text-sm font-semibold">{t('transfersList.colTransferDate')}</th>
+                  <th className="p-3 text-left text-sm font-semibold">{t('transfersList.colStatus')}</th>
+                  <th className="p-3 text-left text-sm font-semibold">{t('transfersList.colTransferredBy')}</th>
+                  <th className="p-3 text-left text-sm font-semibold">{t('transfersList.colQuantity')}</th>
+                  <th className="p-3 text-left text-sm font-semibold">{t('transfersList.colUom')}</th>
+                  <th className="p-3 text-left text-sm font-semibold">{t('transfersList.colCost')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -166,11 +166,9 @@ export default function TransfersPage() {
                       className="border-b hover:bg-gray-50 cursor-pointer"
                     >
                        <td className="p-3 text-sm">{itemName}</td>
-                      {/* <td className="p-3 text-sm">{item.transferReferenceNumber}</td> */}
                       <td className="p-3 text-sm">{new Date(item.transferDate).toLocaleDateString()}</td>
                       <td className="p-3 text-sm">{item.transferStatus}</td>
                       <td className="p-3 text-sm">{item.transferredBy}</td>
-                      {/* <td className="p-3 text-sm">{item.approvedBy || 'N/A'}</td> */}
                       <td className="p-3 text-sm">{itemQuantity}</td>
                       <td className="p-3 text-sm">{uom}</td>
                       <td className="p-3 text-sm">{formattedCosts[item.transferReferenceNumber] || 'N/A'}</td>
@@ -186,28 +184,44 @@ export default function TransfersPage() {
   };
 
   return (
-    <PageLayout title="Transfers">
+    <PageLayout title={t('transfersList.pageTitle')}>
       {/* Tab Navigation */}
       <div className="flex border-b border-gray-200 bg-white rounded-t-lg shadow-sm overflow-hidden">
-        {tabs.map((tab) => (
-          <button
-            key={tab.name}
-            onClick={() => setActiveTab(tab.name)}
-            className={`flex-1 py-3 px-6 font-medium text-sm transition-colors duration-150 text-center 
-              ${activeTab === tab.name
-                ? 'bg-[#00997B] text-white'
-                : 'text-gray-600 bg-gray-100 hover:bg-gray-200'
-              }`}
-          >
-            Transfer {tab.name}
-          </button>
-        ))}
+        <button
+          onClick={() => setActiveTab('Inventory Items')}
+          className={`flex-1 py-3 px-6 font-medium text-sm transition-colors duration-150 text-center 
+            ${activeTab === 'Inventory Items'
+              ? 'bg-[#00997B] text-white'
+              : 'text-gray-600 bg-gray-100 hover:bg-gray-200'
+            }`}
+        >
+          {t('transfersList.tabInventory')}
+        </button>
+        <button
+          onClick={() => setActiveTab('Recipe')}
+          className={`flex-1 py-3 px-6 font-medium text-sm transition-colors duration-150 text-center 
+            ${activeTab === 'Recipe'
+              ? 'bg-[#00997B] text-white'
+              : 'text-gray-600 bg-gray-100 hover:bg-gray-200'
+            }`}
+        >
+          {t('transfersList.tabRecipe')}
+        </button>
+        <button
+          onClick={() => setActiveTab('Sub Recipe')}
+          className={`flex-1 py-3 px-6 font-medium text-sm transition-colors duration-150 text-center 
+            ${activeTab === 'Sub Recipe'
+              ? 'bg-[#00997B] text-white'
+              : 'text-gray-600 bg-gray-100 hover:bg-gray-200'
+            }`}
+        >
+          {t('transfersList.tabSubRecipe')}
+        </button>
       </div>
-
       {/* Table Content */}
       <div className="bg-white rounded-lg shadow-sm mt-6">
         {renderTable()}
       </div>
     </PageLayout>
   );
-} 
+}

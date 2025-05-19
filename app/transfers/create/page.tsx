@@ -15,6 +15,7 @@ import { ArrowLeft } from 'lucide-react';
 // import { toast } from 'react-toastify'; // Removed toast
 import api from '@/store/api';
 import ConfirmationModal from '@/components/common/ConfirmationModal'; // Added ConfirmationModal import
+import { useTranslation } from '@/context/TranslationContext';
 
 // Import form parts (assuming they will be created)
 import TransferHeaderForm from '@/components/transfers/TransferHeaderForm';
@@ -98,6 +99,7 @@ interface PreparedSubRecipe {
 }
 
 function CreateTransferContent() {
+  const { t } = useTranslation();
   const router = useRouter();
   const searchParams = useSearchParams();
   const dispatch: AppDispatch = useDispatch();
@@ -292,14 +294,14 @@ function CreateTransferContent() {
 
     // --- Input Validation (Basic) ---
     if (!formData.transferDate || !formData.sourceBranchId || !formData.targetBranchId || formData.items.length === 0) {
-        showModal("Validation Error", "Please fill in Transfer Date, Source Branch, Target Branch, and add at least one item.");
+        showModal(t('transfers.validationErrorTitle'), t('transfers.validationErrorFields'));
         setIsSubmitting(false);
         return;
     }
 
     // Check if source and target branches are the same
     if (formData.sourceBranchId === formData.targetBranchId) {
-        showModal("Validation Error", "Source and target branches cannot be the same.");
+        showModal(t('transfers.validationErrorTitle'), t('transfers.validationErrorSameBranch'));
         setIsSubmitting(false);
         return;
     }
@@ -405,7 +407,7 @@ function CreateTransferContent() {
           });
           break;
         default:
-          showModal("Error", "Invalid transfer type for submission.");
+          showModal(t('common.error'), t('transfers.invalidType'));
           setIsSubmitting(false);
           return;
       }
@@ -419,16 +421,16 @@ function CreateTransferContent() {
 
       // --- Handle Response ---
       if (response.status === 200 || response.status === 201) { // Check for success status
-          showModal("Success", `Transfer (${formData.transferType}) submitted successfully!`, true);
+          showModal(t('common.success'), t('transfers.submitSuccess', { type: formData.transferType }), true);
       } else {
           // Attempt to get error message from response, fallback to generic message
-          const errorMsg = response.data?.description || response.data?.message || 'Submission failed. Please try again.';
-          showModal("Error", `Submission Failed: ${errorMsg}`);
+          const errorMsg = response.data?.description || response.data?.message || t('transfers.submitFailed');
+          showModal(t('common.error'), `${t('transfers.submitFailed')}: ${errorMsg}`);
       }
     } catch (error: any) { // Catch block for network errors or exceptions
         console.error("API Submission Error:", error);
-        const errorMsg = error.response?.data?.description || error.response?.data?.message || error.message || 'An unexpected error occurred.';
-        showModal("Error", `Submission Failed: ${errorMsg}`);
+        const errorMsg = error.response?.data?.description || error.response?.data?.message || error.message || t('transfers.unexpectedError');
+        showModal(t('common.error'), `${t('transfers.submitFailed')}: ${errorMsg}`);
     } finally {
         setIsSubmitting(false);
     }
@@ -547,13 +549,13 @@ function CreateTransferContent() {
   };
 
   return (
-    <PageLayout title={`Create Transfer - ${formData.transferType}`}>
+    <PageLayout title={t('transfers.createTitle', { type: t(`transfers.tab.${transferTypeParam}`) })}>
       <div className="space-y-6">
         {/* Back Link */}
         <div className="mb-6">
           <Link href="/transfers" className="text-gray-500 hover:text-gray-700 flex items-center gap-2 w-fit">
             <ArrowLeft size={20} />
-            <span>Back to Transfers</span>
+            <span>{t('transfers.backToTransfers')}</span>
           </Link>
         </div>
 
@@ -586,7 +588,7 @@ function CreateTransferContent() {
               subRecipeStatus === 'loading'
             }
           >
-            {isSubmitting ? 'Submitting...' : 'Submit Transfer'}
+            {isSubmitting ? t('transfers.submitting') : t('transfers.submitTransfer')}
           </Button>
         </div>
       </div>
@@ -598,17 +600,18 @@ function CreateTransferContent() {
         title={modalTitle}
         message={modalMessage}
         isAlert={true} // Use alert mode for simple OK button
-        okText="OK"
+        okText={t('common.ok')}
       />
     </PageLayout>
   );
 }
 
 export default function CreateTransferPage() {
+  const { t } = useTranslation();
   return (
     <Suspense
       fallback={
-        <PageLayout title="Create Transfer">
+        <PageLayout title={t('transfers.createTitle', { type: '' })}>
           <div className="flex justify-center items-center h-64">
             <Loader size="medium" />
           </div>
@@ -618,4 +621,4 @@ export default function CreateTransferPage() {
       <CreateTransferContent />
     </Suspense>
   );
-} 
+}

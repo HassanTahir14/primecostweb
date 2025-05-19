@@ -6,6 +6,7 @@ import Input from '@/components/common/input';
 import Select from '@/components/common/select';
 import { Plus, Trash2 } from 'lucide-react';
 import { useUnits } from '@/hooks/useUnits';
+import { useTranslation } from '@/context/TranslationContext';
 
 // Assuming Recipe structure from a potential recipeSlice
 interface Recipe {
@@ -48,6 +49,7 @@ export default function TransferRecipeTable({
   targetBranchId,
   units
 }: TransferRecipeTableProps) {
+  const { t } = useTranslation();
   // Get units from the hook
   const { units: hookUnits, loading: unitsLoading } = useUnits();
 
@@ -57,7 +59,7 @@ export default function TransferRecipeTable({
     if (sourceBranchId === targetBranchId && sourceBranchId !== '') {
       return [{ 
         value: '', 
-        label: 'Select a recipe', 
+        label: t('transfers.selectRecipe'), 
         disabled: true 
       }];
     }
@@ -76,7 +78,7 @@ export default function TransferRecipeTable({
         disabled: false
     }));
     return [ ...options];
-  }, [allRecipes, sourceBranchId, targetBranchId]);
+  }, [allRecipes, sourceBranchId, targetBranchId, t]);
 
   const handleItemChange = (index: number, field: string, value: any) => {
     const newItems = [...items];
@@ -146,7 +148,7 @@ export default function TransferRecipeTable({
   };
 
   if (unitsLoading) {
-    return <div>Loading units...</div>;
+    return <div>{t('transfers.loadingUnits')}</div>;
   }
 
   return (
@@ -154,25 +156,24 @@ export default function TransferRecipeTable({
       {/* Show available quantity in the top right, outside the table, as in the screenshot */}
       {items && items[0] && items[0].availableQuantity !== undefined && (
         <div className="absolute right-4 top-2 text-base font-semibold text-black">
-          Available Quantity: <span className="font-bold">{items[0].availableQuantity}</span>
+          {t('transfers.availableQuantity')}: <span className="font-bold">{items[0].availableQuantity}</span>
         </div>
       )}
-      <h3 className="text-lg font-semibold p-4 border-b">Recipes</h3>
+      <h3 className="text-lg font-semibold p-4 border-b">{t('transfers.recipes')}</h3>
       {sourceBranchId === targetBranchId && sourceBranchId !== '' && (
         <div className="px-4 py-2 text-red-600 text-sm font-medium">
-          Cannot transfer recipes to the same branch
+          {t('transfers.cannotTransferSameBranchRecipes')}
         </div>
       )}
       <div className="w-full">
         <table className="w-full">
             <thead className="bg-[#00997B] text-white">
                 <tr>
-                    <th className="p-3 text-left text-sm font-semibold">Recipe</th>
-                    <th className="p-3 text-left text-sm font-semibold w-24">Code</th>
-                    {/* <th className="p-3 text-left text-sm font-semibold w-24">Available</th> */}
-                    <th className="p-3 text-left text-sm font-semibold w-24">Quantity</th>
-                    <th className="p-3 text-left text-sm font-semibold w-32">UOM</th>
-                    <th className="p-3 text-left text-sm font-semibold w-24">Cost</th>
+                    <th className="p-3 text-left text-sm font-semibold">{t('transfers.recipe')}</th>
+                    <th className="p-3 text-left text-sm font-semibold w-24">{t('transfers.code')}</th>
+                    <th className="p-3 text-left text-sm font-semibold w-24">{t('transfers.quantity')}</th>
+                    <th className="p-3 text-left text-sm font-semibold w-32">{t('transfers.uom')}</th>
+                    <th className="p-3 text-left text-sm font-semibold w-24">{t('transfers.cost')}</th>
                     <th className="p-3 text-left text-sm font-semibold w-16"></th>
                 </tr>
             </thead>
@@ -192,7 +193,7 @@ export default function TransferRecipeTable({
                             value={item.recipeCode}
                             readOnly
                             className="bg-gray-100"
-                            placeholder="Code"
+                            placeholder={t('transfers.code')}
                         />
                     </td>
                     {/* <td className="p-2 align-top">
@@ -214,7 +215,7 @@ export default function TransferRecipeTable({
                             type="number"
                             value={item.quantity}
                             onChange={(e) => handleItemChange(index, 'quantity', e.target.value)}
-                            placeholder="Qty"
+                            placeholder={t('transfers.qty')}
                             min="1"
                             max={item.availableQuantity || 0}
                             step="any"
@@ -233,7 +234,7 @@ export default function TransferRecipeTable({
                         <Input
                             type="number"
                             value={(item.cost * item.quantity || 0).toFixed(2)}
-                            placeholder="Cost"
+                            placeholder={t('transfers.cost')}
                             readOnly
                             className="bg-gray-100"
                             step="0.01"
@@ -256,9 +257,9 @@ export default function TransferRecipeTable({
         </div>
         <div className="p-3 bg-gray-50 border-t">
             <Button variant="outline" size="sm" onClick={addItem} className="text-[#00997B] border-[#00997B] hover:bg-[#E8FFFE]">
-                <Plus size={16} className="mr-1" /> Add Recipe
+                <Plus size={16} className="mr-1" /> {t('transfers.addRecipe')}
             </Button>
         </div>
     </div>
   );
-} 
+}
