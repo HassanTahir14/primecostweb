@@ -15,10 +15,12 @@ import { ArrowLeft } from 'lucide-react';
 import { getDefaultDateRange } from '@/utils/dateUtils';
 import { useCurrency } from '@/context/CurrencyContext';
 import { formatCurrencyValue } from '@/utils/currencyUtils';
+import { useTranslation } from '@/context/TranslationContext';
 
 const RecipesTransferredReportPage: React.FC = () => {
   const dispatch: AppDispatch = useDispatch();
   const { currency } = useCurrency();
+  const { t } = useTranslation();
   const [formattedCosts, setFormattedCosts] = useState<any>({});
   const { data: reportData, loading, error } = useSelector((state: RootState) => state.transferReports.recipesTransferred);
 
@@ -68,48 +70,48 @@ const RecipesTransferredReportPage: React.FC = () => {
 
   // Column definitions moved inside component to access formattedCosts
   const recipeColumns: ColumnDefinition<RecipeTransferRecord>[] = [
-    { header: 'Transfer Date', accessorKey: 'transferDate' },
-    { header: 'Transfer Code', accessorKey: 'transferCode' },
-    { header: 'Requested By', accessorKey: 'requestedBy' },
-    { header: 'Transferred By', accessorKey: 'transferredBy' },
-    { header: 'From Branch', accessorKey: 'fromBranch' },
-    { header: 'To Branch', accessorKey: 'toBranch' },
+    { header: t('transferRecipesTransferred.colTransferDate'), accessorKey: 'transferDate' },
+    { header: t('transferRecipesTransferred.colTransferCode'), accessorKey: 'transferCode' },
+    { header: t('transferRecipesTransferred.colRequestedBy'), accessorKey: 'requestedBy' },
+    { header: t('transferRecipesTransferred.colTransferredBy'), accessorKey: 'transferredBy' },
+    { header: t('transferRecipesTransferred.colFromBranch'), accessorKey: 'fromBranch' },
+    { header: t('transferRecipesTransferred.colToBranch'), accessorKey: 'toBranch' },
     { 
-        header: 'Transfer Cost', 
+        header: t('transferRecipesTransferred.colTransferCost'), 
         accessorKey: 'transferCost',
-        cell: (value, record) => formattedCosts[`${record.transferCode}-${record.transferDate}`] || 'N/A'
+        cell: (value, record) => formattedCosts[`${record.transferCode}-${record.transferDate}`] || t('transferRecipesTransferred.na')
     },
-    { header: 'Other Charges', accessorKey: 'otherCharges' },
-    { header: 'Total Cost', accessorKey: 'totalTransferCost' },
+    { header: t('transferRecipesTransferred.colOtherCharges'), accessorKey: 'otherCharges' },
+    { header: t('transferRecipesTransferred.colTotalCost'), accessorKey: 'totalTransferCost' },
   ];
 
   return (
-    <PageLayout title="Recipes Transferred Report">
+    <PageLayout title={t('transferRecipesTransferred.pageTitle')}>
       <div className="mb-4">
         <Link href="/reports/transfer" className="text-gray-500 hover:text-gray-700 flex items-center gap-2 w-fit">
           <ArrowLeft size={20} />
-          <span>Back to Transfer Reports</span>
+          <span>{t('transferRecipesTransferred.backToTransferReports')}</span>
         </Link>
       </div>
 
       <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 mb-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
           <Input
-            label="Start Date"
+            label={t('transferRecipesTransferred.labelStartDate')}
             type="date"
             name="startDate"
             value={startDate}
             onChange={(e) => setStartDate(e.target.value)}
           />
           <Input
-            label="End Date"
+            label={t('transferRecipesTransferred.labelEndDate')}
             type="date"
             name="endDate"
             value={endDate}
             onChange={(e) => setEndDate(e.target.value)}
           />
           <Button onClick={handleFetchReport} disabled={loading}>
-            {loading ? 'Generating...' : 'Generate Report'}
+            {loading ? t('transferRecipesTransferred.generating') : t('transferRecipesTransferred.generateReport')}
           </Button>
         </div>
         {validationError && (
@@ -118,7 +120,7 @@ const RecipesTransferredReportPage: React.FC = () => {
       </div>
 
       <ReportTypeTable<RecipeTransferRecord>
-        title="Transferred Recipes Report Results"
+        title={t('transferRecipesTransferred.tableTitle')}
         data={reportData?.transferDetails || []}
         columns={recipeColumns}
         isLoading={loading}
@@ -127,13 +129,13 @@ const RecipesTransferredReportPage: React.FC = () => {
       <ConfirmationModal
         isOpen={!!error}
         onClose={handleCloseErrorModal}
-        title="Error"
-        message={typeof error === 'string' ? error : (error as any)?.message || 'An error occurred fetching the report.'}
+        title={t('transferRecipesTransferred.errorTitle')}
+        message={typeof error === 'string' ? error : (error as any)?.message || t('transferRecipesTransferred.errorMsg')}
         isAlert={true}
-        okText="OK"
+        okText={t('transferRecipesTransferred.ok')}
       />
     </PageLayout>
   );
 };
 
-export default RecipesTransferredReportPage; 
+export default RecipesTransferredReportPage;
