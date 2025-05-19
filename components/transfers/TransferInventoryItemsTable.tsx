@@ -123,11 +123,8 @@ export default function TransferInventoryItemsTable({
         if (selectedItemData) {
             currentItem.itemId = selectedItemData.itemId;
             currentItem.itemCode = selectedItemData.itemCode;
-            // Calculate available quantity in primary unit
-            const availableQty = selectedItemData.secondaryUnitValue > 0
-              ? selectedItemData.totalQuantity / selectedItemData.secondaryUnitValue
-              : selectedItemData.totalQuantity;
-            currentItem.availableQuantity = availableQty;
+            // Use exact available quantity as received from response
+            currentItem.availableQuantity = selectedItemData.totalQuantity;
             currentItem.primaryUnitName = getPrimaryUnitName(selectedItemData.primaryUnitId);
             // Set primary unit as default
             currentItem.uom = selectedItemData.primaryUnitId?.toString() || '';
