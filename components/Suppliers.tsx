@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { useTranslation } from '@/context/TranslationContext';
 import Button from '@/components/common/button';
 import { fetchAllSuppliers, deleteSupplier } from '@/store/supplierSlice';
 import type { RootState } from '@/store/store';
@@ -15,6 +16,7 @@ interface SuppliersProps {
 }
 
 export default function Suppliers({ onClose, onEdit }: SuppliersProps) {
+  const { t } = useTranslation();
   const router = useRouter();
   const dispatch = useDispatch();
   const { suppliers, loading, error } = useSelector((state: RootState) => state.supplier);
@@ -68,7 +70,7 @@ export default function Suppliers({ onClose, onEdit }: SuppliersProps) {
           <button onClick={onClose} className="text-gray-600 hover:text-gray-800">
             <ArrowLeft className="w-5 h-5" />
           </button>
-          <h1 className="text-xl sm:text-2xl font-bold">Suppliers</h1>
+          <h1 className="text-xl sm:text-2xl font-bold">{t('suppliers.title')}</h1>
         </div>
 
         <Button 
@@ -76,7 +78,7 @@ export default function Suppliers({ onClose, onEdit }: SuppliersProps) {
           className="rounded-full bg-[#05A49D] text-white text-xs sm:text-sm px-3 py-1.5 sm:px-4 sm:py-2"
           disabled={loading}
         >
-          Add New
+          {t('suppliers.addNew')}
         </Button>
       </div>
 
@@ -90,12 +92,12 @@ export default function Suppliers({ onClose, onEdit }: SuppliersProps) {
             <table className="w-full min-w-[650px]">
               <thead>
                 <tr className="border-b">
-                  <th className="text-left pb-3 sm:pb-4 text-gray-500 text-xs sm:text-sm font-normal">Supplier Name</th>
-                  <th className="text-left pb-3 sm:pb-4 text-gray-500 text-xs sm:text-sm font-normal">Supplier Email</th>
-                  <th className="text-left pb-3 sm:pb-4 text-gray-500 text-xs sm:text-sm font-normal">Supplier Contact</th>
-                  <th className="text-left pb-3 sm:pb-4 text-gray-500 text-xs sm:text-sm font-normal">Supplier SalesMan</th>
-                  <th className="text-left pb-3 sm:pb-4 text-gray-500 text-xs sm:text-sm font-normal">ID</th>
-                  <th className="text-right pb-3 sm:pb-4 text-gray-500 text-xs sm:text-sm font-normal">Actions</th>
+                  <th className="text-left pb-3 sm:pb-4 text-gray-500 text-xs sm:text-sm font-normal">{t('suppliers.name')}</th>
+                  <th className="text-left pb-3 sm:pb-4 text-gray-500 text-xs sm:text-sm font-normal">{t('suppliers.email')}</th>
+                  <th className="text-left pb-3 sm:pb-4 text-gray-500 text-xs sm:text-sm font-normal">{t('suppliers.contact')}</th>
+                  <th className="text-left pb-3 sm:pb-4 text-gray-500 text-xs sm:text-sm font-normal">{t('suppliers.salesmanName')}</th>
+                  <th className="text-left pb-3 sm:pb-4 text-gray-500 text-xs sm:text-sm font-normal">{t('suppliers.id')}</th>
+                  <th className="text-right pb-3 sm:pb-4 text-gray-500 text-xs sm:text-sm font-normal">{t('common.action')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -115,7 +117,7 @@ export default function Suppliers({ onClose, onEdit }: SuppliersProps) {
                           onClick={() => onEdit(supplier.supplierId.toString())}
                           disabled={loading}
                         >
-                          Edit
+                          {t('common.edit')}
                         </Button>
                         {/* <Button 
                           variant="destructive" 
@@ -124,7 +126,7 @@ export default function Suppliers({ onClose, onEdit }: SuppliersProps) {
                           onClick={() => handleDeleteClick(supplier.supplierId)}
                           disabled={loading}
                         >
-                          Delete
+                          {t('common.delete')}
                         </Button> */}
                       </div>
                     </td>
@@ -135,7 +137,7 @@ export default function Suppliers({ onClose, onEdit }: SuppliersProps) {
           )}
           {suppliers.length === 0 && !loading && (
             <div className="text-center py-6 text-gray-500">
-              No suppliers found
+              {t('suppliers.noSuppliers')}
             </div>
           )}
         </div>
@@ -146,31 +148,31 @@ export default function Suppliers({ onClose, onEdit }: SuppliersProps) {
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
         onConfirm={handleDeleteConfirm}
-        title="Delete Supplier"
-        message="Are you sure you want to delete this supplier? This action cannot be undone."
-        confirmText="Delete"
-        cancelText="Cancel"
+        title={t('suppliers.deleteTitle')}
+        message={t('suppliers.deleteMessage')}
+        confirmText={t('common.delete')}
+        cancelText={t('common.cancel')}
       />
 
       {/* Success Modal */}
       <ConfirmationModal
         isOpen={isSuccessModalOpen}
         onClose={() => setIsSuccessModalOpen(false)}
-        title="Success"
+        title={t('common.success')}
         message={modalMessage}
         isAlert={true}
-        okText="OK"
+        okText={t('common.ok')}
       />
 
       {/* Error Modal */}
       <ConfirmationModal
         isOpen={isErrorModalOpen}
         onClose={() => setIsErrorModalOpen(false)}
-        title="Error"
+        title={t('common.error')}
         message={modalMessage}
         isAlert={true}
-        okText="OK"
+        okText={t('common.ok')}
       />
     </div>
   );
-} 
+}

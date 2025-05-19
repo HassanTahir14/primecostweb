@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { useTranslation } from '@/context/TranslationContext';
 import Button from '@/components/common/button';
 import Input from '@/components/common/input';
 import { addSupplier, updateSupplier, fetchAllSuppliers } from '@/store/supplierSlice';
@@ -17,6 +18,7 @@ interface SupplierDetailsProps {
 }
 
 export default function SupplierDetails({ supplierId, onClose }: SupplierDetailsProps) {
+  const { t } = useTranslation();
   const router = useRouter();
   const dispatch = useDispatch();
   const { loading, error, suppliers } = useSelector((state: RootState) => state.supplier);
@@ -63,12 +65,12 @@ export default function SupplierDetails({ supplierId, onClose }: SupplierDetails
           crNo: supplierToEdit.crNo
         });
       } else {
-        setModalMessage('Supplier not found');
+        setModalMessage(t('suppliers.notFound'));
         setIsErrorModalOpen(true);
         router.push('/suppliers');
       }
     }
-  }, [isEditMode, supplierId, suppliers, router]);
+  }, [isEditMode, supplierId, suppliers, router, t]);
 
   useEffect(() => {
     if (error) {
@@ -87,55 +89,50 @@ export default function SupplierDetails({ supplierId, onClose }: SupplierDetails
 
   const validateForm = () => {
     if (!formData.name) {
-      setModalMessage('Name is required');
+      setModalMessage(t('suppliers.nameRequired'));
       setIsErrorModalOpen(true);
       return false;
     }
     if (!formData.email) {
-      setModalMessage('Email is required');
+      setModalMessage(t('suppliers.emailRequired'));
       setIsErrorModalOpen(true);
       return false;
     }
     if (!formData.contactNo) {
-      setModalMessage('Contact number is required');
+      setModalMessage(t('suppliers.contactRequired'));
       setIsErrorModalOpen(true);
       return false;
     }
     if (!formData.salesmanName) {
-      setModalMessage('Salesman name is required');
+      setModalMessage(t('suppliers.salesmanNameRequired'));
       setIsErrorModalOpen(true);
       return false;
     }
     if (!formData.salesmanContactNo) {
-      setModalMessage('Salesman contact number is required');
+      setModalMessage(t('suppliers.salesmanContactRequired'));
       setIsErrorModalOpen(true);
       return false;
     }
     if (!formData.salesmanEmail) {
-      setModalMessage('Salesman email is required');
+      setModalMessage(t('suppliers.salesmanEmailRequired'));
       setIsErrorModalOpen(true);
       return false;
     }
     if (!formData.supplierAddress) {
-      setModalMessage('Supplier address is required');
+      setModalMessage(t('suppliers.addressRequired'));
       setIsErrorModalOpen(true);
       return false;
     }
     if (!formData.vatNo) {
-      setModalMessage('VAT number is required');
+      setModalMessage(t('suppliers.vatRequired'));
       setIsErrorModalOpen(true);
       return false;
     }
     if (!formData.crNo) {
-      setModalMessage('CR number is required');
+      setModalMessage(t('suppliers.crRequired'));
       setIsErrorModalOpen(true);
       return false;
     } 
-    
-    
-    
-    
-    
     return true;
   };
 
@@ -173,18 +170,18 @@ export default function SupplierDetails({ supplierId, onClose }: SupplierDetails
         <button onClick={() => router.push('/suppliers')} className="text-gray-600 hover:text-gray-800 mr-2">
           <ArrowLeft className="w-5 h-5" />
         </button>
-        <h1 className="text-xl sm:text-2xl font-bold">Supplier Details</h1>
+        <h1 className="text-xl sm:text-2xl font-bold">{t('suppliers.detailsTitle')}</h1>
       </div>
 
       <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6 flex-1">
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-gray-700 mb-2 font-medium">Name</label>
+              <label className="block text-gray-700 mb-2 font-medium">{t('suppliers.name')}</label>
               <Input
                 type="text"
                 name="name"
-                placeholder="Enter supplier name"
+                placeholder={t('suppliers.namePlaceholder')}
                 value={formData.name}
                 onChange={handleChange}
                 className="w-full"
@@ -193,11 +190,11 @@ export default function SupplierDetails({ supplierId, onClose }: SupplierDetails
             </div>
             
             <div>
-              <label className="block text-gray-700 mb-2 font-medium">Salesman Name</label>
+              <label className="block text-gray-700 mb-2 font-medium">{t('suppliers.salesmanName')}</label>
               <Input
                 type="text"
                 name="salesmanName"
-                placeholder="Enter salesman name"
+                placeholder={t('suppliers.salesmanNamePlaceholder')}
                 value={formData.salesmanName}
                 onChange={handleChange}
                 className="w-full"
@@ -207,11 +204,11 @@ export default function SupplierDetails({ supplierId, onClose }: SupplierDetails
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-gray-700 mb-2 font-medium">Contact Number</label>
+              <label className="block text-gray-700 mb-2 font-medium">{t('suppliers.contact')}</label>
               <Input
                 type="text"
                 name="contactNo"
-                placeholder="Enter supplier contact"
+                placeholder={t('suppliers.contactPlaceholder')}
                 value={formData.contactNo}
                 onChange={handleChange}
                 className="w-full"
@@ -220,11 +217,11 @@ export default function SupplierDetails({ supplierId, onClose }: SupplierDetails
             </div>
             
             <div>
-              <label className="block text-gray-700 mb-2 font-medium">Salesman Contact Number</label>
+              <label className="block text-gray-700 mb-2 font-medium">{t('suppliers.salesmanContact')}</label>
               <Input
                 type="text"
                 name="salesmanContactNo"
-                placeholder="Enter salesman contact"
+                placeholder={t('suppliers.salesmanContactPlaceholder')}
                 value={formData.salesmanContactNo}
                 onChange={handleChange}
                 className="w-full"
@@ -234,11 +231,11 @@ export default function SupplierDetails({ supplierId, onClose }: SupplierDetails
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-gray-700 mb-2 font-medium">Email</label>
+              <label className="block text-gray-700 mb-2 font-medium">{t('suppliers.email')}</label>
               <Input
                 type="email"
                 name="email"
-                placeholder="Enter supplier email"
+                placeholder={t('suppliers.emailPlaceholder')}
                 value={formData.email}
                 onChange={handleChange}
                 className="w-full"
@@ -247,11 +244,11 @@ export default function SupplierDetails({ supplierId, onClose }: SupplierDetails
             </div>
             
             <div>
-              <label className="block text-gray-700 mb-2 font-medium">Salesman Email</label>
+              <label className="block text-gray-700 mb-2 font-medium">{t('suppliers.salesmanEmail')}</label>
               <Input
                 type="email"
                 name="salesmanEmail"
-                placeholder="Enter salesman email"
+                placeholder={t('suppliers.salesmanEmailPlaceholder')}
                 value={formData.salesmanEmail}
                 onChange={handleChange}
                 className="w-full"
@@ -261,11 +258,11 @@ export default function SupplierDetails({ supplierId, onClose }: SupplierDetails
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-gray-700 mb-2 font-medium">VAT No.</label>
+              <label className="block text-gray-700 mb-2 font-medium">{t('suppliers.vat')}</label>
               <Input
                 type="text"
                 name="vatNo"
-                placeholder="Enter supplier VAT"
+                placeholder={t('suppliers.vatPlaceholder')}
                 value={formData.vatNo}
                 onChange={handleChange}
                 className="w-full"
@@ -273,11 +270,11 @@ export default function SupplierDetails({ supplierId, onClose }: SupplierDetails
             </div>
             
             <div>
-              <label className="block text-gray-700 mb-2 font-medium">Supplier Address</label>
+              <label className="block text-gray-700 mb-2 font-medium">{t('suppliers.address')}</label>
               <Input
                 type="text"
                 name="supplierAddress"
-                placeholder="Enter supplier address"
+                placeholder={t('suppliers.addressPlaceholder')}
                 value={formData.supplierAddress}
                 onChange={handleChange}
                 className="w-full"
@@ -286,11 +283,11 @@ export default function SupplierDetails({ supplierId, onClose }: SupplierDetails
           </div>
           
           <div>
-            <label className="block text-gray-700 mb-2 font-medium">CR Number</label>
+            <label className="block text-gray-700 mb-2 font-medium">{t('suppliers.cr')}</label>
             <Input
               type="text"
               name="crNo"
-              placeholder="Enter supplier cr number"
+              placeholder={t('suppliers.crPlaceholder')}
               value={formData.crNo}
               onChange={handleChange}
               className="w-full md:w-1/2"
@@ -303,7 +300,7 @@ export default function SupplierDetails({ supplierId, onClose }: SupplierDetails
               className="bg-[#05A49D] text-white hover:bg-[#048c86] px-6 py-2.5 rounded-md"
               disabled={loading}
             >
-              {loading ? 'Processing...' : 'SUBMIT'}
+              {loading ? 'Processing...' : t('common.submit')}
             </Button>
           </div>
         </form>
@@ -313,21 +310,21 @@ export default function SupplierDetails({ supplierId, onClose }: SupplierDetails
       <ConfirmationModal
         isOpen={isSuccessModalOpen}
         onClose={handleSuccessClose}
-        title="Success"
+        title={t('suppliers.success')}
         message={modalMessage}
         isAlert={true}
-        okText="OK"
+        okText={t('suppliers.ok')}
       />
 
       {/* Error Modal */}
       <ConfirmationModal
         isOpen={isErrorModalOpen}
         onClose={() => setIsErrorModalOpen(false)}
-        title="Error"
+        title={t('suppliers.error')}
         message={modalMessage}
         isAlert={true}
-        okText="OK"
+        okText={t('suppliers.ok')}
       />
     </div>
   );
-} 
+}
