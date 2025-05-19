@@ -1012,5 +1012,25 @@
         "unitRequired": "Unit is required",
         "deleteTitle": "Delete Serving Size",
         "deleteMessage": "Are you sure you want to delete? This action cannot be undone."
+    },
+    "slaReport": {
+        "title": "SLA Report",
+        "totalRequest": "Total Request",
+        "approved": "Approved",
+        "rejected": "Rejected",
+        "pending": "Pending",
+        "exportData": "Export Data",
+        "loading": "Loading SLA data...",
+        "noData": "No SLA data available.",
+        "type": "Type",
+        "id": "ID",
+        "from": "From",
+        "dated": "Dated",
+        "status": "Status",
+        "statuses": {
+            "approved": "Approved",
+            "rejected": "Rejected",
+            "pending": "Pending"
+        }
     }
 }

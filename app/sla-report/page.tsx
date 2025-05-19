@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useTranslation } from '@/context/TranslationContext';
 import PageLayout from '@/components/PageLayout';
 import Button from '@/components/common/button';
 import api from '@/store/api'; // Import the api instance
@@ -10,6 +11,7 @@ import ConfirmationModal from '@/components/common/ConfirmationModal'; // Import
 // const mockSlaData = [...];
 
 export default function SlaReportPage() {
+  const { t } = useTranslation();
   // Add state for data, loading, modal, and summary counts
   const [slaData, setSlaData] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -72,30 +74,30 @@ export default function SlaReportPage() {
   };
 
   return (
-    <PageLayout title="SLA Report">
+    <PageLayout title={t('slaReport.title')}>
       <div className="space-y-6">
         {/* Status Cards - Updated with dynamic data */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="bg-[#00997B] text-white rounded-lg p-4 flex justify-between items-center">
-            <span className="font-medium">Total Request</span>
+            <span className="font-medium">{t('slaReport.totalRequest')}</span>
             <span className="bg-white text-[#00997B] rounded-full px-2 py-0.5 text-sm font-semibold">
               {loading ? '-' : totalRequests}
             </span>
           </div>
           <div className="bg-[#00997B] text-white rounded-lg p-4 flex justify-between items-center">
-            <span className="font-medium">Approved</span>
+            <span className="font-medium">{t('slaReport.approved')}</span>
             <span className="bg-white text-[#00997B] rounded-full px-2 py-0.5 text-sm font-semibold">
               {loading ? '-' : approvedCount}
             </span>
           </div>
           <div className="bg-[#00997B] text-white rounded-lg p-4 flex justify-between items-center">
-            <span className="font-medium">Rejected</span>
+            <span className="font-medium">{t('slaReport.rejected')}</span>
             <span className="bg-white text-[#00997B] rounded-full px-2 py-0.5 text-sm font-semibold">
               {loading ? '-' : rejectedCount}
             </span>
           </div>
           <div className="bg-[#00997B] text-white rounded-lg p-4 flex justify-between items-center">
-            <span className="font-medium">Pending</span>
+            <span className="font-medium">{t('slaReport.pending')}</span>
             <span className="bg-white text-[#00997B] rounded-full px-2 py-0.5 text-sm font-semibold">
               {loading ? '-' : pendingCount}
             </span>
@@ -105,26 +107,26 @@ export default function SlaReportPage() {
         {/* SLA Report Table */}
         <div className="bg-white rounded-lg shadow-sm p-6">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-2xl font-semibold text-gray-900">SLA Report</h2>
+            <h2 className="text-2xl font-semibold text-gray-900">{t('slaReport.title')}</h2>
             <Button>
-              Export Data
+              {t('slaReport.exportData')}
             </Button>
           </div>
           
           <div className="overflow-x-auto">
             {loading ? (
-              <div className="text-center py-4 text-gray-500">Loading SLA data...</div>
+              <div className="text-center py-4 text-gray-500">{t('slaReport.loading')}</div>
             ) : slaData.length === 0 && !modalMessage ? (
-              <div className="text-center py-4 text-gray-500">No SLA data available.</div>
+              <div className="text-center py-4 text-gray-500">{t('slaReport.noData')}</div>
             ) : (
               <table className="w-full">
                 <thead>
                   <tr className="text-left border-b border-gray-200">
-                    <th className="py-3 px-4 font-medium text-gray-600">Type</th>
-                    <th className="py-3 px-4 font-medium text-gray-600">ID</th>
-                    <th className="py-3 px-4 font-medium text-gray-600">From</th>
-                    <th className="py-3 px-4 font-medium text-gray-600">Dated</th>
-                    <th className="py-3 px-4 font-medium text-gray-600">Status</th>
+                    <th className="py-3 px-4 font-medium text-gray-600">{t('slaReport.type')}</th>
+                    <th className="py-3 px-4 font-medium text-gray-600">{t('slaReport.id')}</th>
+                    <th className="py-3 px-4 font-medium text-gray-600">{t('slaReport.from')}</th>
+                    <th className="py-3 px-4 font-medium text-gray-600">{t('slaReport.dated')}</th>
+                    <th className="py-3 px-4 font-medium text-gray-600">{t('slaReport.status')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
@@ -145,7 +147,7 @@ export default function SlaReportPage() {
                             : ''
                         }`}
                       >
-                        {item.status}
+                        {t(`slaReport.statuses.${item.status?.toLowerCase()}`) || item.status}
                       </td>
                     </tr>
                   ))}
@@ -160,11 +162,11 @@ export default function SlaReportPage() {
       <ConfirmationModal
         isOpen={isModalOpen}
         onClose={handleCloseModal}
-        title={isModalAlert ? 'Error' : 'Information'}
+        title={isModalAlert ? t('common.error') : t('common.info')}
         message={modalMessage}
         isAlert={isModalAlert}
-        okText="OK"
+        okText={t('common.ok')}
       />
     </PageLayout>
   );
-} 
+}
