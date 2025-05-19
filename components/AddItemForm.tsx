@@ -13,6 +13,7 @@ import { fetchAllTaxes, selectAllTaxes } from '@/store/taxSlice';
 import { fetchAllBranches } from "@/store/branchSlice";
 import { fetchCountries, formatCountryOptions } from '@/utils/countryUtils';
 import { getCurrencyFromStorage } from '@/utils/currencyUtils';
+import { useTranslation } from '@/context/TranslationContext';
 // TODO: Import actions/selectors for Units and Tax Types when available
 // import { fetchAllUnits, selectAllUnits } from '@/store/unitSlice'; 
 // import { fetchAllTaxTypes, selectAllTaxTypes } from '@/store/taxTypeSlice';
@@ -167,13 +168,12 @@ export default function AddItemForm({ onClose, onSuccess }: AddItemFormProps) {
   // useEffect for showing modal based on status/action
   useEffect(() => {
     if (itemStatus === 'succeeded' && currentAction === 'add') {
-       handleShowMessage('Success', 'Item added successfully!');
+       handleShowMessage(t('items.add.successTitle'), t('items.add.successMessage'));
     } else if (itemStatus === 'failed' && currentAction === 'add') {
-       const errorMsg = typeof itemError === 'string' ? itemError : (itemError?.description || itemError?.message || 'Failed to add item. Please check details and try again.');
-       handleShowMessage('Error Adding Item', errorMsg);
+       const errorMsg = typeof itemError === 'string' ? itemError : (itemError?.description || itemError?.message || t('items.add.errorMessage'));
+       handleShowMessage(t('items.add.errorTitle'), errorMsg);
     }
-    // No dependency on itemError needed here, only for displaying message if status is failed
-  }, [itemStatus, currentAction]); // Depend only on status and action changes
+  }, [itemStatus, currentAction]);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -226,48 +226,39 @@ export default function AddItemForm({ onClose, onSuccess }: AddItemFormProps) {
 
   // --- Validation for Details Tab --- 
   const validateDetailsTab = (): string | null => {
-    // Check only the fields required on the Details tab
     const requiredDetailsFields: Record<string, string> = {
-        itemName: "Item Name",
-        category: "Item Category",
-        primaryUnit: "Primary Unit",
-        primaryUnitValue: "Primary Unit Value",
-        secondaryUnit: "Secondary Unit",
-        secondaryUnitValue: "Secondary Unit Value",
-        countryOfOrigin: "Country of Origin",
-        itemType: "Item Type",
-        // branch: "Branch",
-        // storageLocation: "Storage Location",
-        brandName: "Brand Name",
-
-        // Add other required fields VISIBLE ON DETAILS TAB if any
+        itemName: t('items.form.itemName'),
+        category: t('items.form.itemCategory'),
+        primaryUnit: t('items.form.primaryUnit'),
+        primaryUnitValue: t('items.form.primaryUnitValue'),
+        secondaryUnit: t('items.form.secondaryUnit'),
+        secondaryUnitValue: t('items.form.secondaryUnitValue'),
+        countryOfOrigin: t('items.form.countryOfOrigin'),
+        itemType: t('items.form.itemType'),
+        brandName: t('items.form.brandName'),
     };
-
     for (const field in requiredDetailsFields) {
         if (!formData[field] || String(formData[field]).trim() === "") {
-            return `${requiredDetailsFields[field]} is required.`;
+            return t('items.form.requiredField', { field: requiredDetailsFields[field] });
         }
     }
-    
-    // You might want basic numeric checks here too if applicable
     const numericDetailsFields: Record<string, string> = {
-        primaryUnitValue: "Primary Unit Value",
-        secondaryUnitValue: "Secondary Unit Value",
+        primaryUnitValue: t('items.form.primaryUnitValue'),
+        secondaryUnitValue: t('items.form.secondaryUnitValue'),
     };
     for (const field in numericDetailsFields) {
          const value = formData[field];
          if (value && isNaN(Number(value))) {
-             return `${numericDetailsFields[field]} must be a valid number.`;
+             return t('items.form.mustBeNumber', { field: numericDetailsFields[field] });
          }
           if (value && Number(value) < 0) {
-              return `${numericDetailsFields[field]} cannot be negative.`;
+              return t('items.form.cannotBeNegative', { field: numericDetailsFields[field] });
          }
     }
     if (formData.secondaryUnitValue && !formData.secondaryUnit) {
-         return "Secondary Unit must be selected if Secondary Unit Value is entered.";
+         return t('items.form.secondaryUnitRequired');
     }
-
-    return null; // Details tab is valid
+    return null;
   };
 
   // --- Validation for Final Submission (Checks both tabs) ---
@@ -278,33 +269,28 @@ export default function AddItemForm({ onClose, onSuccess }: AddItemFormProps) {
 
     // Then, check required fields on the Costing tab
     const requiredCostingFields: Record<string, string> = {
-        taxType: "TAX Type",
-        // Add other required costing fields like purchase costs if mandatory
-        // purchaseCostWithoutVAT: "Purchase Cost (Without VAT)",
+        taxType: t('items.form.taxType'),
     };
     for (const field in requiredCostingFields) {
         if (!formData[field] || String(formData[field]).trim() === "") {
-            return `${requiredCostingFields[field]} is required.`;
+            return t('items.form.requiredField', { field: requiredCostingFields[field] });
         }
     }
 
     // Numeric checks for costing fields
     const numericCostingFields: Record<string, string> = {
-        purchaseCostWithoutVAT: "Purchase Cost (Without VAT)",
-        purchaseCostWithVAT: "Purchase Cost (With VAT)",
+        purchaseCostWithoutVAT: t('items.form.purchaseCostWithoutVAT'),
+        purchaseCostWithVAT: t('items.form.purchaseCostWithVAT'),
     };
     for (const field in numericCostingFields) {
          const value = formData[field];
          if (value && isNaN(Number(value))) {
-             return `${numericCostingFields[field]} must be a valid number.`;
+             return t('items.form.mustBeNumber', { field: numericCostingFields[field] });
          }
          if (value && Number(value) < 0) {
-              return `${numericCostingFields[field]} cannot be negative.`;
+              return t('items.form.cannotBeNegative', { field: numericCostingFields[field] });
          }
     }
-    
-    // Add any other cross-tab validation if needed
-
     return null; // Entire form is valid
   };
 
@@ -385,15 +371,16 @@ export default function AddItemForm({ onClose, onSuccess }: AddItemFormProps) {
     }
   };
 
+  const { t } = useTranslation();
+
   return (
     <div className="flex-1 flex flex-col">
       <div className="flex items-center gap-2 mb-4 md:mb-6">
         <button onClick={onClose} className="text-gray-600 hover:text-gray-800" disabled={isLoading}>
           <ArrowLeft className="w-5 h-5" />
         </button>
-        <h1 className="text-xl font-semibold">Add New Item</h1>
+        <h1 className="text-xl font-semibold">{t('items.add.title')}</h1>
       </div>
-
       <div className="flex mb-4 md:mb-6">
         <button
           className={`flex-1 py-3 text-center font-medium rounded-none ${
@@ -404,7 +391,7 @@ export default function AddItemForm({ onClose, onSuccess }: AddItemFormProps) {
           onClick={() => setCurrentTab("details")}
           disabled={isLoading}
         >
-          Details
+          {t('items.add.tabs.details')}
         </button>
         <button
           className={`flex-1 py-3 text-center font-medium rounded-none ${
@@ -415,45 +402,35 @@ export default function AddItemForm({ onClose, onSuccess }: AddItemFormProps) {
           onClick={() => setCurrentTab("costing")}
           disabled={isLoading}
         >
-          Costing/Images
+          {t('items.add.tabs.costingImages')}
         </button>
       </div>
-
       <form onSubmit={handleSubmit} className="flex-1 bg-white rounded-lg p-4 md:p-6">
         {currentTab === "details" ? (
-          // Details Tab Content
           <div className="space-y-5">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Input
-                 label="Item Name *"
+                 label={t('items.form.itemNameRequired')}
                 name="itemName"
                 value={formData.itemName}
                 onChange={handleInputChange}
-                 placeholder="Enter item name"
+                 placeholder={t('items.form.itemNamePlaceholder')}
                  required
               />
-
               <Input
-              label="Brand Name"
+              label={t('items.form.brandName')}
               name="brandName"
               value={formData.brandName}
               onChange={handleInputChange}
-               placeholder="Enter brand name"
+               placeholder={t('items.form.brandNamePlaceholder')}
               />
-              {/* <Select
-                label="Branch"
-                name="branch"
-                value={formData.branch}
-                onChange={handleInputChange}
-                 options={BRANCH_OPTIONS} // Replace with fetched data if needed
-              /> */}
               <div className="relative">
                 <Input
-                  label="Item Code"
+                  label={t('items.form.itemCode')}
                   name="itemCode"
                   value={formData.itemCode}
                   onChange={handleInputChange}
-                   placeholder="Enter or generate code"
+                   placeholder={t('items.form.itemCodePlaceholder')}
                   className="pr-4 md:pr-40"
                 />
                 <div className="mt-2 md:mt-0 md:absolute md:right-2 md:bottom-1.5">
@@ -463,133 +440,113 @@ export default function AddItemForm({ onClose, onSuccess }: AddItemFormProps) {
                     className="w-full md:w-auto px-4 py-1.5 bg-[#339A89] text-white text-sm rounded-full hover:bg-[#2b8274] transition-colors"
                      disabled={isLoading}
                   >
-                    Generate Item Code
+                    {t('items.form.generateItemCode')}
                   </button>
                 </div>
               </div>
-              {/* <Select
-                label="Storage Location"
-                name="storageLocation"
-                value={formData.storageLocation}
-                onChange={handleInputChange}
-                 options={LOCATION_OPTIONS} // Replace with fetched data if needed
-              />
-              <Input
-                label="Items Brand Name"
-                name="brandName"
-                value={formData.brandName}
-                onChange={handleInputChange}
-                 placeholder="Enter brand name"
-              /> */}
               <Select
-                label="Country of Origin"
+                label={t('items.form.countryOfOrigin')}
                 name="countryOfOrigin"
                 value={formData.countryOfOrigin}
                 onChange={handleInputChange}
                 options={countryOptions}
               />
               <Select
-                 label="Item Category *"
+                 label={t('items.form.itemCategoryRequired')}
                 name="category"
                 value={formData.category}
                 onChange={handleInputChange}
-                 options={categoryOptions} // Use fetched categories
+                 options={categoryOptions}
                  required
               />
               <Select
-                label="Item Type"
+                label={t('items.form.itemType')}
                 name="itemType"
                 value={formData.itemType}
                 onChange={handleInputChange}
-                 options={ITEM_TYPE_OPTIONS} // Replace with fetched data if needed
+                 options={ITEM_TYPE_OPTIONS}
               />
             </div>
-
             <div className="space-y-3 mt-6">
-              <h3 className="font-medium">Units of Measurement</h3>
-               {/* Display error if units failed to load */} 
+              <h3 className="font-medium">{t('items.form.unitsOfMeasurement')}</h3>
                 {unitsError && (
                  <div className="text-red-600 text-sm flex items-center gap-2">
-                   <AlertCircle size={16} /> Could not load units: {unitsError}
+                   <AlertCircle size={16} /> {t('items.form.unitsLoadError', { error: unitsError })}
                  </div>
-               )} 
+               )}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Select
-                   label="Primary unit *"
+                   label={t('items.form.primaryUnitRequired')}
                   name="primaryUnit"
                   value={formData.primaryUnit}
                   onChange={handleInputChange}
-                   options={unitOptions} // Use fetched units
+                   options={unitOptions}
                    required
-                   disabled={unitsLoading || !!unitsError} // Disable if loading or error
+                   disabled={unitsLoading || !!unitsError}
                 />
                 <Input
-                  label="Primary Unit Value"
+                  label={t('items.form.primaryUnitValue')}
                   name="primaryUnitValue"
-                   type="number" // Use number type
+                   type="number"
                   value={formData.primaryUnitValue}
                   onChange={handleInputChange}
-                   placeholder="Enter value (e.g., 1, 0.5)"
-                   step="any" // Allow decimals
+                   placeholder={t('items.form.primaryUnitValuePlaceholder')}
+                   step="any"
                    min="0"
                 />
                 <Select
-                  label="Secondary Unit"
+                  label={t('items.form.secondaryUnit')}
                   name="secondaryUnit"
                   value={formData.secondaryUnit}
                   onChange={handleInputChange}
-                   options={unitOptions} // Use fetched units
-                   disabled={unitsLoading || !!unitsError} // Disable if loading or error
+                   options={unitOptions}
+                   disabled={unitsLoading || !!unitsError}
                 />
                 <Input
-                  label="Secondary Unit Value"
+                  label={t('items.form.secondaryUnitValue')}
                   name="secondaryUnitValue"
-                   type="number" // Use number type
+                   type="number"
                   value={formData.secondaryUnitValue}
                   onChange={handleInputChange}
-                   placeholder="Enter value"
-                   step="any" // Allow decimals
+                   placeholder={t('items.form.secondaryUnitValuePlaceholder')}
+                   step="any"
                    min="0"
                 />
               </div>
             </div>
-
             <div className="flex justify-end mt-6">
                <Button type="button" onClick={handleNextClick} disabled={isLoading}>
-                Next
+                {t('items.add.next')}
               </Button>
             </div>
           </div>
         ) : (
-          // Costing/Images Tab Content
           <div className="space-y-5">
             <Select
-               label="TAX Type *"
+               label={t('items.form.taxTypeRequired')}
               name="taxType"
               value={formData.taxType}
               onChange={handleInputChange}
                options={taxTypeOptions}
                required
             />
-
             <div className="relative">
               <Input
-                label="Tax Rate (%)"
+                label={t('items.form.taxRate')}
                 name="taxRate"
                 value={formData.taxRate}
                 disabled
                 className="bg-gray-50"
               />
             </div>
-
             <div className="relative">
               <Input
-                label="Purchase Cost (Without VAT)"
+                label={t('items.form.purchaseCostWithoutVAT')}
                 name="purchaseCostWithoutVAT"
                  type="number"
                 value={formData.purchaseCostWithoutVAT}
                 onChange={handleInputChange}
-                 placeholder="Enter value"
+                 placeholder={t('items.form.purchaseCostWithoutVATPlaceholder')}
                 className="pl-16"
                  step="any"
                  min="0"
@@ -598,10 +555,9 @@ export default function AddItemForm({ onClose, onSuccess }: AddItemFormProps) {
                 {getCurrencyFromStorage()}
               </span>
             </div>
-
             <div className="relative">
               <Input
-                label="Purchase Cost (With VAT)"
+                label={t('items.form.purchaseCostWithVAT')}
                 name="purchaseCostWithVAT"
                  type="number"
                 value={formData.purchaseCostWithVAT}
@@ -612,11 +568,10 @@ export default function AddItemForm({ onClose, onSuccess }: AddItemFormProps) {
                 {getCurrencyFromStorage()}
               </span>
             </div>
-
             <div className="space-y-4">
-              <h3 className="font-medium">Item Images</h3>
+              <h3 className="font-medium">{t('items.form.itemImages')}</h3>
                <label htmlFor="file-upload" className="inline-block px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors cursor-pointer">
-                 Upload Image(s)
+                 {t('items.form.uploadImages')}
                </label>
               <input
                 id="file-upload"
@@ -635,44 +590,31 @@ export default function AddItemForm({ onClose, onSuccess }: AddItemFormProps) {
                   >
                     <img
                       src={URL.createObjectURL(file)}
-                      alt={`Preview ${index + 1}`}
+                      alt={t('items.form.imagePreviewAlt', { index: index + 1 })}
                       className="w-full h-full object-cover rounded-lg"
                     />
-                     {/* TODO: Implement remove button 
-                     <button 
-                        type="button" 
-                        onClick={() => handleRemoveImage(index)} 
-                        className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                        disabled={isLoading}
-                     >
-                       <X size={14} /> 
-                     </button>
-                     */} 
                   </div>
                 ))}
               </div>
             </div>
-
              <div className="flex justify-between items-center mt-6">
                 <Button type="button" variant="outline" onClick={() => setCurrentTab("details")} disabled={isLoading}>
-                  Back
+                  {t('items.add.back')}
                 </Button>
                <Button type="submit" disabled={isLoading}>
-                 {isLoading ? 'Adding Item...' : 'Add Product'}
+                 {isLoading ? t('items.add.adding') : t('items.add.addProduct')}
                </Button>
             </div>
           </div>
         )}
       </form>
-
-      {/* Message Modal */}
       <ConfirmationModal
         isOpen={isMessageModalOpen}
         onClose={handleMessageModalClose}
         title={messageModalContent.title}
         message={messageModalContent.message}
         isAlert={true}
-        okText="OK"
+        okText={t('common.ok')}
       />
     </div>
   );

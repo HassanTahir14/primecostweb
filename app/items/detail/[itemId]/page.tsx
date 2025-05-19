@@ -16,6 +16,7 @@ import { RootState } from '@/store/store'; // Import RootState if needed for typ
 import axios from 'axios'; // Use axios for direct API call if not using your api wrapper
 import { useCurrency } from '@/context/CurrencyContext';
 import { formatCurrencyValue } from '@/utils/currencyUtils';
+import { useTranslation } from '@/context/TranslationContext';
 
 // Define the specific Item structure (can be imported if defined elsewhere)
 interface ItemImage { imageId: number; path: string; }
@@ -106,6 +107,7 @@ const formatDate = (dateString: string | null | undefined) => {
 };
 
 export default function ItemDetailPage() {
+  const { t } = useTranslation();
   const router = useRouter();
   const params = useParams();
   const itemId = params.itemId as string;
@@ -286,64 +288,64 @@ export default function ItemDetailPage() {
   const fieldConfig: DetailFieldConfig[] = [
     { 
       key: 'name', 
-      label: 'Item Name',
+      label: t('items.detail.itemName'),
       render: (name) => name.split('@')[0]
     },
     {
       key: 'name',
-      label: 'Item Type',
-      render: (name) => name.split('@')[1] || 'N/A'
+      label: t('items.detail.itemType'),
+      render: (name) => name.split('@')[1] || t('common.na')
     },
-    { key: 'code', label: 'Item Code' },
-    { key: 'itemsBrandName', label: 'Brand Name' },
+    { key: 'code', label: t('items.detail.itemCode') },
+    { key: 'itemsBrandName', label: t('items.detail.brandName') },
     {
       key: 'categoryId', 
-      label: 'Category',
-      render: (categoryId) => (Array.isArray(categories) ? categories.find(c => c.categoryId === categoryId)?.name : undefined) || categoryId || 'N/A'
+      label: t('items.detail.category'),
+      render: (categoryId) => (Array.isArray(categories) ? categories.find(c => c.categoryId === categoryId)?.name : undefined) || categoryId || t('common.na')
     },
     {
       key: 'primaryUnitId',
-      label: 'Primary Unit',
-      render: (unitId) => units.find(u => u.unitOfMeasurementId === unitId)?.unitName || unitId || 'N/A'
+      label: t('items.detail.primaryUnit'),
+      render: (unitId) => units.find(u => u.unitOfMeasurementId === unitId)?.unitName || unitId || t('common.na')
     },
-    { key: 'primaryUnitValue', label: 'Primary Unit Value' }, 
+    { key: 'primaryUnitValue', label: t('items.detail.primaryUnitValue') }, 
     {
       key: 'secondaryUnitId',
-      label: 'Secondary Unit',
-      render: (unitId) => unitId ? (units.find(u => u.unitOfMeasurementId === unitId)?.unitName || unitId) : 'N/A'
+      label: t('items.detail.secondaryUnit'),
+      render: (unitId) => unitId ? (units.find(u => u.unitOfMeasurementId === unitId)?.unitName || unitId) : t('common.na')
     },
     {
       key: 'secondaryUnitValue',
-      label: 'Secondary Unit Value',
-      render: (value, data) => data.secondaryUnitId ? (value ?? 'N/A') : 'N/A'
+      label: t('items.detail.secondaryUnitValue'),
+      render: (value, data) => data.secondaryUnitId ? (value ?? t('common.na')) : t('common.na')
     }, 
     {
       key: 'taxId',
-      label: 'Tax Type',
-      render: (taxId) => taxes.find(t => t.taxId === taxId)?.taxName || taxId || 'N/A'
+      label: t('items.detail.taxType'),
+      render: (taxId) => taxes.find(tax => tax.taxId === taxId)?.taxName || taxId || t('common.na')
     },
     {
       key: 'taxId',
-      label: 'Tax Rate',
+      label: t('items.detail.taxRate'),
       render: (taxId) => {
-          const tax = taxes.find(t => t.taxId === taxId);
-          return tax ? `${tax.taxRate}%` : 'N/A';
+          const tax = taxes.find(tax => tax.taxId === taxId);
+          return tax ? `${tax.taxRate}%` : t('common.na');
       }
     },
     // Only show price-related fields to admin users
     ...(isAdmin ? [
       { 
         key: 'purchaseCostWithoutVat', 
-        label: 'Cost (VAT Excl)',
-        render: () => formattedCosts.purchaseCostWithoutVat || 'N/A'
+        label: t('items.detail.costVatExcl'),
+        render: () => formattedCosts.purchaseCostWithoutVat || t('common.na')
       },
       { 
         key: 'purchaseCostWithVat', 
-        label: 'Cost (VAT Incl)', 
-        render: () => formattedCosts.purchaseCostWithVat || 'N/A'
+        label: t('items.detail.costVatIncl'), 
+        render: () => formattedCosts.purchaseCostWithVat || t('common.na')
       }
     ] : []),
-    { key: 'countryOrigin', label: 'Country of Origin' },
+    { key: 'countryOrigin', label: t('items.detail.countryOfOrigin') },
   ];
 
   // Show loading if item list or units are loading, or if item is being searched
@@ -380,9 +382,9 @@ export default function ItemDetailPage() {
   // Extend fieldConfig for details section
   const extendedFieldConfig = [
     ...fieldConfig.filter(f => f.key !== 'taxId' && f.key !== 'taxRate'), // Remove old tax fields
-    { key: 'taxTypeWithRate', label: 'Tax Type' },
-    ...(extraDetails.conversionInfo ? [{ key: 'conversionInfo', label: 'Unit Conversion' }] : []),
-    ...(extraDetails.totalStockInfo ? [{ key: 'totalStockInfo', label: 'Total Stock' }] : []),
+    { key: 'taxTypeWithRate', label: t('items.detail.taxType') },
+    ...(extraDetails.conversionInfo ? [{ key: 'conversionInfo', label: t('items.detail.unitConversion') }] : []),
+    ...(extraDetails.totalStockInfo ? [{ key: 'totalStockInfo', label: t('items.detail.totalStock') }] : []),
   ];
 
   // Merge item data with extra details
@@ -404,11 +406,11 @@ export default function ItemDetailPage() {
   return (
     <PageLayout title={
       combinedLoading
-        ? "Loading Item..."
-        : (item ? `Item: ${item.name.split('@')[0]}` : "Item Detail")
+        ? t('items.detail.loadingItem')
+        : (item ? t('items.detail.itemWithName', { name: item.name.split('@')[0] }) : t('items.detail.itemDetail'))
     }>
       <GenericDetailPage
-        title="Item Details"
+        title={t('items.detail.itemDetails')}
         data={detailsData}
         fieldConfig={extendedFieldConfig}
         onBack={() => router.back()}
@@ -424,7 +426,7 @@ export default function ItemDetailPage() {
       {!combinedLoading && item && item.branchDetails && item.branchDetails.length > 0 && (
         <div className="flex-1 flex flex-col p-4 md:p-6 lg:p-8 bg-gray-50">
           <div className="bg-white bg-opacity-70 p-4 sm:p-6 md:p-8 rounded-2xl shadow-lg">
-            <h2 className="text-base md:text-lg font-bold mb-4">Branch Stock Details</h2>
+            <h2 className="text-base md:text-lg font-bold mb-4">{t('items.detail.branchStockDetails')}</h2>
             <div className="bg-white bg-opacity-90 rounded-xl shadow-md overflow-hidden">
               <div className="p-4 sm:p-6">
                 <dl className="grid grid-cols-1 gap-y-4">
@@ -439,11 +441,11 @@ export default function ItemDetailPage() {
                         <dd className="mt-2">
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2">
                             <div>
-                              <span className="text-sm font-medium text-gray-500">Location</span>
+                              <span className="text-sm font-medium text-gray-500">{t('items.detail.location')}</span>
                               <p className="mt-1 text-sm text-gray-900">{detail.storageLocationName}</p>
                             </div>
                             <div>
-                              <span className="text-sm font-medium text-gray-500">Quantity</span>
+                              <span className="text-sm font-medium text-gray-500">{t('items.detail.quantity')}</span>
                               <p className="mt-1 text-sm text-gray-900">{branchStock} {primaryUnit ? primaryUnit.unitName : ''}</p>
                             </div>
                           </div>
@@ -462,32 +464,17 @@ export default function ItemDetailPage() {
       {!purchaseOrdersLoading && receivedPurchaseOrders.length > 0 && (
         <div className="flex-1 flex flex-col p-4 md:p-6 lg:p-8 bg-gray-50">
           <div className="bg-white bg-opacity-70 p-4 sm:p-6 md:p-8 rounded-2xl shadow-lg">
-            <h2 className="text-base md:text-lg font-bold mb-4">Stock details from purchases</h2>
-            
-            {/* Conversion and total stock info
-            {primaryUnit && secondaryUnit && conversionRate && (
-              <div className="mb-4 text-gray-700 text-sm md:text-base">
-                <div>
-                  <span className="font-semibold">{`1 ${primaryUnit.unitName}`}</span>
-                  {` = ${conversionRate} ${secondaryUnit.unitName}`}
-                </div>
-                <div>
-                  <span className="font-semibold">Total Stock:</span>
-                  {` ${totalStockPrimary} ${primaryUnit.unitName}`}
-                </div> 
-              </div>
-            )} */}
-
+            <h2 className="text-base md:text-lg font-bold mb-4">{t('items.detail.stockDetailsFromPurchases')}</h2>
             <div className="overflow-x-auto">
               <table className="min-w-full border-separate border-spacing-y-2">
                 <thead>
                   <tr>
-                    <th className="text-left font-bold text-gray-700 px-4 py-2">Purchase Order Id</th>
-                    <th className="text-left font-bold text-gray-700 px-4 py-2">Quantity</th>
-                    <th className="text-left font-bold text-gray-700 px-4 py-2">Unit</th>
-                    <th className="text-left font-bold text-gray-700 px-4 py-2">Supplier Name</th>
-                    <th className="text-left font-bold text-gray-700 px-4 py-2">Delivered Date</th>
-                    <th className="text-left font-bold text-gray-700 px-4 py-2">Expiry Date</th>
+                    <th className="text-left font-bold text-gray-700 px-4 py-2">{t('items.detail.purchaseOrderId')}</th>
+                    <th className="text-left font-bold text-gray-700 px-4 py-2">{t('items.detail.quantity')}</th>
+                    <th className="text-left font-bold text-gray-700 px-4 py-2">{t('items.detail.unit')}</th>
+                    <th className="text-left font-bold text-gray-700 px-4 py-2">{t('items.detail.supplierName')}</th>
+                    <th className="text-left font-bold text-gray-700 px-4 py-2">{t('items.detail.deliveredDate')}</th>
+                    <th className="text-left font-bold text-gray-700 px-4 py-2">{t('items.detail.expiryDate')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -498,10 +485,10 @@ export default function ItemDetailPage() {
                       <td className="text-left px-4 py-2 text-gray-900">{po.unitName}</td>
                       <td className="text-left px-4 py-2 text-gray-900">{po.supplierName}</td>
                       <td className="text-left px-4 py-2 text-gray-900">
-                        {po.dateOfDelivery ? new Date(po.dateOfDelivery).toLocaleDateString('en-GB') : 'N/A'}
+                        {po.dateOfDelivery ? new Date(po.dateOfDelivery).toLocaleDateString('en-GB') : t('common.na')}
                       </td>
                       <td className="text-left px-4 py-2 text-gray-900">
-                        {po.expiryDate ? new Date(po.expiryDate).toLocaleDateString('en-GB') : 'N/A'}
+                        {po.expiryDate ? new Date(po.expiryDate).toLocaleDateString('en-GB') : t('common.na')}
                       </td>
                     </tr>
                   ))}
@@ -513,4 +500,4 @@ export default function ItemDetailPage() {
       )}
     </PageLayout>
   );
-} 
+}

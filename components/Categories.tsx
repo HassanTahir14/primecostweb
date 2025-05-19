@@ -20,6 +20,8 @@ import {
 } from '@/store/itemCategorySlice';
 import { AppDispatch } from '@/store/store';
 import Loader from './common/Loader';
+import { useTranslation } from '@/context/TranslationContext';
+
 interface Category {
   categoryId: number;
   name: string;
@@ -30,6 +32,7 @@ export default function Categories({ onClose }: { onClose: () => void }) {
   const categories = useSelector(selectAllCategories);
   const loading = useSelector(selectCategoryStatus);
   const error = useSelector(selectCategoryError);
+  const { t } = useTranslation();
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -45,7 +48,7 @@ export default function Categories({ onClose }: { onClose: () => void }) {
 
   useEffect(() => {
     if (error) {
-      handleShowMessage('Error', typeof error === 'string' ? error : 'An error occurred while fetching categories.');
+      handleShowMessage(t('categories.errorTitle'), typeof error === 'string' ? error : t('categories.errorFetch'));
     }
   }, [error]);
 
@@ -56,18 +59,18 @@ export default function Categories({ onClose }: { onClose: () => void }) {
 
   const handleAddCategory = async (categoryName: string) => {
     if (!categoryName.trim()) {
-      handleShowMessage('Validation Error', 'Category name cannot be empty.');
+      handleShowMessage(t('categories.validationTitle'), t('categories.validationEmpty'));
       return;
     }
     try {
       const resultAction = await dispatch(addCategory({ name: categoryName }));
       if (addCategory.fulfilled.match(resultAction)) {
-        handleShowMessage('Success', resultAction.payload.message || 'Category added successfully');
+        handleShowMessage(t('categories.successTitle'), resultAction.payload.message || t('categories.successAdd'));
         dispatch(fetchAllCategories());
         setIsCreateModalOpen(false);
       } else if (addCategory.rejected.match(resultAction)) {
-        const errorMsg = typeof resultAction.payload === 'string' ? resultAction.payload : (resultAction.payload as any)?.message || 'Failed to add category';
-        handleShowMessage('Error', errorMsg);
+        const errorMsg = typeof resultAction.payload === 'string' ? resultAction.payload : (resultAction.payload as any)?.message || t('categories.errorAdd');
+        handleShowMessage(t('categories.errorTitle'), errorMsg);
       }
     } finally {
     }
@@ -75,18 +78,18 @@ export default function Categories({ onClose }: { onClose: () => void }) {
 
   const handleEditCategory = async (categoryId: number, newName: string) => {
     if (!newName.trim()) {
-      handleShowMessage('Validation Error', 'Category name cannot be empty.');
+      handleShowMessage(t('categories.validationTitle'), t('categories.validationEmpty'));
       return;
     }
     try {
       const resultAction = await dispatch(updateCategory({ categoryId, name: newName }));
       if (updateCategory.fulfilled.match(resultAction)) {
-        handleShowMessage('Success', resultAction.payload.message || 'Category updated successfully');
+        handleShowMessage(t('categories.successTitle'), resultAction.payload.message || t('categories.successUpdate'));
         dispatch(fetchAllCategories());
         setIsEditModalOpen(false);
       } else if (updateCategory.rejected.match(resultAction)) {
-        const errorMsg = typeof resultAction.payload === 'string' ? resultAction.payload : (resultAction.payload as any)?.message || 'Failed to update category';
-        handleShowMessage('Error', errorMsg);
+        const errorMsg = typeof resultAction.payload === 'string' ? resultAction.payload : (resultAction.payload as any)?.message || t('categories.errorUpdate');
+        handleShowMessage(t('categories.errorTitle'), errorMsg);
       }
     } finally {
     }
@@ -96,10 +99,10 @@ export default function Categories({ onClose }: { onClose: () => void }) {
     try {
       const resultAction = await dispatch(deleteCategory(categoryId));
       if (deleteCategory.fulfilled.match(resultAction)) {
-        handleShowMessage('Success', resultAction.payload.message || 'Category deleted successfully');
+        handleShowMessage(t('categories.successTitle'), resultAction.payload.message || t('categories.successDelete'));
       } else if (deleteCategory.rejected.match(resultAction)) {
-        const errorMsg = typeof resultAction.payload === 'string' ? resultAction.payload : (resultAction.payload as any)?.message || 'Failed to delete category';
-        handleShowMessage('Error', errorMsg);
+        const errorMsg = typeof resultAction.payload === 'string' ? resultAction.payload : (resultAction.payload as any)?.message || t('categories.errorDelete');
+        handleShowMessage(t('categories.errorTitle'), errorMsg);
       }
     } finally {
       setIsDeleteModalOpen(false);
@@ -119,7 +122,7 @@ export default function Categories({ onClose }: { onClose: () => void }) {
 
   const handleMessageModalClose = () => {
     setIsMessageModalOpen(false);
-    if (messageModalContent.title !== 'Validation Error' && !isEditModalOpen && !isCreateModalOpen) {
+    if (messageModalContent.title !== t('categories.validationTitle') && !isEditModalOpen && !isCreateModalOpen) {
         dispatch(clearError());
     }
   };
@@ -139,22 +142,19 @@ export default function Categories({ onClose }: { onClose: () => void }) {
           <button onClick={onClose} className="text-gray-600 hover:text-gray-800">
             <ArrowLeft className="w-5 h-5" />
           </button>
-          <h1 className="text-xl sm:text-2xl font-bold">Categories</h1>
+          <h1 className="text-xl sm:text-2xl font-bold">{t('categories.title')}</h1>
         </div>
-
         <Button 
           onClick={() => setIsCreateModalOpen(true)}
           className="rounded-full bg-[#339A89] text-xs sm:text-sm px-3 py-1.5 sm:px-4 sm:py-2"
         >
-          Create New
+          {t('categories.createNew')}
         </Button>
       </div>
-
       <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6 flex-1">
         <div className="border-b pb-3 sm:pb-4 mb-3 sm:mb-4">
-          <h2 className="text-gray-500 text-xs sm:text-sm">Category Name</h2>
+          <h2 className="text-gray-500 text-xs sm:text-sm">{t('categories.categoryName')}</h2>
         </div>
-
         <div className="space-y-3 sm:space-y-4">
           {categories.map((category) => (
             <div 
@@ -169,7 +169,7 @@ export default function Categories({ onClose }: { onClose: () => void }) {
                   className="rounded-full bg-[#339A89] text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-1.5"
                   onClick={() => openEditModal(category)}
                 >
-                  Edit
+                  {t('categories.edit')}
                 </Button>
                 <Button 
                   variant="destructive" 
@@ -177,24 +177,22 @@ export default function Categories({ onClose }: { onClose: () => void }) {
                   className="rounded-full bg-red-500 text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-1.5"
                   onClick={() => openDeleteModal(category)}
                 >
-                  Delete
+                  {t('categories.delete')}
                 </Button>
               </div>
             </div>
           ))}
         </div>
       </div>
-
       <CreateCategoryModal 
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
         onAddCategory={handleAddCategory}
       />
-
       <Modal
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
-        title="Edit Category"
+        title={t('categories.editCategory')}
       >
         <form onSubmit={(e) => {
           e.preventDefault();
@@ -203,17 +201,16 @@ export default function Categories({ onClose }: { onClose: () => void }) {
           }
         }} className="w-full">
           <div className="mb-4 sm:mb-6">
-            <label className="block text-gray-700 mb-2 text-sm sm:text-base">Category Name *</label>
+            <label className="block text-gray-700 mb-2 text-sm sm:text-base">{t('categories.categoryNameRequired')}</label>
             <Input
               type="text"
               value={editCategoryName}
               onChange={(e) => setEditCategoryName(e.target.value)}
-              placeholder="Enter Category Name"
+              placeholder={t('categories.categoryNamePlaceholder')}
               className="w-full bg-white text-sm sm:text-base"
               required
             />
           </div>
-          
           <div className="flex justify-between gap-3 mt-6">
             <Button
               type="button"
@@ -221,37 +218,34 @@ export default function Categories({ onClose }: { onClose: () => void }) {
               onClick={() => setIsEditModalOpen(false)}
               className="border-gray-300 bg-white text-gray-700 hover:bg-gray-50 text-xs sm:text-sm py-2 px-3 sm:px-4"
             >
-              Cancel
+              {t('categories.cancel')}
             </Button>
-            
             <Button
               type="submit"
               className="bg-[#339A89] text-white hover:bg-[#2b8274] text-xs sm:text-sm py-2 px-3 sm:px-4"
             >
-              Update
+              {t('categories.update')}
             </Button>
           </div>
         </form>
       </Modal>
-
       <ConfirmationModal
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
         onConfirm={() => currentCategory && handleDeleteCategory(currentCategory.categoryId)}
-        title="Delete Category"
-        message={`Are you sure you want to delete the category "${currentCategory?.name}"?`}
-        confirmText="Delete"
-        cancelText="Cancel"
+        title={t('categories.deleteCategory')}
+        message={t('categories.deleteConfirm', { name: currentCategory?.name })}
+        confirmText={t('categories.delete')}
+        cancelText={t('categories.cancel')}
       />
-
       <ConfirmationModal
         isOpen={isMessageModalOpen}
         onClose={handleMessageModalClose}
         title={messageModalContent.title}
         message={messageModalContent.message}
         isAlert={true}
-        okText="OK"
+        okText={t('common.ok')}
       />
     </div>
   );
-} 
+}
