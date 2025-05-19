@@ -7,6 +7,7 @@ import { useDispatch } from 'react-redux';
 import { AppDispatch } from '@/store/store';
 import { useUnits } from '@/hooks/useUnits';
 import Select from '@/components/common/select';
+import { useTranslation } from '@/context/TranslationContext';
 
 interface Ingredient {
   id: number;
@@ -48,6 +49,7 @@ export default function RecipeIngredientsForm({ onNext, onBack, initialData, onS
   const [availableUnits, setAvailableUnits] = useState<any[]>([]);
 
   const { units } = useUnits();
+  const { t } = useTranslation();
 
   useEffect(() => {
     dispatch(fetchAllItems({}))
@@ -158,11 +160,11 @@ export default function RecipeIngredientsForm({ onNext, onBack, initialData, onS
   const validateFields = () => {
     const newErrors: { [key: string]: string } = {};
 
-    if (!item) newErrors.item = 'Item is required';
-    if (!quantity || Number(quantity) <= 0) newErrors.quantity = 'Quantity must be greater than 0';
-    if (!yieldPercent || Number(yieldPercent) <= 0) newErrors.yieldPercent = 'Yield % must be greater than 0';
-    if (apUsdUnit === '' || Number(apUsdUnit) < 0) newErrors.apUsdUnit = 'AP USD / Unit must be 0 or greater';
-    if (epUsdUnit === '' || Number(epUsdUnit) < 0) newErrors.epUsdUnit = 'EP USD / Unit must be 0 or greater';
+    if (!item) newErrors.item = t('recipes.subRecipes.ingredientsForm.itemRequired');
+    if (!quantity || Number(quantity) <= 0) newErrors.quantity = t('recipes.subRecipes.ingredientsForm.quantityRequired');
+    if (!yieldPercent || Number(yieldPercent) <= 0) newErrors.yieldPercent = t('recipes.subRecipes.ingredientsForm.yieldPercentRequired');
+    if (apUsdUnit === '' || Number(apUsdUnit) < 0) newErrors.apUsdUnit = t('recipes.subRecipes.ingredientsForm.apUsdUnitRequired');
+    if (epUsdUnit === '' || Number(epUsdUnit) < 0) newErrors.epUsdUnit = t('recipes.subRecipes.ingredientsForm.epUsdUnitRequired');
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -229,22 +231,22 @@ export default function RecipeIngredientsForm({ onNext, onBack, initialData, onS
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-semibold">Sub Recipe Ingredients</h2>
+      <h2 className="text-2xl font-semibold">{t('recipes.subRecipes.ingredientsForm.title')}</h2>
 
       {/* Ingredients List */}
       <div className="bg-white rounded-lg shadow p-4">
         <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-medium">Ingredients List</h3>
+          <h3 className="text-lg font-medium">{t('recipes.subRecipes.ingredientsForm.list')}</h3>
           <Button 
             onClick={() => setShowForm(true)} 
             disabled={showForm}
           >
-            Add Ingredient
+            {t('recipes.subRecipes.ingredientsForm.addIngredient')}
           </Button>
         </div>
 
         {ingredients.length === 0 ? (
-          <p className="text-gray-500 text-center py-4">No ingredients added yet</p>
+          <p className="text-gray-500 text-center py-4">{t('recipes.subRecipes.ingredientsForm.noIngredients')}</p>
         ) : (
           <div className="space-y-4">
             {ingredients.map((ingredient, index) => (
@@ -252,9 +254,9 @@ export default function RecipeIngredientsForm({ onNext, onBack, initialData, onS
                 <div>
                   <p className="font-medium">{ingredient.itemName.split('@')[0]}</p>
                   <p className="text-sm text-gray-600">
-                    Quantity: {ingredient.quantity} {ingredient.unit} | 
-                    Yield: {ingredient.yieldPercentage}% | 
-                    Cost: USD {ingredient.recipeCost.toFixed(2)}
+                    {t('recipes.subRecipes.ingredientsForm.quantity')}: {ingredient.quantity} {ingredient.unit} | 
+                    {t('recipes.subRecipes.ingredientsForm.yieldPercent')}: {ingredient.yieldPercentage}% | 
+                    {t('recipes.subRecipes.ingredientsForm.cost')}: USD {ingredient.recipeCost.toFixed(2)}
                   </p>
                 </div>
                 <div className="flex gap-2">
@@ -263,14 +265,14 @@ export default function RecipeIngredientsForm({ onNext, onBack, initialData, onS
                     size="sm"
                     onClick={() => handleEditIngredient(index)}
                   >
-                    Edit
+                    {t('recipes.subRecipes.ingredientsForm.edit')}
                   </Button>
                   <Button 
                     variant="destructive" 
                     size="sm"
                     onClick={() => handleDeleteIngredient(index)}
                   >
-                    Delete
+                    {t('recipes.subRecipes.ingredientsForm.delete')}
                   </Button>
                 </div>
               </div>
@@ -284,10 +286,10 @@ export default function RecipeIngredientsForm({ onNext, onBack, initialData, onS
         <div className="bg-white rounded-lg shadow p-6">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-lg font-medium">
-              {selectedIngredientIndex !== null ? 'Edit Ingredient' : 'Add New Ingredient'}
+              {selectedIngredientIndex !== null ? t('recipes.subRecipes.ingredientsForm.editIngredient') : t('recipes.subRecipes.ingredientsForm.addNewIngredient')}
             </h3>
             <Button variant="outline" size="sm" onClick={resetForm}>
-              Cancel
+              {t('common.cancel')}
             </Button>
           </div>
 
@@ -295,7 +297,7 @@ export default function RecipeIngredientsForm({ onNext, onBack, initialData, onS
           <div className="space-y-4">
             {/* Select Item */}
             <div>
-              <label className="block text-gray-700 font-medium mb-2">Select Item</label>
+              <label className="block text-gray-700 font-medium mb-2">{t('recipes.subRecipes.ingredientsForm.selectItem')}</label>
               <Select
                 label=""
                 options={itemList.map((item: any) => ({
@@ -311,7 +313,7 @@ export default function RecipeIngredientsForm({ onNext, onBack, initialData, onS
 
             {/* Unit Selection */}
             <div>
-              <label className="block text-gray-700 font-medium mb-2">Unit</label>
+              <label className="block text-gray-700 font-medium mb-2">{t('recipes.subRecipes.ingredientsForm.unit')}</label>
               <Select
                 label=""
                 options={availableUnits.map((unit: any) => ({
@@ -328,10 +330,10 @@ export default function RecipeIngredientsForm({ onNext, onBack, initialData, onS
 
             {/* Quantity */}
             <div>
-              <label className="block text-gray-700 font-medium mb-2">Quantity</label>
+              <label className="block text-gray-700 font-medium mb-2">{t('recipes.subRecipes.ingredientsForm.quantity')}</label>
               <input
                 type="number"
-                placeholder="Enter value"
+                placeholder={t('recipes.subRecipes.ingredientsForm.quantityPlaceholder')}
                 className={`w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00997B] ${errors.quantity ? 'border-red-500' : 'border-gray-300'}`}
                 value={quantity}
                 onChange={(e) => setQuantity(e.target.value)}
@@ -341,12 +343,12 @@ export default function RecipeIngredientsForm({ onNext, onBack, initialData, onS
 
             {/* Yield Percent */}
             <div>
-              <label className="block text-gray-700 font-medium mb-2">Yield %</label>
+              <label className="block text-gray-700 font-medium mb-2">{t('recipes.subRecipes.ingredientsForm.yieldPercent')}</label>
               <div className="relative">
                 <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">%</span>
                 <input
                   type="number"
-                  placeholder="Enter value"
+                  placeholder={t('recipes.subRecipes.ingredientsForm.yieldPercentPlaceholder')}
                   className={`w-full p-3 border rounded-lg pl-8 focus:outline-none focus:ring-2 focus:ring-[#00997B] ${errors.yieldPercent ? 'border-red-500' : 'border-gray-300'}`}
                   value={yieldPercent}
                   onChange={(e) => setYieldPercent(e.target.value)}
@@ -357,7 +359,7 @@ export default function RecipeIngredientsForm({ onNext, onBack, initialData, onS
 
             {/* AP USD / Unit */}
             <div>
-              <label className="block text-gray-700 font-medium mb-2">AP USD / Unit</label>
+              <label className="block text-gray-700 font-medium mb-2">{t('recipes.subRecipes.ingredientsForm.apUsdUnit')}</label>
               <input
                 type="number"
                 className={`w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00997B] ${errors.apUsdUnit ? 'border-red-500' : 'border-gray-300'}`}
@@ -370,7 +372,7 @@ export default function RecipeIngredientsForm({ onNext, onBack, initialData, onS
 
             {/* EP USD / Unit */}
             <div>
-              <label className="block text-gray-700 font-medium mb-2">EP USD / Unit</label>
+              <label className="block text-gray-700 font-medium mb-2">{t('recipes.subRecipes.ingredientsForm.epUsdUnit')}</label>
               <input
                 type="number"
                 className={`w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00997B] ${errors.epUsdUnit ? 'border-red-500' : 'border-gray-300'} bg-gray-100`}
@@ -384,7 +386,7 @@ export default function RecipeIngredientsForm({ onNext, onBack, initialData, onS
 
             {/* Recipe Cost */}
             <div>
-              <label className="block text-gray-700 font-medium mb-2">Sub Recipe cost</label>
+              <label className="block text-gray-700 font-medium mb-2">{t('recipes.subRecipes.ingredientsForm.recipeCost')}</label>
               <div className="w-full p-3 border border-gray-300 rounded-lg bg-gray-100">
                 USD {recipeCost.toFixed(2)}
               </div>
@@ -395,7 +397,7 @@ export default function RecipeIngredientsForm({ onNext, onBack, initialData, onS
               className="w-full mt-4" 
               onClick={handleSaveIngredient}
             >
-              {selectedIngredientIndex !== null ? 'Update Ingredient' : 'Add Ingredient'}
+              {selectedIngredientIndex !== null ? t('recipes.subRecipes.ingredientsForm.updateIngredient') : t('recipes.subRecipes.ingredientsForm.addIngredient')}
             </Button>
           </div>
         </div>
@@ -403,13 +405,13 @@ export default function RecipeIngredientsForm({ onNext, onBack, initialData, onS
 
       {/* Navigation Buttons */}
       <div className="flex justify-between mt-8">
-        <Button variant="secondary" onClick={onBack}>Back</Button>
+        <Button variant="secondary" onClick={onBack}>{t('common.back')}</Button>
         <Button 
           size="lg" 
           onClick={handleNextClick}
           disabled={ingredients.length === 0}
         >
-          Next
+          {t('common.next')}
         </Button>
       </div>
     </div>

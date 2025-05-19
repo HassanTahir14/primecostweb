@@ -8,6 +8,7 @@ import { Plus, Trash2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { AppDispatch } from '@/store/store';
 import ConfirmationModal from '@/components/common/ConfirmationModal';
+import { useTranslation } from '@/context/TranslationContext';
 
 interface RecipeImage {
   id: number;
@@ -30,6 +31,7 @@ interface ProcedureStep {
 export default function RecipeProcedureForm({ onNext, onBack, initialData, isEditMode = false, onSave }: RecipeProcedureFormProps) {
   const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
+  const { t } = useTranslation();
   const [steps, setSteps] = useState<ProcedureStep[]>(
     initialData.procedureStep?.length 
       ? initialData.procedureStep 
@@ -102,10 +104,10 @@ export default function RecipeProcedureForm({ onNext, onBack, initialData, isEdi
 
     steps.forEach((step, index) => {
       if (!step.stepDescription || step.stepDescription.trim().length < 3) {
-        newErrors[index] = 'Step description must be at least 3 characters long';
+        newErrors[index] = t('recipes.subRecipes.procedureForm.stepDescriptionRequired');
         isValid = false;
       } else if (step.stepDescription.length > 2000) {
-        newErrors[index] = 'Step description must not exceed 2000 characters';
+        newErrors[index] = t('recipes.subRecipes.procedureForm.stepDescriptionTooLong');
         isValid = false;
       }
     });
@@ -116,7 +118,7 @@ export default function RecipeProcedureForm({ onNext, onBack, initialData, isEdi
 
   const handleSubmit = () => {
     if (!validateSteps()) {
-      setErrorMessage('Please fix the validation errors before proceeding');
+      setErrorMessage(t('recipes.subRecipes.procedureForm.fixValidationErrors'));
       setShowErrorModal(true);
       return;
     }
@@ -138,7 +140,7 @@ export default function RecipeProcedureForm({ onNext, onBack, initialData, isEdi
   const handleFinalSubmit = async () => {
     try {
       if (!validateSteps()) {
-        alert('Please fix the validation errors before submitting');
+        alert(t('recipes.subRecipes.procedureForm.fixValidationErrors'));
         return;
       }
 
@@ -147,7 +149,7 @@ export default function RecipeProcedureForm({ onNext, onBack, initialData, isEdi
       // Ensure all steps have valid descriptions
       const hasEmptySteps = steps.some(step => !step.stepDescription.trim());
       if (hasEmptySteps) {
-        alert('All steps must have a description');
+        alert(t('recipes.subRecipes.procedureForm.allStepsRequired'));
         return;
       }
 
@@ -229,7 +231,7 @@ export default function RecipeProcedureForm({ onNext, onBack, initialData, isEdi
           }
         });
       } else {
-        setErrorMessage('At least one image is required');
+        setErrorMessage(t('recipes.subRecipes.procedureForm.imageRequired'));
         setShowErrorModal(true);
         return;
       }
@@ -244,7 +246,7 @@ export default function RecipeProcedureForm({ onNext, onBack, initialData, isEdi
       
       setShowSuccessModal(true);
     } catch (error: any) {
-      setErrorMessage(error.message || 'Failed to create sub recipe');
+      setErrorMessage(error.message || t('recipes.subRecipes.procedureForm.failedToCreate'));
       setShowErrorModal(true);
     } finally {
       setIsSubmitting(false);
@@ -257,22 +259,22 @@ export default function RecipeProcedureForm({ onNext, onBack, initialData, isEdi
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-semibold">Sub Recipe Procedure's</h2>
+        <h2 className="text-2xl font-semibold">{t('recipes.subRecipes.procedureForm.title')}</h2>
         <Button variant="secondary" onClick={handleAddStep}>
           <Plus className="w-4 h-4 mr-2" />
-          Add step
+          {t('recipes.subRecipes.procedureForm.addStep')}
         </Button>
       </div>
 
-      <label className="block text-gray-700 font-medium mb-2">Procedure Steps</label>
+      <label className="block text-gray-700 font-medium mb-2">{t('recipes.subRecipes.procedureForm.steps')}</label>
 
       {steps.map((step, index) => (
         <div key={index} className="space-y-2">
           <div className="flex items-center gap-4">
-            <span className="font-medium text-gray-700 whitespace-nowrap">Step {index + 1}:</span>
+            <span className="font-medium text-gray-700 whitespace-nowrap">{t('recipes.subRecipes.procedureForm.stepLabel', { number: index + 1 })}</span>
             <input
               type="text"
-              placeholder="Enter procedure description"
+              placeholder={t('recipes.subRecipes.procedureForm.enterDescription')}
               className={`flex-grow p-3 border ${errorDetails[index] ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00997B]`}
               value={step.stepDescription}
               onChange={(e) => handleStepChange(index, 'stepDescription', e.target.value)}
@@ -305,12 +307,12 @@ export default function RecipeProcedureForm({ onNext, onBack, initialData, isEdi
       <ConfirmationModal
         isOpen={showErrorModal}
         onClose={() => setShowErrorModal(false)}
-        title="Validation Error"
+        title={t('recipes.subRecipes.procedureForm.validationErrorTitle')}
         message={`${errorMessage}\n\n${Object.entries(errorDetails)
           .map(([key, value]) => `• ${value}`)
           .join('\n')}`}
         isAlert={true}
-        okText="Close"
+        okText={t('common.close')}
       />
 
       {/* Success Modal */}
@@ -320,18 +322,18 @@ export default function RecipeProcedureForm({ onNext, onBack, initialData, isEdi
           setShowSuccessModal(false);
           router.push('/recipes/sub-recipes');
         }}
-        title="Success"
-        message="Succesful!"
+        title={t('common.success')}
+        message={t('recipes.subRecipes.procedureForm.successful')}
         isAlert={true}
-        okText="OK"
+        okText={t('common.ok')}
       />
 
       <div className="flex justify-between mt-8">
-        <Button variant="secondary" onClick={onBack} disabled={isSubmitting}>Back</Button>
+        <Button variant="secondary" onClick={onBack} disabled={isSubmitting}>{t('common.back')}</Button>
         <Button onClick={handleFinalSubmit}>
-          {isSubmitting ? (isEditMode ? 'Updating Sub Recipe...' : 'Creating Sub Recipe...') : (isEditMode ? 'UPDATE SUB RECIPE' : 'CREATE SUB RECIPE')}
+          {isSubmitting ? (isEditMode ? t('recipes.subRecipes.procedureForm.updating') : t('recipes.subRecipes.procedureForm.creating')) : (isEditMode ? t('recipes.subRecipes.procedureForm.updateButton') : t('recipes.subRecipes.procedureForm.createButton'))}
         </Button>
       </div>
     </div>
   );
-} 
+}

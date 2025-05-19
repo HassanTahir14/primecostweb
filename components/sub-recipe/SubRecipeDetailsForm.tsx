@@ -14,6 +14,7 @@ import { useRouter } from 'next/navigation';
 import { getImageUrlWithAuth } from '@/utils/imageUtils';
 import AuthImage from '@/components/common/AuthImage';
 import Select from '@/components/common/select';
+import { useTranslation } from '@/context/TranslationContext';
 
 interface RecipeImage {
   id?: number;
@@ -31,6 +32,7 @@ export default function SubRecipeDetailsForm({ onNext, initialData, isEditMode =
   const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
   const imageBaseUrl = process.env.NEXT_PUBLIC_IMAGE_URL || 'http://212.85.26.46:8082/api/v1/images/view';
+  const { t } = useTranslation();
   const [formData, setFormData] = useState({
     name: initialData.name || '',
     category: initialData.category || '',
@@ -164,33 +166,33 @@ export default function SubRecipeDetailsForm({ onNext, initialData, isEditMode =
     const newErrors: { [key: string]: string } = {};
 
     if (!formData.name.trim()) {
-      newErrors.name = 'Name is required';
+      newErrors.name = t('recipes.subRecipes.detailForm.nameRequired');
     } else if (formData.name.trim().length < 3) {
-      newErrors.name = 'Name must be at least 3 characters long';
+      newErrors.name = t('recipes.subRecipes.detailForm.nameLength');
     }
 
     if (!formData.category) {
-      newErrors.category = 'Category is required';
+      newErrors.category = t('recipes.subRecipes.detailForm.categoryRequired');
     }
 
     if (!formData.portions) {
-      newErrors.portions = 'Number of portions is required';
+      newErrors.portions = t('recipes.subRecipes.detailForm.portionsRequired');
     } else if (parseInt(formData.portions) <= 0) {
-      newErrors.portions = 'Number of portions must be greater than 0';
+      newErrors.portions = t('recipes.subRecipes.detailForm.portionsGreaterThanZero');
     }
 
     if (!formData.servingSize) {
-      newErrors.servingSize = 'Serving size is required';
+      newErrors.servingSize = t('recipes.subRecipes.detailForm.servingSizeRequired');
     }
 
     // Detailed image validation
     if (isEditMode) {
       if (existingImages.length === 0 && newImages.length === 0) {
-        newErrors.images = 'At least one image is required. Please either keep existing images or upload new ones.';
+        newErrors.images = t('recipes.subRecipes.detailForm.imageRequired');
       }
     } else {
       if (newImages.length === 0) {
-        newErrors.images = 'Please upload at least one image for the sub recipe';
+        newErrors.images = t('recipes.subRecipes.detailForm.uploadAtLeastOne');
       }
     }
 
@@ -222,7 +224,7 @@ export default function SubRecipeDetailsForm({ onNext, initialData, isEditMode =
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-semibold">Sub Recipe details</h2>
+        <h2 className="text-2xl font-semibold">{t('recipes.subRecipes.detailForm.title')}</h2>
         <div className="flex gap-2">
           <input
             type="file"
@@ -237,7 +239,7 @@ export default function SubRecipeDetailsForm({ onNext, initialData, isEditMode =
             onClick={() => fileInputRef.current?.click()}
           >
             <Upload className="w-4 h-4 mr-2" />
-            Upload Image
+            {t('recipes.subRecipes.detailForm.uploadImage')}
           </Button>
         </div>
       </div>
@@ -247,7 +249,7 @@ export default function SubRecipeDetailsForm({ onNext, initialData, isEditMode =
         {/* Existing Images */}
         {existingImages.length > 0 && (
           <div className="mb-4">
-            <h4 className="text-sm font-medium mb-2 text-gray-600">Current Images:</h4>
+            <h4 className="text-sm font-medium mb-2 text-gray-600">{t('recipes.subRecipes.detailForm.currentImages')}</h4>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
               {existingImages.map((img) => (
                 <div
@@ -277,7 +279,7 @@ export default function SubRecipeDetailsForm({ onNext, initialData, isEditMode =
         {/* New Images */}
         {newImages.length > 0 && (
           <div className="mt-4">
-            <h4 className="text-sm font-medium mb-2 text-gray-600">New Images to Upload:</h4>
+            <h4 className="text-sm font-medium mb-2 text-gray-600">{t('recipes.subRecipes.detailForm.newImages')}</h4>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
               {newImages.map((file, index) => (
                 <div
@@ -305,10 +307,10 @@ export default function SubRecipeDetailsForm({ onNext, initialData, isEditMode =
       </div>
 
       <div>
-        <label className="block text-gray-700 font-medium mb-2">Name</label>
+        <label className="block text-gray-700 font-medium mb-2">{t('recipes.subRecipes.detailForm.name')}</label>
         <input
           type="text"
-          placeholder="Enter value"
+          placeholder={t('recipes.subRecipes.detailForm.namePlaceholder')}
           className={`w-full p-3 border ${errors.name ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00997B]`}
           value={formData.name}
           onChange={(e) => handleInputChange('name', e.target.value)}
@@ -317,7 +319,7 @@ export default function SubRecipeDetailsForm({ onNext, initialData, isEditMode =
       </div>
 
       <div>
-        <label className="block text-gray-700 font-medium mb-2">Sub Recipe Category</label>
+        <label className="block text-gray-700 font-medium mb-2">{t('recipes.subRecipes.detailForm.category')}</label>
         <Select
           label=""
           options={categoryList.map((cat: any) => ({
@@ -331,10 +333,10 @@ export default function SubRecipeDetailsForm({ onNext, initialData, isEditMode =
       </div>
 
       <div>
-        <label className="block text-gray-700 font-medium mb-2">No. of Portions</label>
+        <label className="block text-gray-700 font-medium mb-2">{t('recipes.subRecipes.detailForm.portions')}</label>
         <input
           type="number"
-          placeholder="Enter value"
+          placeholder={t('recipes.subRecipes.detailForm.namePlaceholder')}
           className={`w-full p-3 border ${errors.portions ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00997B]`}
           value={formData.portions}
           onChange={(e) => handleInputChange('portions', e.target.value)}
@@ -343,7 +345,7 @@ export default function SubRecipeDetailsForm({ onNext, initialData, isEditMode =
       </div>
 
       <div>
-        <label className="block text-gray-700 font-medium mb-2">Serving Size</label>
+        <label className="block text-gray-700 font-medium mb-2">{t('recipes.subRecipes.detailForm.servingSize')}</label>
         <Select
           label=""
           options={servingSizeList.map((size: any) => ({
@@ -357,17 +359,17 @@ export default function SubRecipeDetailsForm({ onNext, initialData, isEditMode =
       </div>
 
       <div className="flex justify-end mt-8">
-        <Button size="lg" onClick={handleSubmit}>Next</Button>
+        <Button size="lg" onClick={handleSubmit}>{t('recipes.subRecipes.detailForm.next')}</Button>
       </div>
 
       {/* Error Modal */}
       <ConfirmationModal
         isOpen={isErrorModalOpen}
         onClose={() => setIsErrorModalOpen(false)}
-        title="Error"
+        title={t('recipes.subRecipes.detailForm.error')}
         message={errorMessage}
         isAlert={true}
-        okText="OK"
+        okText={t('recipes.subRecipes.detailForm.next')}
       />
     </div>
   );

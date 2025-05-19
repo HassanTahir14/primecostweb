@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Button from '@/components/common/button';
 import { getCurrencyFromStorage } from '@/utils/currencyUtils';
+import { useTranslation } from '@/context/TranslationContext';
 
 interface RecipeCostingFormProps {
   onNext: (data: any) => void;
@@ -12,6 +13,7 @@ interface RecipeCostingFormProps {
 }
 
 export default function SubRecipeCostingForm({ onNext, onBack, initialData, onSave }: RecipeCostingFormProps) {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState({
     menuPrice: initialData.menuPrice || '',
     foodCostBudget: initialData.foodCostBudget || '',
@@ -94,25 +96,25 @@ export default function SubRecipeCostingForm({ onNext, onBack, initialData, onSa
     const newErrors: { [key: string]: string } = {};
 
     if (!formData.menuPrice) {
-      newErrors.menuPrice = 'Menu Price is required';
+      newErrors.menuPrice = t('recipes.subRecipes.create.costing.errors.menuPriceRequired');
     } else if (parseFloat(formData.menuPrice) <= 0) {
-      newErrors.menuPrice = 'Menu Price must be greater than 0';
+      newErrors.menuPrice = t('recipes.subRecipes.create.costing.errors.menuPriceGreaterThanZero');
     }
 
     if (!formData.foodCostBudget) {
-      newErrors.foodCostBudget = 'Food Cost % Budget is required';
+      newErrors.foodCostBudget = t('recipes.subRecipes.create.costing.errors.foodCostBudgetRequired');
     } else if (parseFloat(formData.foodCostBudget) <= 0) {
-      newErrors.foodCostBudget = 'Food Cost % Budget must be greater than 0';
+      newErrors.foodCostBudget = t('recipes.subRecipes.create.costing.errors.foodCostBudgetGreaterThanZero');
     } else if (parseFloat(formData.foodCostBudget) > 100) {
-      newErrors.foodCostBudget = 'Food Cost % Budget must be between 0 and 100';
+      newErrors.foodCostBudget = t('recipes.subRecipes.create.costing.errors.foodCostBudgetRange');
     }
 
     if (formData.marginPerPortion && parseFloat(formData.marginPerPortion) < 0) {
-      newErrors.marginPerPortion = 'Margin cannot be negative';
+      newErrors.marginPerPortion = t('recipes.subRecipes.create.costing.errors.marginPerPortionNegative');
     }
 
     if (formData.foodCostActual && (parseFloat(formData.foodCostActual) < 0 || parseFloat(formData.foodCostActual) > 100)) {
-      newErrors.foodCostActual = 'Food Cost % Actual must be between 0 and 100';
+      newErrors.foodCostActual = t('recipes.subRecipes.create.costing.errors.foodCostActualRange');
     }
 
     setErrors(newErrors);
@@ -138,18 +140,18 @@ export default function SubRecipeCostingForm({ onNext, onBack, initialData, onSa
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-semibold">Sub Recipe Costing</h2>
+      <h2 className="text-2xl font-semibold">{t('recipes.subRecipes.create.costing.title')}</h2>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-4">
           {/* Menu Price */}
           <div>
-            <label className="block text-gray-700 font-medium mb-2">Menu Price</label>
+            <label className="block text-gray-700 font-medium mb-2">{t('recipes.subRecipes.create.costing.menuPrice')}</label>
             <div className="relative">
               <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">{getCurrencyFromStorage()}</span>
               <input
                 type="number"
-                placeholder="Enter value"
+                placeholder={t('recipes.subRecipes.create.costing.menuPrice')}
                 className={`${inputClasses} pl-12 border-gray-300 ${errors.menuPrice ? 'border-red-500' : ''}`}
                 value={formData.menuPrice}
                 onChange={(e) => setFormData(prev => ({ ...prev, menuPrice: e.target.value }))}
@@ -160,12 +162,12 @@ export default function SubRecipeCostingForm({ onNext, onBack, initialData, onSa
 
           {/* Food Cost % Budget */}
           <div>
-            <label className="block text-gray-700 font-medium mb-2">Food Cost % Budget</label>
+            <label className="block text-gray-700 font-medium mb-2">{t('recipes.subRecipes.create.costing.foodCostBudget')}</label>
             <div className="relative">
               <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">%</span>
               <input
                 type="number"
-                placeholder="Enter value"
+                placeholder={t('recipes.subRecipes.create.costing.foodCostBudget')}
                 className={`${inputClasses} pl-8 border-gray-300 ${errors.foodCostBudget ? 'border-red-500' : ''}`}
                 value={formData.foodCostBudget}
                 onChange={(e) => setFormData(prev => ({ ...prev, foodCostBudget: e.target.value }))}
@@ -176,7 +178,7 @@ export default function SubRecipeCostingForm({ onNext, onBack, initialData, onSa
 
           {/* Food Cost % Actual (read-only) */}
           <div>
-            <label className="block text-gray-700 font-medium mb-2">Food Cost % Actual</label>
+            <label className="block text-gray-700 font-medium mb-2">{t('recipes.subRecipes.create.costing.foodCostActual')}</label>
             <div className="relative">
               <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">%</span>
               <input
@@ -191,7 +193,7 @@ export default function SubRecipeCostingForm({ onNext, onBack, initialData, onSa
 
           {/* Ideal Selling Price (read-only) */}
           <div>
-            <label className="block text-gray-700 font-medium mb-2">Ideal Selling Price</label>
+            <label className="block text-gray-700 font-medium mb-2">{t('recipes.subRecipes.create.costing.idealSellingPrice')}</label>
             <div className="relative">
               <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">{getCurrencyFromStorage()}</span>
               <input
@@ -207,7 +209,7 @@ export default function SubRecipeCostingForm({ onNext, onBack, initialData, onSa
         <div className="space-y-4">
           {/* Cost Per Portion (read-only) */}
           <div>
-            <label className="block text-gray-700 font-medium mb-2">Cost Per Portion</label>
+            <label className="block text-gray-700 font-medium mb-2">{t('recipes.subRecipes.create.costing.costPerPortion')}</label>
             <div className="relative">
               <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">{getCurrencyFromStorage()}</span>
               <input
@@ -221,7 +223,7 @@ export default function SubRecipeCostingForm({ onNext, onBack, initialData, onSa
 
           {/* Cost Per Recipe (read-only) */}
           <div>
-            <label className="block text-gray-700 font-medium mb-2">Cost Per Sub Recipe</label>
+            <label className="block text-gray-700 font-medium mb-2">{t('recipes.subRecipes.create.costing.costPerRecipe')}</label>
             <div className="relative">
               <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">{getCurrencyFromStorage()}</span>
               <input
@@ -235,7 +237,7 @@ export default function SubRecipeCostingForm({ onNext, onBack, initialData, onSa
 
           {/* Margin Per Portion (read-only) */}
           <div>
-            <label className="block text-gray-700 font-medium mb-2">Margin Per Portion</label>
+            <label className="block text-gray-700 font-medium mb-2">{t('recipes.subRecipes.create.costing.marginPerPortion')}</label>
             <div className="relative">
               <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">{getCurrencyFromStorage()}</span>
               <input
@@ -251,8 +253,8 @@ export default function SubRecipeCostingForm({ onNext, onBack, initialData, onSa
       </div>
 
       <div className="flex justify-between mt-8">
-        <Button variant="secondary" onClick={onBack}>Back</Button>
-        <Button size="lg" onClick={handleSubmit}>Next</Button>
+        <Button variant="secondary" onClick={onBack}>{t('recipes.subRecipes.create.backToSubRecipes')}</Button>
+        <Button size="lg" onClick={handleSubmit}>{t('recipes.subRecipes.create.next')}</Button>
       </div>
     </div>
   );
