@@ -16,30 +16,11 @@ import ConfirmationModal from '@/components/common/ConfirmationModal';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { getDefaultDateRange } from '@/utils/dateUtils';
+import { useTranslation } from '@/context/TranslationContext';
 
-// Column Definitions for Item Expiry
-const itemExpiryColumns: ColumnDefinition<ItemExpiryDetail>[] = [
-    { 
-        header: 'Item Name', 
-        accessorKey: 'itemName',
-        cell: (value) => {
-            const itemName = value as string;
-            return itemName.split('@')[0];
-        }
-    },
-    { header: 'Date Added', accessorKey: 'dateAdded' },
-    { header: 'Expiry Date', accessorKey: 'expiryDate', 
-      cell: (value, row) => <span className={row.status === 'Expired' ? 'text-red-600' : 'text-gray-700'}>{value ?? 'N/A'}</span> },
-    { header: 'Quantity', accessorKey: 'quantity' },
-    { header: 'Storage Location', accessorKey: 'storageLocationName' },
-    { header: 'Branch Name', accessorKey: 'branchName' },
-    { header: 'Item Status', accessorKey: 'status', 
-      cell: (value) => <span className={`px-2 py-0.5 rounded text-xs font-medium ${value === 'Expired' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>{value ?? 'N/A'}</span> },
-    { header: 'PO Status', accessorKey: 'purchaseOrderStatus' },
-];
-
-export default function ItemExpiryReportPage() {
+const ItemExpiryReportPage = () => {
     const dispatch = useDispatch<AppDispatch>();
+    const { t } = useTranslation();
 
     // State for filters
     const { startDate: defaultStartDate, endDate: defaultEndDate } = getDefaultDateRange();
@@ -70,58 +51,72 @@ export default function ItemExpiryReportPage() {
         dispatch(clearReportError('itemExpiries'));
     };
 
+    // Column Definitions for Item Expiry
+    const itemExpiryColumns: ColumnDefinition<ItemExpiryDetail>[] = [
+        { 
+            header: t('purchaseReportsExpiry.colItemName'), 
+            accessorKey: 'itemName',
+            cell: (value) => (value as string).split('@')[0]
+        },
+        { header: t('purchaseReportsExpiry.colDateAdded'), accessorKey: 'dateAdded' },
+        { header: t('purchaseReportsExpiry.colExpiryDate'), accessorKey: 'expiryDate', 
+          cell: (value, row) => <span className={row.status === 'Expired' ? 'text-red-600' : 'text-gray-700'}>{value ?? t('purchaseReportsExpiry.na')}</span> },
+        { header: t('purchaseReportsExpiry.colQuantity'), accessorKey: 'quantity' },
+        { header: t('purchaseReportsExpiry.colStorageLocation'), accessorKey: 'storageLocationName' },
+        { header: t('purchaseReportsExpiry.colBranchName'), accessorKey: 'branchName' },
+        { header: t('purchaseReportsExpiry.colItemStatus'), accessorKey: 'status', 
+          cell: (value) => <span className={`px-2 py-0.5 rounded text-xs font-medium ${value === 'Expired' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>{value ?? t('purchaseReportsExpiry.na')}</span> },
+        { header: t('purchaseReportsExpiry.colPOStatus'), accessorKey: 'purchaseOrderStatus' },
+    ];
+
     return (
-        <PageLayout title="Item Expiry Report">
+        <PageLayout title={t('purchaseReportsExpiry.pageTitle')}>
              <div className="mb-4">
                 <Link href="/reports/purchase" className="text-gray-500 hover:text-gray-700 flex items-center gap-2 w-fit">
                     <ArrowLeft size={20} />
-                    <span>Back to Purchase Reports</span>
+                    <span>{t('purchaseReportsExpiry.backToPurchaseReports')}</span>
                 </Link>
             </div>
-
-            {/* Filters Section */}
             <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 mb-6">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
                     <Input 
-                        label="Start Date"
+                        label={t('purchaseReportsExpiry.labelStartDate')}
                         type="date"
                         name="startDate"
                         value={startDate}
                         onChange={(e) => setStartDate(e.target.value)}
                     />
                     <Input 
-                        label="End Date"
+                        label={t('purchaseReportsExpiry.labelEndDate')}
                         type="date"
                         name="endDate"
                         value={endDate}
                         onChange={(e) => setEndDate(e.target.value)}
                     />
                     <Button onClick={handleFetchReport} disabled={loading}>
-                        {loading ? 'Loading...' : 'Fetch Report'}
+                        {loading ? t('purchaseReportsExpiry.loading') : t('purchaseReportsExpiry.fetchReport')}
                     </Button>
                 </div>
                  {validationError && (
                     <p className="mt-2 text-sm text-red-600">{validationError}</p>
                 )}
             </div>
-
-            {/* Report Table Section */}
             <ReportTypeTable
-                title="Item Expiry Details"
+                title={t('purchaseReportsExpiry.tableTitle')}
                 data={data}
                 columns={itemExpiryColumns}
                 isLoading={loading}
             />
-
-            {/* Error Modal */}
             <ConfirmationModal
                 isOpen={!!error}
                 onClose={handleCloseErrorModal}
-                title="Error"
-                message={typeof error === 'string' ? error : (error as any)?.message || 'An error occurred fetching the report.'}
+                title={t('purchaseReportsExpiry.errorTitle')}
+                message={typeof error === 'string' ? error : (error as any)?.message || t('purchaseReportsExpiry.errorMsg')}
                 isAlert={true}
-                okText="OK"
+                okText={t('purchaseReportsExpiry.ok')}
             />
         </PageLayout>
     );
-} 
+}
+
+export default ItemExpiryReportPage;

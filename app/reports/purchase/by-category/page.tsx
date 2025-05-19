@@ -20,10 +20,12 @@ import { ArrowLeft } from 'lucide-react';
 import { getDefaultDateRange } from '@/utils/dateUtils';
 import { useCurrency } from '@/context/CurrencyContext';
 import { formatCurrencyValue } from '@/utils/currencyUtils';
+import { useTranslation } from '@/context/TranslationContext';
 
 export default function PurchaseByCategoryReportPage() {
     const dispatch = useDispatch<AppDispatch>();
     const { currency } = useCurrency();
+    const { t } = useTranslation();
     const [formattedAmounts, setFormattedAmounts] = useState<any>({});
 
     // State for filters
@@ -77,7 +79,7 @@ export default function PurchaseByCategoryReportPage() {
 
     // Update options to use category name as value
     const categoryOptions = [
-        { value: '', label: 'Select Category', disabled: true },
+        { value: '', label: t('purchaseReportsCategory.selectCategory'), disabled: true },
         ...(categories?.map((cat: ItemCategory) => ({ 
             value: cat.name, // Use name as value
             label: cat.name 
@@ -111,30 +113,27 @@ export default function PurchaseByCategoryReportPage() {
     // Column definitions moved inside component to access formattedAmounts
     const purchaseByCategoryColumns: ColumnDefinition<PurchaseByCategoryDetail>[] = [
         { 
-            header: 'Item Name', 
+            header: t('purchaseReportsCategory.colItemName'), 
             accessorKey: 'itemName',
-            cell: (value) => {
-                const itemName = value as string;
-                return itemName.split('@')[0];
-            }
+            cell: (value) => (value as string).split('@')[0]
         },
-        { header: 'Quantity', accessorKey: 'quantity' },
-        { header: 'Unit', accessorKey: 'unit' },
-        { header: 'Date', accessorKey: 'date' },
+        { header: t('purchaseReportsCategory.colQuantity'), accessorKey: 'quantity' },
+        { header: t('purchaseReportsCategory.colUnit'), accessorKey: 'unit' },
+        { header: t('purchaseReportsCategory.colDate'), accessorKey: 'date' },
         { 
-            header: 'Amount', 
+            header: t('purchaseReportsCategory.colAmount'), 
             accessorKey: 'amount',
-            cell: (value, record) => formattedAmounts[`${record.itemName}-${record.date}`] || 'N/A'
+            cell: (value, record) => formattedAmounts[`${record.itemName}-${record.date}`] || t('purchaseReportsCategory.na')
         },
-        { header: 'Supplier', accessorKey: 'supplierName' },
+        { header: t('purchaseReportsCategory.colSupplier'), accessorKey: 'supplierName' },
     ];
 
     return (
-        <PageLayout title="Purchase by Category Report">
+        <PageLayout title={t('purchaseReportsCategory.pageTitle')}>
             <div className="mb-4">
                 <Link href="/reports/purchase" className="text-gray-500 hover:text-gray-700 flex items-center gap-2 w-fit">
                     <ArrowLeft size={20} />
-                    <span>Back to Purchase Reports</span>
+                    <span>{t('purchaseReportsCategory.backToPurchaseReports')}</span>
                 </Link>
             </div>
 
@@ -142,21 +141,21 @@ export default function PurchaseByCategoryReportPage() {
             <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 mb-6">
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
                     <Input 
-                        label="Start Date"
+                        label={t('purchaseReportsCategory.labelStartDate')}
                         type="date"
                         name="startDate"
                         value={startDate}
                         onChange={(e) => setStartDate(e.target.value)}
                     />
                     <Input 
-                        label="End Date"
+                        label={t('purchaseReportsCategory.labelEndDate')}
                         type="date"
                         name="endDate"
                         value={endDate}
                         onChange={(e) => setEndDate(e.target.value)}
                     />
                      <Select 
-                        label="Category"
+                        label={t('purchaseReportsCategory.labelCategory')}
                         name="category"
                         value={selectedCategory}
                         onChange={(e) => setSelectedCategory(e.target.value)}
@@ -164,7 +163,7 @@ export default function PurchaseByCategoryReportPage() {
                         disabled={categoriesLoading || loading}
                      />
                     <Button onClick={handleFetchReport} disabled={loading || !selectedCategory}>
-                        {loading ? 'Loading...' : 'Fetch Report'}
+                        {loading ? t('purchaseReportsCategory.loading') : t('purchaseReportsCategory.fetchReport')}
                     </Button>
                 </div>
                  {validationError && (
@@ -174,7 +173,7 @@ export default function PurchaseByCategoryReportPage() {
 
             {/* Report Table Section */}
             <ReportTypeTable
-                title="Purchase Details by Category"
+                title={t('purchaseReportsCategory.tableTitle')}
                 data={data}
                 columns={purchaseByCategoryColumns}
                 isLoading={loading}
@@ -185,11 +184,11 @@ export default function PurchaseByCategoryReportPage() {
             <ConfirmationModal
                 isOpen={!!error}
                 onClose={handleCloseErrorModal}
-                title="Error"
-                message={typeof error === 'string' ? error : (error as any)?.message || 'An error occurred fetching the report.'}
+                title={t('purchaseReportsCategory.errorTitle')}
+                message={typeof error === 'string' ? error : (error as any)?.message || t('purchaseReportsCategory.errorMsg')}
                 isAlert={true}
-                okText="OK"
+                okText={t('purchaseReportsCategory.ok')}
             />
         </PageLayout>
     );
-} 
+}

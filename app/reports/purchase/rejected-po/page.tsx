@@ -16,25 +16,11 @@ import ConfirmationModal from '@/components/common/ConfirmationModal';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { getDefaultDateRange } from '@/utils/dateUtils';
-
-// Column Definitions for Rejected POs
-const rejectedPOColumns: ColumnDefinition<RejectedPODetail>[] = [
-    { 
-        header: 'Item Name', 
-        accessorKey: 'itemName',
-        cell: (value) => {
-            const itemName = value as string;
-            return itemName.split('@')[0];
-        }
-    },
-    { header: 'Quantity', accessorKey: 'quantity' },
-    { header: 'Unit', accessorKey: 'unit' },
-    { header: 'Date', accessorKey: 'dated' },
-    { header: 'Reason', accessorKey: 'reason' },
-];
+import { useTranslation } from '@/context/TranslationContext';
 
 export default function RejectedPurchaseOrdersReportPage() {
     const dispatch = useDispatch<AppDispatch>();
+    const { t } = useTranslation();
 
     // State for filters
     const { startDate: defaultStartDate, endDate: defaultEndDate } = getDefaultDateRange();
@@ -66,12 +52,27 @@ export default function RejectedPurchaseOrdersReportPage() {
         dispatch(clearReportError('rejectedPOs'));
     };
 
+    const rejectedPOColumns: ColumnDefinition<RejectedPODetail>[] = [
+        { 
+            header: t('purchaseReportsRejected.colItemName'), 
+            accessorKey: 'itemName',
+            cell: (value) => {
+                const itemName = value as string;
+                return itemName.split('@')[0];
+            }
+        },
+        { header: t('purchaseReportsRejected.colQuantity'), accessorKey: 'quantity' },
+        { header: t('purchaseReportsRejected.colUnit'), accessorKey: 'unit' },
+        { header: t('purchaseReportsRejected.colDate'), accessorKey: 'dated' },
+        { header: t('purchaseReportsRejected.colReason'), accessorKey: 'reason' },
+    ];
+
     return (
-        <PageLayout title="Rejected Purchase Orders Report">
+        <PageLayout title={t('purchaseReportsRejected.pageTitle')}>
              <div className="mb-4">
                 <Link href="/reports/purchase" className="text-gray-500 hover:text-gray-700 flex items-center gap-2 w-fit">
                     <ArrowLeft size={20} />
-                    <span>Back to Purchase Reports</span>
+                    <span>{t('purchaseReportsRejected.backToPurchaseReports')}</span>
                 </Link>
             </div>
 
@@ -79,21 +80,21 @@ export default function RejectedPurchaseOrdersReportPage() {
             <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 mb-6">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
                     <Input 
-                        label="Start Date"
+                        label={t('purchaseReportsRejected.labelStartDate')}
                         type="date"
                         name="startDate"
                         value={startDate}
                         onChange={(e) => setStartDate(e.target.value)}
                     />
                     <Input 
-                        label="End Date"
+                        label={t('purchaseReportsRejected.labelEndDate')}
                         type="date"
                         name="endDate"
                         value={endDate}
                         onChange={(e) => setEndDate(e.target.value)}
                     />
                     <Button onClick={handleFetchReport} disabled={loading}>
-                        {loading ? 'Loading...' : 'Fetch Report'}
+                        {loading ? t('purchaseReportsRejected.loading') : t('purchaseReportsRejected.fetchReport')}
                     </Button>
                 </div>
                  {validationError && (
@@ -103,7 +104,7 @@ export default function RejectedPurchaseOrdersReportPage() {
 
             {/* Report Table Section */}
             <ReportTypeTable
-                title="Rejected Purchase Orders"
+                title={t('purchaseReportsRejected.tableTitle')}
                 data={data}
                 columns={rejectedPOColumns}
                 isLoading={loading}
@@ -114,11 +115,11 @@ export default function RejectedPurchaseOrdersReportPage() {
             <ConfirmationModal
                 isOpen={!!error}
                 onClose={handleCloseErrorModal}
-                title="Error"
-                message={typeof error === 'string' ? error : (error as any)?.message || 'An error occurred fetching the report.'}
+                title={t('purchaseReportsRejected.errorTitle')}
+                message={typeof error === 'string' ? error : (error as any)?.message || t('purchaseReportsRejected.errorMsg')}
                 isAlert={true}
-                okText="OK"
+                okText={t('purchaseReportsRejected.ok')}
             />
         </PageLayout>
     );
-} 
+}

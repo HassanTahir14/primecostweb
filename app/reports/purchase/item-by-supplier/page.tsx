@@ -18,10 +18,12 @@ import { ArrowLeft } from 'lucide-react';
 import { getDefaultDateRange } from '@/utils/dateUtils';
 import { useCurrency } from '@/context/CurrencyContext';
 import { formatCurrencyValue } from '@/utils/currencyUtils';
+import { useTranslation } from '@/context/TranslationContext';
 
 export default function ItemsBySupplierReportPage() {
     const dispatch = useDispatch<AppDispatch>();
     const { currency } = useCurrency();
+    const { t } = useTranslation();
     const [formattedAmounts, setFormattedAmounts] = useState<any>({});
     const [formattedTotalCost, setFormattedTotalCost] = useState<string>('N/A');
 
@@ -83,79 +85,70 @@ export default function ItemsBySupplierReportPage() {
     // Column definitions moved inside component to access formattedAmounts
     const itemsBySupplierColumns: ColumnDefinition<ItemsBySupplierDetail>[] = [
         { 
-            header: 'Item Name', 
+            header: t('purchaseReportsSupplier.colItemName'), 
             accessorKey: 'itemName',
-            cell: (value) => {
-                const itemName = value as string;
-                return itemName.split('@')[0];
-            }
+            cell: (value) => (value as string).split('@')[0]
         },
-        { header: 'Quantity', accessorKey: 'quantity' },
-        { header: 'Unit', accessorKey: 'unit' },
-        { header: 'Date', accessorKey: 'date' },
+        { header: t('purchaseReportsSupplier.colQuantity'), accessorKey: 'quantity' },
+        { header: t('purchaseReportsSupplier.colUnit'), accessorKey: 'unit' },
+        { header: t('purchaseReportsSupplier.colDate'), accessorKey: 'date' },
         { 
-            header: 'Amount', 
+            header: t('purchaseReportsSupplier.colAmount'), 
             accessorKey: 'amount',
-            cell: (value, record) => formattedAmounts[`${record.itemName}-${record.date}`] || 'N/A'
+            cell: (value, record) => formattedAmounts[`${record.itemName}-${record.date}`] || t('purchaseReportsSupplier.na')
         },
-        { header: 'PO Status', accessorKey: 'purchaseOrderStatus' },
+        { header: t('purchaseReportsSupplier.colPOStatus'), accessorKey: 'purchaseOrderStatus' },
     ];
 
     // Update table title to use formatted total cost
-    const tableTitle = `Items Purchased (Total Items: ${totalItems ?? 0}, Total Cost: ${formattedTotalCost})`;
+    const tableTitle = t('purchaseReportsSupplier.tableTitle', { totalItems: totalItems ?? 0, totalCost: formattedTotalCost });
 
     return (
-        <PageLayout title="Items Purchased">
+        <PageLayout title={t('purchaseReportsSupplier.pageTitle')}>
              <div className="mb-4">
                 <Link href="/reports/purchase" className="text-gray-500 hover:text-gray-700 flex items-center gap-2 w-fit">
                     <ArrowLeft size={20} />
-                    <span>Back to Purchase Reports</span>
+                    <span>{t('purchaseReportsSupplier.backToPurchaseReports')}</span>
                 </Link>
             </div>
-
-            {/* Filters Section */}
             <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 mb-6">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
                     <Input 
-                        label="Start Date"
+                        label={t('purchaseReportsSupplier.labelStartDate')}
                         type="date"
                         name="startDate"
                         value={startDate}
                         onChange={(e) => setStartDate(e.target.value)}
                     />
                     <Input 
-                        label="End Date"
+                        label={t('purchaseReportsSupplier.labelEndDate')}
                         type="date"
                         name="endDate"
                         value={endDate}
                         onChange={(e) => setEndDate(e.target.value)}
                     />
                     <Button onClick={handleFetchReport} disabled={loading}>
-                        {loading ? 'Loading...' : 'Fetch Report'}
+                        {loading ? t('purchaseReportsSupplier.loading') : t('purchaseReportsSupplier.fetchReport')}
                     </Button>
                 </div>
                  {validationError && (
                     <p className="mt-2 text-sm text-red-600">{validationError}</p>
                 )}
             </div>
-
-            {/* Report Table Section */}
             <ReportTypeTable
-                title={tableTitle} // Use dynamic title
+                title={tableTitle}
                 data={data}
                 columns={itemsBySupplierColumns}
                 isLoading={loading}
             />
-
-            {/* Error Modal */}
             <ConfirmationModal
                 isOpen={!!error}
                 onClose={handleCloseErrorModal}
-                title="Error"
-                message={typeof error === 'string' ? error : (error as any)?.message || 'An error occurred fetching the report.'}
+                title={t('purchaseReportsSupplier.errorTitle')}
+                message={typeof error === 'string' ? error : (error as any)?.message || t('purchaseReportsSupplier.errorMsg')}
                 isAlert={true}
-                okText="OK"
+                okText={t('purchaseReportsSupplier.ok')}
             />
         </PageLayout>
     );
-} 
+}
