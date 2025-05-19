@@ -997,5 +997,20 @@
         "edit": "Edit",
         "searchPlaceholder": "Search purchase order..."
         
+    },
+    "servingSize": {
+        "title": "Serving Size",
+        "createNew": "Create New",
+        "name": "Serving Size Name",
+        "unit": "Unit",
+        "loading": "Loading serving sizes...",
+        "noServingSizes": "No serving sizes found. Create one to get started.",
+        "newServingSize": "New Serving Size",
+        "editServingSize": "Edit Serving Size",
+        "namePlaceholder": "Enter Serving Size Name",
+        "nameRequired": "Name is required",
+        "unitRequired": "Unit is required",
+        "deleteTitle": "Delete Serving Size",
+        "deleteMessage": "Are you sure you want to delete? This action cannot be undone."
     }
 }

@@ -20,6 +20,7 @@ import {
   selectServingSizeError
 } from '@/store/servingSizeSlice';
 import ConfirmationModal from './common/ConfirmationModal';
+import { useTranslation } from '@/context/TranslationContext';
 
 interface UnitOfMeasurement {
   unitOfMeasurementId: number;
@@ -46,6 +47,7 @@ const UNITS_OPTIONS = [
 
 
 export default function ServingSize({ onClose }: { onClose: () => void }) {
+  const { t } = useTranslation();
   const dispatch = useDispatch<AppDispatch>();
   const servingSizes = useSelector(selectAllServingSizes);
   const isLoading = useSelector(selectServingSizeStatus);
@@ -207,7 +209,7 @@ export default function ServingSize({ onClose }: { onClose: () => void }) {
           <button onClick={onClose} className="text-gray-600 hover:text-gray-800">
             <ArrowLeft className="w-5 h-5" />
           </button>
-          <h1 className="text-xl sm:text-2xl font-bold">Serving Size</h1>
+          <h1 className="text-xl sm:text-2xl font-bold">{t('servingSize.title')}</h1>
         </div>
 
         <Button 
@@ -218,24 +220,24 @@ export default function ServingSize({ onClose }: { onClose: () => void }) {
           className="rounded-full bg-[#339A89] text-white text-xs sm:text-sm px-3 py-1.5 sm:px-4 sm:py-2"
           disabled={isLoading}
         >
-          Create New
+          {t('servingSize.createNew')}
         </Button>
       </div>
 
       <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6 flex-1">
         <div className="grid grid-cols-3 border-b pb-3 sm:pb-4 mb-3 sm:mb-4">
-          <h2 className="text-gray-500 text-xs sm:text-sm">Serving Size Name</h2>
-          <h2 className="text-gray-500 text-xs sm:text-sm">Unit</h2>
-          <h2 className="text-gray-500 text-xs sm:text-sm text-right">Actions</h2>
+          <h2 className="text-gray-500 text-xs sm:text-sm">{t('servingSize.name')}</h2>
+          <h2 className="text-gray-500 text-xs sm:text-sm">{t('servingSize.unit')}</h2>
+          <h2 className="text-gray-500 text-xs sm:text-sm text-right">{t('common.action')}</h2>
         </div>
 
         {isLoading && servingSizes.length === 0 ? (
           <div className="flex justify-center items-center h-40">
-            <p className="text-gray-500">Loading serving sizes...</p>
+            <p className="text-gray-500">{t('servingSize.loading')}</p>
           </div>
         ) : servingSizes.length === 0 ? (
           <div className="flex justify-center items-center h-40">
-            <p className="text-gray-500">No serving sizes found. Create one to get started.</p>
+            <p className="text-gray-500">{t('servingSize.noServingSizes')}</p>
           </div>
         ) : (
           <div className="space-y-3 sm:space-y-4">
@@ -256,7 +258,7 @@ export default function ServingSize({ onClose }: { onClose: () => void }) {
                     onClick={() => openEditModal(size as any)}
                     disabled={isLoading}
                   >
-                    Edit
+                    {t('common.edit')}
                   </Button>
                   <Button 
                     variant="destructive" 
@@ -265,7 +267,7 @@ export default function ServingSize({ onClose }: { onClose: () => void }) {
                     onClick={() => handleDeleteClick(size as any)}
                     disabled={isLoading}
                   >
-                    Delete
+                    {t('common.delete')}
                   </Button>
                 </div>
               </div>
@@ -278,7 +280,7 @@ export default function ServingSize({ onClose }: { onClose: () => void }) {
       <Modal 
         isOpen={isCreateModalOpen}
         onClose={() => !isLoading && setIsCreateModalOpen(false)}
-        title="New Serving Size"
+        title={t('servingSize.newServingSize')}
         size="sm"
       >
         <form onSubmit={(e) => {
@@ -286,7 +288,7 @@ export default function ServingSize({ onClose }: { onClose: () => void }) {
           handleAddServingSize(servingSizeName, servingSizeUnit);
         }} className="w-full">
           <div className="mb-4">
-            <label className="block text-gray-700 mb-2 font-medium">Name</label>
+            <label className="block text-gray-700 mb-2 font-medium">{t('servingSize.name')}</label>
             <Input
               type="text"
               value={servingSizeName}
@@ -294,15 +296,15 @@ export default function ServingSize({ onClose }: { onClose: () => void }) {
                 setServingSizeName(e.target.value);
                 if (e.target.value.trim()) setNameError('');
               }}
-              placeholder="Enter Serving Size Name"
+              placeholder={t('servingSize.namePlaceholder')}
               className={`w-full bg-white ${nameError ? 'border-red-500' : ''}`}
               disabled={isLoading}
             />
-            {nameError && <p className="mt-1 text-red-500 text-sm">{nameError}</p>}
+            {nameError && <span className="text-red-500 text-xs">{t('servingSize.nameRequired')}</span>}
           </div>
           
           <div className="mb-4">
-            <label className="block text-gray-700 mb-2 font-medium">Unit</label>
+            <label className="block text-gray-700 mb-2 font-medium">{t('servingSize.unit')}</label>
             <Select
               value={servingSizeUnit}
               onChange={(e) => {
@@ -313,23 +315,18 @@ export default function ServingSize({ onClose }: { onClose: () => void }) {
               className={`w-full bg-white ${unitError ? 'border-red-500' : ''}`}
               disabled={isLoading}
             />
-            {unitError && <p className="mt-1 text-red-500 text-sm">{unitError}</p>}
+            {unitError && <span className="text-red-500 text-xs">{t('servingSize.unitRequired')}</span>}
           </div>
           
           <div className="flex justify-between gap-3 mt-6">
             <Button
               type="button"
               variant="outline"
-              onClick={() => {
-                if (!isLoading) {
-                  setIsCreateModalOpen(false);
-                  resetForm();
-                }
-              }}
+              onClick={() => !isLoading && setIsCreateModalOpen(false)}
               className="border-gray-300 bg-white text-gray-700 hover:bg-gray-50 px-4 sm:px-6"
               disabled={isLoading}
             >
-              Discard
+              {t('common.discard')}
             </Button>
             
             <Button
@@ -337,7 +334,7 @@ export default function ServingSize({ onClose }: { onClose: () => void }) {
               className="bg-[#339A89] text-white hover:bg-[#2b8274] px-4 sm:px-6"
               disabled={isLoading}
             >
-              {isLoading ? 'Adding...' : 'ADD'}
+              {t('common.save')}
             </Button>
           </div>
         </form>
@@ -347,7 +344,7 @@ export default function ServingSize({ onClose }: { onClose: () => void }) {
       <Modal
         isOpen={isEditModalOpen}
         onClose={() => !isLoading && setIsEditModalOpen(false)}
-        title="Edit Serving Size"
+        title={t('servingSize.editServingSize')}
         size="sm"
       >
         <form onSubmit={(e) => {
@@ -357,7 +354,7 @@ export default function ServingSize({ onClose }: { onClose: () => void }) {
           }
         }} className="w-full">
           <div className="mb-4">
-            <label className="block text-gray-700 mb-2 font-medium">Name</label>
+            <label className="block text-gray-700 mb-2 font-medium">{t('servingSize.name')}</label>
             <Input
               type="text"
               value={servingSizeName}
@@ -365,15 +362,15 @@ export default function ServingSize({ onClose }: { onClose: () => void }) {
                 setServingSizeName(e.target.value);
                 if (e.target.value.trim()) setNameError('');
               }}
-              placeholder="Enter Serving Size Name"
+              placeholder={t('servingSize.namePlaceholder')}
               className={`w-full bg-white ${nameError ? 'border-red-500' : ''}`}
               disabled={isLoading}
             />
-            {nameError && <p className="mt-1 text-red-500 text-sm">{nameError}</p>}
+            {nameError && <span className="text-red-500 text-xs">{t('servingSize.nameRequired')}</span>}
           </div>
           
           <div className="mb-4">
-            <label className="block text-gray-700 mb-2 font-medium">Unit</label>
+            <label className="block text-gray-700 mb-2 font-medium">{t('servingSize.unit')}</label>
             <Select
               value={servingSizeUnit}
               onChange={(e) => {
@@ -384,7 +381,7 @@ export default function ServingSize({ onClose }: { onClose: () => void }) {
               className={`w-full bg-white ${unitError ? 'border-red-500' : ''}`}
               disabled={isLoading}
             />
-            {unitError && <p className="mt-1 text-red-500 text-sm">{unitError}</p>}
+            {unitError && <span className="text-red-500 text-xs">{t('servingSize.unitRequired')}</span>}
           </div>
           
           <div className="flex justify-between gap-3 mt-6">
@@ -395,15 +392,14 @@ export default function ServingSize({ onClose }: { onClose: () => void }) {
               className="border-gray-300 bg-white text-gray-700 hover:bg-gray-50 px-4 sm:px-6"
               disabled={isLoading}
             >
-              Cancel
+              {t('common.cancel')}
             </Button>
-            
             <Button
               type="submit"
               className="bg-[#339A89] text-white hover:bg-[#2b8274] px-4 sm:px-6"
               disabled={isLoading}
             >
-              {isLoading ? 'Updating...' : 'Update'}
+              {t('common.update')}
             </Button>
           </div>
         </form>
@@ -413,10 +409,10 @@ export default function ServingSize({ onClose }: { onClose: () => void }) {
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
         onConfirm={handleDeleteConfirm}
-        title="Delete Serving Size"
-        message={`Are you sure you want to delete ${selectedServingSize?.name}? This action cannot be undone.`}
-        confirmText="Delete"
-        cancelText="Cancel"
+        title={t('servingSize.deleteTitle')}
+        message={t('servingSize.deleteMessage')}
+        confirmText={t('common.delete')}
+        cancelText={t('common.cancel')}
       />
 
       <ConfirmationModal
@@ -425,20 +421,20 @@ export default function ServingSize({ onClose }: { onClose: () => void }) {
           setIsSuccessModalOpen(false);
           window.location.reload();
         }}
-        title="Success"
+        title={t('common.success')}
         message={successMessage}
         isAlert={true}
-        okText="OK"
+        okText={t('common.ok')}
       />
 
       <ConfirmationModal
         isOpen={isErrorModalOpen}
         onClose={() => setIsErrorModalOpen(false)}
-        title="Error"
+        title={t('common.error')}
         message={errorMessage}
         isAlert={true}
-        okText="OK"
+        okText={t('common.ok')}
       />
     </div>
   );
-} 
+}

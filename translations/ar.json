@@ -984,5 +984,20 @@
         "deleteConfirmMessage": "هل أنت متأكد أنك تريد حذف أمر الشراء {id}؟ لا يمكن التراجع عن هذا الإجراء.",
         "edit": "تعديل",
         "searchPlaceholder": "ابحث عن أمر شراء..."
+    },
+    "servingSize": {
+        "title": "حجم الحصة",
+        "createNew": "إنشاء جديد",
+        "name": "اسم حجم الحصة",
+        "unit": "الوحدة",
+        "loading": "جاري تحميل أحجام الحصص...",
+        "noServingSizes": "لم يتم العثور على أحجام حصص. أنشئ واحدًا للبدء.",
+        "newServingSize": "حجم حصة جديد",
+        "editServingSize": "تعديل حجم الحصة",
+        "namePlaceholder": "أدخل اسم حجم الحصة",
+        "nameRequired": "الاسم مطلوب",
+        "unitRequired": "الوحدة مطلوبة",
+        "deleteTitle": "حذف حجم الحصة",
+        "deleteMessage": "هل أنت متأكد أنك تريد حذف ؟ لا يمكن التراجع عن هذا الإجراء."
     }
 }
