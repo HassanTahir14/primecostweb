@@ -29,6 +29,25 @@ interface GenericDetailPageProps {
   purchaseOrders?: any[];
 }
 
+const translations = {
+  en: {
+    download: 'Download PDF',
+    generating: 'Generating...',
+  },
+  ar: {
+    download: 'تحميل PDF',
+    generating: 'جارٍ التحميل...',
+  },
+};
+
+const getLang = () => {
+  try {
+    return localStorage.getItem('language') || 'en';
+  } catch {
+    return 'en';
+  }
+};
+
 const GenericDetailPage: React.FC<GenericDetailPageProps> = ({
   title,
   data,
@@ -43,6 +62,9 @@ const GenericDetailPage: React.FC<GenericDetailPageProps> = ({
   purchaseOrders = [],
 }) => {
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+  type Lang = keyof typeof translations;
+  const lang = (getLang() as Lang) in translations ? (getLang() as Lang) : 'en';
+  const t = translations[lang];
 
   const handleDownloadPDF = () => {
     if (data) {
@@ -130,12 +152,12 @@ const GenericDetailPage: React.FC<GenericDetailPageProps> = ({
           {isGeneratingPDF ? (
             <>
               <Loader className="w-4 h-4 animate-spin" />
-              <span>Generating...</span>
+              <span>{t.generating}</span>
             </>
           ) : (
             <>
               <Download className="w-4 h-4" />
-              <span>Download PDF</span>
+              <span>{t.download}</span>
             </>
           )}
         </Button>
@@ -184,4 +206,4 @@ const GenericDetailPage: React.FC<GenericDetailPageProps> = ({
   );
 };
 
-export default GenericDetailPage; 
+export default GenericDetailPage;
