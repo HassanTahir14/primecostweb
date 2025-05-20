@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Button from '@/components/common/button';
 import { getCurrencyFromStorage } from '@/utils/currencyUtils';
+import { useTranslation } from '@/context/TranslationContext';
 
 interface RecipeCostingFormProps {
   onNext: (data: any) => void;
@@ -12,6 +13,7 @@ interface RecipeCostingFormProps {
 }
 
 export default function RecipeCostingForm({ onNext, onBack, initialData, onSave }: RecipeCostingFormProps) {
+  const { t } = useTranslation();
   // Get total ingredients cost from previous step if available
   const totalIngredientsCost = calculateTotalIngredientsCost(initialData.ingredients || []);
   
@@ -96,25 +98,25 @@ export default function RecipeCostingForm({ onNext, onBack, initialData, onSave 
     const newErrors: { [key: string]: string } = {};
 
     if (!menuPrice) {
-      newErrors.menuPrice = 'Menu Price is required.';
+      newErrors.menuPrice = t('mainRecipes.costing.errors.menuPriceRequired');
     } else if (parseFloat(menuPrice) <= 0) {
-      newErrors.menuPrice = 'Must be greater than 0.';
+      newErrors.menuPrice = t('mainRecipes.costing.errors.greaterThanZero');
     }
 
     if (!foodCostBudgetPercent) {
-      newErrors.foodCostBudgetPercent = 'Food Cost % Budget is required.';
+      newErrors.foodCostBudgetPercent = t('mainRecipes.costing.errors.foodCostBudgetRequired');
     } else if (parseFloat(foodCostBudgetPercent) <= 0) {
-      newErrors.foodCostBudgetPercent = 'Must be greater than 0.';
+      newErrors.foodCostBudgetPercent = t('mainRecipes.costing.errors.greaterThanZero');
     } else if (parseFloat(foodCostBudgetPercent) > 100) {
-      newErrors.foodCostBudgetPercent = 'Must be between 0 and 100.';
+      newErrors.foodCostBudgetPercent = t('mainRecipes.costing.errors.foodCostBudgetRange');
     }
 
     if (marginPerPortion && parseFloat(marginPerPortion) < 0) {
-      newErrors.marginPerPortion = 'Margin cannot be negative. Please increase the menu price.';
+      newErrors.marginPerPortion = t('mainRecipes.costing.errors.marginNegative');
     }
 
     if (foodCostActualPercent && (parseFloat(foodCostActualPercent) < 0 || parseFloat(foodCostActualPercent) > 100)) {
-      newErrors.foodCostActualPercent = 'Must be between 0 and 100.';
+      newErrors.foodCostActualPercent = t('mainRecipes.costing.errors.foodCostActualRange');
     }
 
     setErrors(newErrors);
@@ -142,20 +144,20 @@ export default function RecipeCostingForm({ onNext, onBack, initialData, onSave 
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-semibold">Recipe Costing</h2>
+      <h2 className="text-2xl font-semibold">{t('mainRecipes.costing.title')}</h2>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-4">
           {/* Menu Price */}
           <div>
-            <label className="block text-gray-700 font-medium mb-2">Menu Price</label>
+            <label className="block text-gray-700 font-medium mb-2">{t('mainRecipes.costing.menuPrice')}</label>
             <div className="relative">
               <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
                 {getCurrencyFromStorage()}
               </span>
               <input
                 type="number"
-                placeholder="Enter value"
+                placeholder={t('mainRecipes.costing.placeholders.menuPrice')}
                 className={`${inputClasses} pl-16 border-gray-300 ${errors.menuPrice ? 'border-red-500' : ''}`}
                 value={menuPrice}
                 onChange={(e) => setMenuPrice(e.target.value)}
@@ -166,12 +168,12 @@ export default function RecipeCostingForm({ onNext, onBack, initialData, onSave 
 
           {/* Food Cost % Budget */}
           <div>
-            <label className="block text-gray-700 font-medium mb-2">Food Cost % Budget</label>
+            <label className="block text-gray-700 font-medium mb-2">{t('mainRecipes.costing.foodCostBudget')}</label>
             <div className="relative">
               <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">%</span>
               <input
                 type="number"
-                placeholder="Enter value"
+                placeholder={t('mainRecipes.costing.placeholders.foodCostBudget')}
                 className={`${inputClasses} pl-8 border-gray-300 ${errors.foodCostBudgetPercent ? 'border-red-500' : ''}`}
                 value={foodCostBudgetPercent}
                 onChange={(e) => setFoodCostBudgetPercent(e.target.value)}
@@ -182,7 +184,7 @@ export default function RecipeCostingForm({ onNext, onBack, initialData, onSave 
 
           {/* Food Cost % Actual (read-only) */}
           <div>
-            <label className="block text-gray-700 font-medium mb-2">Food Cost % Actual</label>
+            <label className="block text-gray-700 font-medium mb-2">{t('mainRecipes.costing.foodCostActual')}</label>
             <div className="relative">
               <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">%</span>
               <input
@@ -197,7 +199,7 @@ export default function RecipeCostingForm({ onNext, onBack, initialData, onSave 
 
           {/* Ideal Selling Price (read-only) */}
           <div>
-            <label className="block text-gray-700 font-medium mb-2">Ideal Selling Price</label>
+            <label className="block text-gray-700 font-medium mb-2">{t('mainRecipes.costing.idealSellingPrice')}</label>
             <div className="relative">
               <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
                 {getCurrencyFromStorage()}
@@ -215,7 +217,7 @@ export default function RecipeCostingForm({ onNext, onBack, initialData, onSave 
         <div className="space-y-4">
           {/* Cost Per Portion (read-only) */}
           <div>
-            <label className="block text-gray-700 font-medium mb-2">Cost Per Portion</label>
+            <label className="block text-gray-700 font-medium mb-2">{t('mainRecipes.costing.costPerPortion')}</label>
             <div className="relative">
               <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
                 {getCurrencyFromStorage()}
@@ -231,7 +233,7 @@ export default function RecipeCostingForm({ onNext, onBack, initialData, onSave 
 
           {/* Cost Per Recipe (read-only) */}
           <div>
-            <label className="block text-gray-700 font-medium mb-2">Cost Per Recipe</label>
+            <label className="block text-gray-700 font-medium mb-2">{t('mainRecipes.costing.costPerRecipe')}</label>
             <div className="relative">
               <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
                 {getCurrencyFromStorage()}
@@ -247,7 +249,7 @@ export default function RecipeCostingForm({ onNext, onBack, initialData, onSave 
 
           {/* Margin Per Portion (read-only) */}
           <div>
-            <label className="block text-gray-700 font-medium mb-2">Margin Per Portion</label>
+            <label className="block text-gray-700 font-medium mb-2">{t('mainRecipes.costing.marginPerPortion')}</label>
             <div className="relative">
               <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
                 {getCurrencyFromStorage()}
@@ -265,8 +267,8 @@ export default function RecipeCostingForm({ onNext, onBack, initialData, onSave 
       </div>
 
       <div className="flex justify-between mt-8">
-        <Button variant="secondary" onClick={onBack}>Back</Button>
-        <Button size="lg" onClick={handleSubmit}>Next</Button>
+        <Button variant="secondary" onClick={onBack}>{t('common.back')}</Button>
+        <Button size="lg" onClick={handleSubmit}>{t('common.next')}</Button>
       </div>
     </div>
   );

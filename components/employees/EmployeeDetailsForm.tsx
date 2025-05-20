@@ -134,42 +134,42 @@ export default function EmployeeDetailsForm({ onNext, initialData, onSave, error
       
       // First name validation
       if (!formData.firstname.trim()) {
-          newErrors.firstname = 'First name is required';
+          newErrors.firstname = t('employees.details.errors.firstnameRequired');
       } else if (formData.firstname.length > 50) {
-          newErrors.firstname = 'First name must be between 1 and 50 characters';
+          newErrors.firstname = t('employees.details.errors.firstnameLength');
       }
 
       // Email validation
       if (!formData.loginId.trim()) {
-          newErrors.loginId = 'Email is required';
+          newErrors.loginId = t('employees.details.errors.emailRequired');
       } else if (formData.loginId.length < 5 || formData.loginId.length > 50) {
-          newErrors.loginId = 'Email must be between 5 and 50 characters';
+          newErrors.loginId = t('employees.details.errors.emailLength');
       } else {
         // Email format validation
         const emailRegex = /^[\w-.]+@[\w-]+\.[a-zA-Z]{2,}$/;
         if (!emailRegex.test(formData.loginId)) {
-          newErrors.loginId = 'Please enter a valid email address';
+          newErrors.loginId = t('employees.details.errors.emailInvalid');
         }
       }
 
       // Iqama expiry date validation
       if (!formData.iqamaExpiryDate) {
-          newErrors.iqamaExpiryDate = 'Iqama expiry date is required';
+          newErrors.iqamaExpiryDate = t('employees.details.errors.iqamaExpiryDateRequired');
       }
 
       // Position validation
       if (!formData.position) {
-          newErrors.position = 'Position is required';
+          newErrors.position = t('employees.details.errors.positionRequired');
       }
 
       // Mobile number validation
       if (!formData.mobileNumber.trim()) {
-          newErrors.mobileNumber = 'Mobile number is required';
+          newErrors.mobileNumber = t('employees.details.errors.mobileNumberRequired');
       }
 
       // Iqama ID validation
       if (!formData.iqamaId.trim()) {
-          newErrors.iqamaId = 'Iqama ID is required';
+          newErrors.iqamaId = t('employees.details.errors.iqamaIdRequired');
       }
 
       // Helper to parse yyyy-mm-dd
@@ -186,9 +186,9 @@ export default function EmployeeDetailsForm({ onNext, initialData, onSave, error
       if (formData.healthCardExpiry) {
         const expiry = parseDate(formData.healthCardExpiry);
         if (!expiry || isNaN(expiry.getTime())) {
-          newErrors.healthCardExpiry = 'Invalid date format';
+          newErrors.healthCardExpiry = t('employees.details.errors.invalidDateFormat');
         } else if (expiry < today) {
-          newErrors.healthCardExpiry = 'Health card expiry cannot be in the past';
+          newErrors.healthCardExpiry = t('employees.details.errors.healthCardExpiryPast');
         }
       }
 
@@ -196,9 +196,9 @@ export default function EmployeeDetailsForm({ onNext, initialData, onSave, error
       if (formData.iqamaExpiryDate) {
         const expiry = parseDate(formData.iqamaExpiryDate);
         if (!expiry || isNaN(expiry.getTime())) {
-          newErrors.iqamaExpiryDate = 'Invalid date format';
+          newErrors.iqamaExpiryDate = t('employees.details.errors.invalidDateFormat');
         } else if (expiry < today) {
-          newErrors.iqamaExpiryDate = 'Iqama expiry cannot be in the past';
+          newErrors.iqamaExpiryDate = t('employees.details.errors.iqamaExpiryPast');
         }
       }
 
@@ -206,9 +206,9 @@ export default function EmployeeDetailsForm({ onNext, initialData, onSave, error
       if (formData.dateOfBirth) {
         const dob = parseDate(formData.dateOfBirth);
         if (!dob || isNaN(dob.getTime())) {
-          newErrors.dateOfBirth = 'Invalid date format';
+          newErrors.dateOfBirth = t('employees.details.errors.invalidDateFormat');
         } else if (dob > today) {
-          newErrors.dateOfBirth = 'Date of birth cannot be in the future';
+          newErrors.dateOfBirth = t('employees.details.errors.dobFuture');
         }
       }
 
@@ -220,42 +220,42 @@ export default function EmployeeDetailsForm({ onNext, initialData, onSave, error
     
     // First name validation
     if (!formData.firstname.trim()) {
-      newErrors.firstname = 'First name is required';
+      newErrors.firstname = t('employees.details.errors.firstnameRequired');
     } else if (formData.firstname.length > 50) {
-      newErrors.firstname = 'First name must be between 1 and 50 characters';
+      newErrors.firstname = t('employees.details.errors.firstnameLength');
     }
 
     // Email validation
     if (!formData.loginId.trim()) {
-      newErrors.loginId = 'Email is required';
+      newErrors.loginId = t('employees.details.errors.emailRequired');
     } else if (formData.loginId.length < 5 || formData.loginId.length > 50) {
-      newErrors.loginId = 'Email must be between 5 and 50 characters';
+      newErrors.loginId = t('employees.details.errors.emailLength');
     } else {
       // Email format validation
       const emailRegex = /^[\w-.]+@[\w-]+\.[a-zA-Z]{2,}$/;
       if (!emailRegex.test(formData.loginId)) {
-        newErrors.loginId = 'Please enter a valid email address';
+        newErrors.loginId = t('employees.details.errors.emailInvalid');
       }
     }
 
     // Iqama expiry date validation
     if (!formData.iqamaExpiryDate) {
-      newErrors.iqamaExpiryDate = 'Iqama expiry date is required';
+      newErrors.iqamaExpiryDate = t('employees.details.errors.iqamaExpiryDateRequired');
     }
 
     // Position validation
     if (!formData.position) {
-      newErrors.position = 'Position is required';
+      newErrors.position = t('employees.details.errors.positionRequired');
     }
 
     // Mobile number validation
     if (!formData.mobileNumber.trim()) {
-      newErrors.mobileNumber = 'Mobile number is required';
+      newErrors.mobileNumber = t('employees.details.errors.mobileNumberRequired');
     }
 
     // Iqama ID validation
     if (!formData.iqamaId.trim()) {
-      newErrors.iqamaId = 'Iqama ID is required';
+      newErrors.iqamaId = t('employees.details.errors.iqamaIdRequired');
     }
 
     // Helper to parse yyyy-mm-dd
@@ -272,9 +272,9 @@ export default function EmployeeDetailsForm({ onNext, initialData, onSave, error
     if (formData.healthCardExpiry) {
       const expiry = parseDate(formData.healthCardExpiry);
       if (!expiry || isNaN(expiry.getTime())) {
-        newErrors.healthCardExpiry = 'Invalid date format';
+        newErrors.healthCardExpiry = t('employees.details.errors.invalidDateFormat');
       } else if (expiry < today) {
-        newErrors.healthCardExpiry = 'Health card expiry cannot be in the past';
+        newErrors.healthCardExpiry = t('employees.details.errors.healthCardExpiryPast');
       }
     }
 
@@ -282,9 +282,9 @@ export default function EmployeeDetailsForm({ onNext, initialData, onSave, error
     if (formData.iqamaExpiryDate) {
       const expiry = parseDate(formData.iqamaExpiryDate);
       if (!expiry || isNaN(expiry.getTime())) {
-        newErrors.iqamaExpiryDate = 'Invalid date format';
+        newErrors.iqamaExpiryDate = t('employees.details.errors.invalidDateFormat');
       } else if (expiry < today) {
-        newErrors.iqamaExpiryDate = 'Iqama expiry cannot be in the past';
+        newErrors.iqamaExpiryDate = t('employees.details.errors.iqamaExpiryPast');
       }
     }
 
@@ -292,9 +292,9 @@ export default function EmployeeDetailsForm({ onNext, initialData, onSave, error
     if (formData.dateOfBirth) {
       const dob = parseDate(formData.dateOfBirth);
       if (!dob || isNaN(dob.getTime())) {
-        newErrors.dateOfBirth = 'Invalid date format';
+        newErrors.dateOfBirth = t('employees.details.errors.invalidDateFormat');
       } else if (dob > today) {
-        newErrors.dateOfBirth = 'Date of birth cannot be in the future';
+        newErrors.dateOfBirth = t('employees.details.errors.dobFuture');
       }
     }
 

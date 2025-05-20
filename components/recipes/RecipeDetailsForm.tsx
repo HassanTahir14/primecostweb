@@ -11,6 +11,7 @@ import ConfirmationModal from '@/components/common/ConfirmationModal';
 import { getImageUrlWithAuth } from '@/utils/imageUtils';
 import AuthImage from '@/components/common/AuthImage';
 import Select from '@/components/common/select';
+import { useTranslation } from '@/context/TranslationContext';
 
 interface RecipeImage {
   id?: number;
@@ -31,6 +32,9 @@ const generateRecipeCode = () => {
 };
 
 export default function RecipeDetailsForm({ onNext, initialData, isEditMode = false, onSave }: RecipeDetailsFormProps) {
+  const dispatch = useDispatch<AppDispatch>();
+  const imageBaseUrl = process.env.NEXT_PUBLIC_IMAGE_URL || 'http://212.85.26.46:8082/api/v1/images/view';
+  const { t } = useTranslation();
   const [formData, setFormData] = useState({
     name: initialData.name || '',
     recipeCode: initialData.recipeCode || generateRecipeCode(),
@@ -56,11 +60,6 @@ export default function RecipeDetailsForm({ onNext, initialData, isEditMode = fa
   // Modal states
   const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
-
-  const dispatch = useDispatch<AppDispatch>();
-
-  // Update the image base URL
-  const imageBaseUrl = process.env.NEXT_PUBLIC_IMAGE_URL || 'http://212.85.26.46:8082/api/v1/images/view';
 
   // Update images when initialData changes
   useEffect(() => {
@@ -172,21 +171,21 @@ export default function RecipeDetailsForm({ onNext, initialData, isEditMode = fa
   };
 
   const validateForm = () => {
-    const newErrors: any = {};
+    const newErrors: { [key: string]: string } = {};
 
     if (!formData.name.trim()) {
-      newErrors.name = 'Name is required';
+      newErrors.name = t('mainRecipes.form.nameRequired');
     } else if (formData.name.trim().length < 3) {
-      newErrors.name = 'Name must be at least 3 characters long';
+      newErrors.name = t('mainRecipes.form.nameLength');
     }
 
-    if (!formData.category) newErrors.category = 'Category is required';
+    if (!formData.category) newErrors.category = t('mainRecipes.form.categoryRequired');
     if (!formData.portions || isNaN(Number(formData.portions)) || Number(formData.portions) <= 0)
-      newErrors.portions = 'Portions must be a positive number';
-    if (!formData.servingSize) newErrors.servingSize = 'Serving size is required';
+      newErrors.portions = t('mainRecipes.form.portionsRequired');
+    if (!formData.servingSize) newErrors.servingSize = t('mainRecipes.form.servingSizeRequired');
     if (existingImages.length + newImages.length === 0) {
-      newErrors.images = 'At least one image is required';
-      setErrorMessage('Please upload at least one image before proceeding.');
+      newErrors.images = t('mainRecipes.form.imageRequired');
+      setErrorMessage(t('mainRecipes.form.uploadImageMessage'));
       setIsErrorModalOpen(true);
     }
 
@@ -210,7 +209,7 @@ export default function RecipeDetailsForm({ onNext, initialData, isEditMode = fa
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-semibold">Recipe details</h2>
+        <h2 className="text-2xl font-semibold">{t('mainRecipes.form.detailsTitle')}</h2>
         <div className="flex gap-2">
           <input
             type="file"
@@ -225,7 +224,7 @@ export default function RecipeDetailsForm({ onNext, initialData, isEditMode = fa
             onClick={() => fileInputRef.current?.click()}
           >
             <Upload className="w-4 h-4 mr-2" />
-            Upload Image
+            {t('mainRecipes.form.uploadImage')}
           </Button>
         </div>
       </div>
@@ -235,7 +234,7 @@ export default function RecipeDetailsForm({ onNext, initialData, isEditMode = fa
         {/* Existing Images */}
         {existingImages.length > 0 && (
           <div className="mb-4">
-            <h4 className="text-sm font-medium mb-2 text-gray-600">Current Images:</h4>
+            <h4 className="text-sm font-medium mb-2 text-gray-600">{t('mainRecipes.form.currentImages')}</h4>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
               {existingImages.map((img) => (
                 <div
@@ -265,7 +264,7 @@ export default function RecipeDetailsForm({ onNext, initialData, isEditMode = fa
         {/* New Images */}
         {newImages.length > 0 && (
           <div className="mt-4">
-            <h4 className="text-sm font-medium mb-2 text-gray-600">New Images to Upload:</h4>
+            <h4 className="text-sm font-medium mb-2 text-gray-600">{t('mainRecipes.form.newImages')}</h4>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
               {newImages.map((file, index) => (
                 <div
@@ -293,10 +292,10 @@ export default function RecipeDetailsForm({ onNext, initialData, isEditMode = fa
       </div>
 
       <div>
-        <label className="block text-gray-700 font-medium mb-2">Name</label>
+        <label className="block text-gray-700 font-medium mb-2">{t('mainRecipes.form.name')}</label>
         <input
           type="text"
-          placeholder="Enter value"
+          placeholder={t('mainRecipes.form.namePlaceholder')}
           className={`w-full p-3 border ${errors.name ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00997B]`}
           value={formData.name}
           onChange={(e) => handleInputChange('name', e.target.value)}
@@ -305,7 +304,7 @@ export default function RecipeDetailsForm({ onNext, initialData, isEditMode = fa
       </div>
 
       <div>
-        <label className="block text-gray-700 font-medium mb-2">Recipe Category</label>
+        <label className="block text-gray-700 font-medium mb-2">{t('mainRecipes.form.category')}</label>
         <Select
           label=""
           options={categoryList.map((cat: any) => ({
@@ -319,10 +318,10 @@ export default function RecipeDetailsForm({ onNext, initialData, isEditMode = fa
       </div>
 
       <div>
-        <label className="block text-gray-700 font-medium mb-2">No. of Portions</label>
+        <label className="block text-gray-700 font-medium mb-2">{t('mainRecipes.form.portions')}</label>
         <input
           type="number"
-          placeholder="Enter value"
+          placeholder={t('mainRecipes.form.enterValue')}
           className={`w-full p-3 border ${errors.portions ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00997B]`}
           value={formData.portions}
           onChange={(e) => handleInputChange('portions', e.target.value)}
@@ -331,7 +330,7 @@ export default function RecipeDetailsForm({ onNext, initialData, isEditMode = fa
       </div>
 
       <div>
-        <label className="block text-gray-700 font-medium mb-2">Serving Size</label>
+        <label className="block text-gray-700 font-medium mb-2">{t('mainRecipes.form.servingSize')}</label>
         <Select
           label=""
           options={servingSizeList.map((size: any) => ({
@@ -345,17 +344,17 @@ export default function RecipeDetailsForm({ onNext, initialData, isEditMode = fa
       </div>
 
       <div className="flex justify-end mt-8">
-        <Button size="lg" onClick={handleSubmit}>Next</Button>
+        <Button size="lg" onClick={handleSubmit}>{t('common.next')}</Button>
       </div>
 
       {/* Error Modal */}
       <ConfirmationModal
         isOpen={isErrorModalOpen}
         onClose={() => setIsErrorModalOpen(false)}
-        title="Error"
+        title={t('common.error')}
         message={errorMessage}
         isAlert={true}
-        okText="OK"
+        okText={t('common.ok')}
       />
     </div>
   );
