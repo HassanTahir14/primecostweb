@@ -1668,5 +1668,28 @@
       "logout": "تسجيل الخروج",
       "menu": "القائمة"
     }
+  },
+  "tokens": {
+    "title": "الرموز",
+    "heading": "رمز",
+    "applyFilter": "تطبيق الفلتر",
+    "pending": "قيد الانتظار",
+    "rejected": "مرفوض",
+    "approved": "مقبول",
+    "tokenType": "نوع الرمز",
+    "status": "الحالة",
+    "requestedBy": "تم الطلب بواسطة",
+    "createdAt": "تاريخ الإنشاء",
+    "updatedAt": "تاريخ التحديث",
+    "noTokensFound": "لم يتم العثور على رموز",
+    "approve": "موافقة",
+    "reject": "رفض",
+    "fromDate": "من تاريخ",
+    "toDate": "إلى تاريخ",
+    "noOfRecords": "عدد السجلات",
+    "sortBy": "ترتيب حسب",
+    "ascending": "تصاعدي",
+    "descending": "تنازلي",
+    "apply": "تطبيق"
   }
 }

@@ -5,6 +5,7 @@ import PageLayout from '@/components/PageLayout';
 import api from '@/store/api';
 import ConfirmationModal from '@/components/common/ConfirmationModal';
 import Modal from '@/components/common/Modal';
+import { useTranslation } from '@/context/TranslationContext';
 
 interface Token {
   tokenId: number;
@@ -19,6 +20,7 @@ interface Token {
 type TokenAction = 'APPROVED' | 'REJECTED';
 
 export default function TokensPage() {
+  const { t } = useTranslation();
   const [isLatestTokens, setIsLatestTokens] = useState(true);
   const [tokens, setTokens] = useState<Token[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -190,34 +192,34 @@ export default function TokensPage() {
   };
 
   return (
-    <PageLayout title="Tokens">
+    <PageLayout title={t('tokens.title')}>
       <div className="bg-white rounded-lg shadow-sm p-6">
         <div className="flex flex-col space-y-6">
           <div className="flex justify-between items-center flex-wrap gap-4">
-            <h1 className="text-3xl font-semibold text-gray-900">Token</h1>
+            <h1 className="text-3xl font-semibold text-gray-900">{t('tokens.heading')}</h1>
             <div className="flex space-x-4">
               <button
                 className="bg-[#00997B] text-white rounded-lg py-3 px-6 font-semibold shadow"
                 onClick={() => setIsFilterModalOpen(true)}
                 style={{ minWidth: '140px' }}
               >
-                Apply Filter
+                {t('tokens.applyFilter')}
               </button>
               <div className="bg-[#00997B] text-white rounded-lg py-3 px-5 text-center font-medium">
-                <p className="font-medium">Pending: {stats.pending}</p>
+                <p className="font-medium">{t('tokens.pending')}: {stats.pending}</p>
               </div>
               <div className="bg-[#00997B] text-white rounded-lg py-3 px-5 text-center font-medium">
-                <p className="font-medium">Rejected: {stats.rejected}</p>
+                <p className="font-medium">{t('tokens.rejected')}: {stats.rejected}</p>
               </div>
               <div className="bg-[#00997B] text-white rounded-lg py-3 px-5 text-center font-medium">
-                <p className="font-medium">Approved: {stats.approved}</p>
+                <p className="font-medium">{t('tokens.approved')}: {stats.approved}</p>
               </div>
             </div>
           </div>
           <div className="grid grid-cols-3 gap-2 px-2 py-2 border-b border-gray-200">
-            <div className="text-lg font-semibold text-gray-400">Token Type</div>
-            <div className="text-lg font-semibold text-gray-400 text-center">Status</div>
-            <div className="text-lg font-semibold text-gray-400 text-right">Requested By</div>
+            <div className="text-lg font-semibold text-gray-400">{t('tokens.tokenType')}</div>
+            <div className="text-lg font-semibold text-gray-400 text-center">{t('tokens.status')}</div>
+            <div className="text-lg font-semibold text-gray-400 text-right">{t('tokens.requestedBy')}</div>
           </div>
           <div className="flex flex-col gap-3">
             {isLoading ? (
@@ -237,7 +239,7 @@ export default function TokensPage() {
                 >
                   <div className="flex flex-col min-w-0">
                     <div className="text-base font-semibold text-gray-900">{token.tokenType.split('@')[0]}</div>
-                    <div className="text-sm text-gray-400 mt-1">Created at:{token.createdAt}</div>
+                    <div className="text-sm text-gray-400 mt-1">{t('tokens.createdAt')}:{token.createdAt}</div>
                   </div>
                   <div className="flex flex-col items-center">
                     <span className={`text-base font-bold ${
@@ -247,7 +249,7 @@ export default function TokensPage() {
                     }`}>
                       {token.tokenStatus}
                     </span>
-                    <span className="text-xs text-gray-400 mt-1">Updated at:{token.updatedAt}</span>
+                    <span className="text-xs text-gray-400 mt-1">{t('tokens.updatedAt')}:{token.updatedAt}</span>
                   </div>
                   <div className="text-[#00997B] font-semibold text-base text-right">{token.requestorName}</div>
                 </div>
@@ -255,7 +257,7 @@ export default function TokensPage() {
             )}
             {tokens.length === 0 && !isLoading && (
               <div className="text-center py-6 text-gray-500">
-                No tokens found
+                {t('tokens.noTokensFound')}
               </div>
             )}
           </div>
@@ -266,10 +268,9 @@ export default function TokensPage() {
       <ConfirmationModal
         isOpen={isErrorModalOpen}
         onClose={() => setIsErrorModalOpen(false)}
-        title="Error"
+        title={t('common.error')}
         message={modalMessage}
-        isAlert={true}
-        okText="OK"
+        okText={t('common.ok')}
       />
 
       {/* Confirmation Modal for Token Actions */}
@@ -285,9 +286,9 @@ export default function TokensPage() {
         onReject={() => performTokenAction('REJECTED')}
         title={confirmModalTitle}
         message={confirmModalMessage}
-        confirmText="Approve"
-        rejectText="Reject"
-        cancelText="Cancel"
+        confirmText={t('tokens.approve')}
+        rejectText={t('tokens.reject')}
+        cancelText={t('common.cancel')}
         isAlert={false}
       />
 
@@ -295,7 +296,7 @@ export default function TokensPage() {
       <Modal isOpen={isFilterModalOpen} onClose={() => setIsFilterModalOpen(false)} size="md">
         <div className="flex flex-col gap-4">
           <div>
-            <label className="block mb-1 font-medium">From Date</label>
+            <label className="block mb-1 font-medium">{t('tokens.fromDate')}</label>
             <input
               type="date"
               className="w-full border rounded px-3 py-2"
@@ -304,7 +305,7 @@ export default function TokensPage() {
             />
           </div>
           <div>
-            <label className="block mb-1 font-medium">To Date</label>
+            <label className="block mb-1 font-medium">{t('tokens.toDate')}</label>
             <input
               type="date"
               className="w-full border rounded px-3 py-2"
@@ -313,7 +314,7 @@ export default function TokensPage() {
             />
           </div>
           <div>
-            <label className="block mb-1 font-medium">No of records</label>
+            <label className="block mb-1 font-medium">{t('tokens.noOfRecords')}</label>
             <input
               type="number"
               className="w-full border rounded px-3 py-2"
@@ -322,14 +323,14 @@ export default function TokensPage() {
             />
           </div>
           <div>
-            <label className="block mb-1 font-medium">Sort By</label>
+            <label className="block mb-1 font-medium">{t('tokens.sortBy')}</label>
             <select
               className="w-full border rounded px-3 py-2"
               value={filter.sortBy}
               onChange={e => setFilter(f => ({ ...f, sortBy: e.target.value }))}
             >
-              <option value="asc">Ascending</option>
-              <option value="desc">Descending</option>
+              <option value="asc">{t('tokens.ascending')}</option>
+              <option value="desc">{t('tokens.descending')}</option>
             </select>
           </div>
           <div className="flex justify-end gap-2 mt-4">
@@ -337,7 +338,7 @@ export default function TokensPage() {
               className="bg-gray-200 text-gray-700 rounded px-4 py-2"
               onClick={() => setIsFilterModalOpen(false)}
             >
-              Cancel
+              {t('common.cancel')}
             </button>
             <button
               className="bg-[#00997B] text-white rounded px-4 py-2"
@@ -346,11 +347,11 @@ export default function TokensPage() {
                 fetchTokensWithFilter();
               }}
             >
-              Apply
+              {t('tokens.apply')}
             </button>
           </div>
         </div>
       </Modal>
     </PageLayout>
   );
-} 
+}

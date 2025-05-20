@@ -1689,5 +1689,28 @@
       "logout": "Logout",
       "menu": "Menu"
     }
+  },
+  "tokens": {
+    "title": "Tokens",
+    "heading": "Token",
+    "applyFilter": "Apply Filter",
+    "pending": "Pending",
+    "rejected": "Rejected",
+    "approved": "Approved",
+    "tokenType": "Token Type",
+    "status": "Status",
+    "requestedBy": "Requested By",
+    "createdAt": "Created at",
+    "updatedAt": "Updated at",
+    "noTokensFound": "No tokens found",
+    "approve": "Approve",
+    "reject": "Reject",
+    "fromDate": "From Date",
+    "toDate": "To Date",
+    "noOfRecords": "No of records",
+    "sortBy": "Sort By",
+    "ascending": "Ascending",
+    "descending": "Descending",
+    "apply": "Apply"
   }
 }
