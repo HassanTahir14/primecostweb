@@ -306,6 +306,32 @@ function CreateTransferContent() {
         return;
     }
 
+    // --- Quantity Validation ---
+    if (transferTypeParam === 'inventory') {
+      const invalidItem = formData.items.find((item: any) => {
+        const selectedUnitId = parseInt(item.uom);
+        const primaryUnitValue = item.primaryUnitValue || 1;
+        const secondaryUnitValue = item.secondaryUnitValue || 1;
+        let maxQuantity = item.availableQuantity;
+        let enteredQuantity = parseFloat(item.quantity) || 0;
+        if (selectedUnitId === item.secondaryUnitId) {
+          maxQuantity = (item.availableQuantity * secondaryUnitValue) / primaryUnitValue;
+        }
+        // Allow up to 2 decimals for comparison
+        const truncate2 = (val: number) => {
+          const str = val.toString();
+          const dot = str.indexOf('.') !== -1 ? str.indexOf('.') : str.length;
+          return parseFloat(str.slice(0, dot + 1 + 2).replace(/\.$/, ''));
+        };
+        return truncate2(enteredQuantity) > truncate2(maxQuantity);
+      });
+      if (invalidItem) {
+        showModal(t('transfers.validationErrorTitle'), t('transfers.validationErrorQuantity'));
+        setIsSubmitting(false);
+        return;
+      }
+    }
+
     // --- Calculate Cost Breakdowns ---
     const calculatedCostBreakdowns = [
         {

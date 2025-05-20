@@ -174,15 +174,7 @@ export default function TransferInventoryItemsTable({
         // Get unit values
         const primaryUnitValue = currentItem.primaryUnitValue || 1;
         const secondaryUnitValue = currentItem.secondaryUnitValue || 1;
-        let maxQuantity = currentItem.availableQuantity;
-        // If using secondary unit, convert availableQuantity to secondary unit equivalent
-        if (selectedUnitId === currentItem.secondaryUnitId) {
-          maxQuantity = (currentItem.availableQuantity * secondaryUnitValue) / primaryUnitValue;
-        }
-        // Validate quantity against maxQuantity
-        if (quantity > maxQuantity) {
-            quantity = maxQuantity;
-        }
+        // Remove maxQuantity validation, allow any quantity
         // Truncate to 2 decimal places (no rounding)
         const quantityStr = quantity.toString();
         const dotIndex = quantityStr.indexOf('.') !== -1 ? quantityStr.indexOf('.') : quantityStr.length;

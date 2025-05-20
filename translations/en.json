@@ -1158,9 +1158,10 @@
     "validationErrorFields": "Please fill in Transfer Date, Source Branch, Target Branch, and add at least one item.",
     "validationErrorSameBranch": "Source and target branches cannot be the same.",
     "invalidType": "Invalid transfer type for submission.",
-    "submitSuccess": "Transfer ({{type}}) submitted successfully!",
+    "submitSuccess": "Transfer submitted successfully!",
     "submitFailed": "Submission failed. Please try again.",
     "unexpectedError": "An unexpected error occurred.",
+    "validationErrorQuantity": "Quantity exceeds available stock.",
     "tab": {
       "inventory": "Inventory Items",
       "recipe": "Recipe",
