@@ -169,14 +169,24 @@ export default function TransferInventoryItemsTable({
     
     // Update cost when quantity or unit changes
     if (field === 'quantity' || field === 'uom') {
-        const quantity = parseFloat(currentItem.quantity) || 0;
+        let quantity = parseFloat(currentItem.quantity) || 0;
         const selectedUnitId = parseInt(currentItem.uom);
-        // Validate quantity against available quantity (in primary unit)
-        if (quantity > currentItem.availableQuantity) {
-            currentItem.quantity = currentItem.availableQuantity;
-        } else {
-            currentItem.quantity = quantity;
+        // Get unit values
+        const primaryUnitValue = currentItem.primaryUnitValue || 1;
+        const secondaryUnitValue = currentItem.secondaryUnitValue || 1;
+        let maxQuantity = currentItem.availableQuantity;
+        // If using secondary unit, convert availableQuantity to secondary unit equivalent
+        if (selectedUnitId === currentItem.secondaryUnitId) {
+          maxQuantity = (currentItem.availableQuantity * secondaryUnitValue) / primaryUnitValue;
         }
+        // Validate quantity against maxQuantity
+        if (quantity > maxQuantity) {
+            quantity = maxQuantity;
+        }
+        // Truncate to 2 decimal places (no rounding)
+        const quantityStr = quantity.toString();
+        const dotIndex = quantityStr.indexOf('.') !== -1 ? quantityStr.indexOf('.') : quantityStr.length;
+        currentItem.quantity = quantityStr.slice(0, dotIndex + 1 + 2).replace(/\.$/, '');
         // Get cost from allItemsWithCost
         const selectedItemCostData = allItemsWithCost.find(opt => String(opt.itemId) === String(currentItem.itemId));
         const baseCost = selectedItemCostData?.purchaseCostWithVat || 0;
@@ -187,7 +197,7 @@ export default function TransferInventoryItemsTable({
             currentItem.cost = baseCost;
         } else if (selectedUnitId === currentItem.secondaryUnitId) {
             // If secondary unit is selected, adjust cost based on unit value ratio
-            const unitRatio = currentItem.secondaryUnitValue / currentItem.primaryUnitValue;
+            const unitRatio = secondaryUnitValue / primaryUnitValue;
             currentItem.cost = baseCost / unitRatio;
         }
     }
@@ -216,7 +226,15 @@ export default function TransferInventoryItemsTable({
       {/* Show available quantity in the top right, outside the table, as in the screenshot */}
       {items && items[0] && items[0].availableQuantity !== undefined && (
         <div className="absolute right-4 top-2 text-base font-semibold text-black">
-          {t('transfers.availableQuantity')}: <span className="font-bold">{items[0].availableQuantity}</span> {getAvailableQuantityUnitName(items[0])}
+          {t('transfers.availableQuantity')}: <span className="font-bold">{
+            (() => {
+              // Format available quantity to 2 digits after decimal, no rounding
+              const aq = items[0].availableQuantity;
+              const aqStr = aq?.toString() || '0';
+              const dotIndex = aqStr.indexOf('.') !== -1 ? aqStr.indexOf('.') : aqStr.length;
+              return aqStr.slice(0, dotIndex + 1 + 2).replace(/\.$/, '');
+            })()
+          }</span> {getAvailableQuantityUnitName(items[0])}
         </div>
       )}
       <h3 className="text-lg font-semibold p-4 border-b">{t('transfers.inventoryItems')}</h3>
