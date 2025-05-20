@@ -798,7 +798,11 @@
       "employeeImages": "Employee Images",
       "addNewImages": "Add New Images",
       "saveChanges": "Save Changes",
-      "previous": "Previous"
+      "previous": "Previous",
+      "errors": {
+        "basicSalaryRequired": "Basic salary is required.",
+        "totalSalaryRequired": "Total salary is required."
+      }
     },
     "status": {
       "title": "Status",

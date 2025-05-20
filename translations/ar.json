@@ -708,7 +708,11 @@
       "addNewImages": "إضافة صور جديدة",
       "saveChanges": "حفظ التغييرات",
       "previous": "السابق",
-      "saving": "جاري الحفظ..."
+      "saving": "جاري الحفظ...",
+      "errors": {
+        "basicSalaryRequired": "الراتب الأساسي مطلوب.",
+        "totalSalaryRequired": "إجمالي الراتب مطلوب."
+      }
     },
     "dutySchedule": {
       "title": "جدول الدوام",

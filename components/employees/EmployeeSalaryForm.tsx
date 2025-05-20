@@ -179,12 +179,23 @@ export default function EmployeeSalaryForm({
   // Update the image base URL
   const imageBaseUrl = process.env.NEXT_PUBLIC_IMAGE_URL || 'http://212.85.26.46:8082/api/v1/images/view';
 
-  // Transform API error keys to form field names
+  // Transform API error keys to form field names and use translation keys for known errors
   const getFieldError = (fieldName: string): string | undefined => {
     if (!errors) return undefined;
-    
-    const apiKey = `salaryRequestDTO.${fieldName}`;
-    return errors[apiKey];
+
+    // Use translation keys for known fields
+    if (errors[`salaryRequestDTO.${fieldName}`]) {
+      switch (fieldName) {
+        case 'basicSalary':
+          return t('employees.salary.errors.basicSalaryRequired');
+        case 'totalSalary':
+          return t('employees.salary.errors.totalSalaryRequired');
+        // Add more cases as you add more error keys
+        default:
+          return errors[`salaryRequestDTO.${fieldName}`];
+      }
+    }
+    return undefined;
   };
 
   return (
