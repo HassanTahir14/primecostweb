@@ -106,10 +106,24 @@ export default function TransferInventoryItemsTable({
     return unitOptions;
   };
 
-  // Helper to get primary unit name by id
-  const getPrimaryUnitName = (primaryUnitId: number) => {
-    const unit = units.find(u => u.unitOfMeasurementId === primaryUnitId);
+  // Helper to get unit name by id
+  const getUnitName = (unitId: number) => {
+    const unit = units.find(u => u.unitOfMeasurementId === unitId);
     return unit ? unit.unitName : '';
+  };
+
+  // Helper to get correct unit name for Available Quantity based on calculationMethod
+  const getAvailableQuantityUnitName = (item: any) => {
+    if (!item) return '';
+    if (typeof item.calculationMethod === 'string') {
+      if (item.calculationMethod.startsWith('PRIMARY')) {
+        return item.secondaryUnitName || getUnitName(item.secondaryUnitId);
+      } else if (item.calculationMethod.startsWith('SECONDARY')) {
+        return item.primaryUnitName || getUnitName(item.primaryUnitId);
+      }
+    }
+    // fallback
+    return item.primaryUnitName || getUnitName(item.primaryUnitId);
   };
 
   const handleItemChange = (index: number, field: string, value: any) => {
@@ -125,7 +139,8 @@ export default function TransferInventoryItemsTable({
             currentItem.itemCode = selectedItemData.itemCode;
             // Use exact available quantity as received from response
             currentItem.availableQuantity = selectedItemData.totalQuantity;
-            currentItem.primaryUnitName = getPrimaryUnitName(selectedItemData.primaryUnitId);
+            currentItem.primaryUnitName = getUnitName(selectedItemData.primaryUnitId);
+            currentItem.secondaryUnitName = getUnitName(selectedItemData.secondaryUnitId);
             // Set primary unit as default
             currentItem.uom = selectedItemData.primaryUnitId?.toString() || '';
             // Store the base cost and unit values
@@ -134,6 +149,8 @@ export default function TransferInventoryItemsTable({
             currentItem.secondaryUnitValue = selectedItemData.secondaryUnitValue || 1;
             currentItem.primaryUnitId = selectedItemData.primaryUnitId;
             currentItem.secondaryUnitId = selectedItemData.secondaryUnitId;
+            // @ts-ignore: calculationMethod is present in API response but not in Item type
+            currentItem.calculationMethod = selectedItemData.calculationMethod;
             // Set cost as unit cost (not multiplied by quantity)
             currentItem.cost = currentItem.baseCost;
         } else {
@@ -145,6 +162,8 @@ export default function TransferInventoryItemsTable({
             currentItem.secondaryUnitValue = 1;
             currentItem.availableQuantity = 0;
             currentItem.primaryUnitName = '';
+            currentItem.secondaryUnitName = '';
+            currentItem.calculationMethod = '';
         }
     }
     
@@ -197,7 +216,7 @@ export default function TransferInventoryItemsTable({
       {/* Show available quantity in the top right, outside the table, as in the screenshot */}
       {items && items[0] && items[0].availableQuantity !== undefined && (
         <div className="absolute right-4 top-2 text-base font-semibold text-black">
-          {t('transfers.availableQuantity')}: <span className="font-bold">{items[0].availableQuantity}</span> {items[0].primaryUnitName}
+          {t('transfers.availableQuantity')}: <span className="font-bold">{items[0].availableQuantity}</span> {getAvailableQuantityUnitName(items[0])}
         </div>
       )}
       <h3 className="text-lg font-semibold p-4 border-b">{t('transfers.inventoryItems')}</h3>

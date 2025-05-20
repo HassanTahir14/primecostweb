@@ -30,14 +30,17 @@ export default function InventoryByItems() {
               primaryUnitValue: item.primaryUnitValue,
               secondaryUnitId: item.secondaryUnitId,
               secondaryUnitValue: item.secondaryUnitValue,
+              calculationMethod: item.calculationMethod,
             });
           }
-          // Add storage info for this location
+          // Add storage info for this location, including calculationMethod and unit ids for correct unit display
           itemMap.get(item.itemId).storageInfo.push({
             storageLocation: item.storageLocation,
             branchLocation: item.branchLocation,
             quantity: item.totalQuantity, // Use exact quantity from response
-            unitId: item.primaryUnitId,
+            calculationMethod: item.calculationMethod,
+            primaryUnitId: item.primaryUnitId,
+            secondaryUnitId: item.secondaryUnitId,
           });
         });
         setGroupedItems(Array.from(itemMap.values()));
@@ -80,11 +83,25 @@ export default function InventoryByItems() {
                   <td className="px-6 py-4 align-top">{item.name}</td>
                   <td className="px-6 py-4 align-top">{item.storageInfo[0]?.branchLocation || ''}</td>
                   <td className="px-6 py-4 align-top">
-                    {item.storageInfo.map((s: any, idx: number) => (
-                      <div key={idx}>
-                        {s.storageLocation} = <b>{s.quantity.toFixed(2)} {getUnitName(s.unitId)}</b>
-                      </div>
-                    ))}
+                    {item.storageInfo.map((s: any, idx: number) => {
+                      let showUnit = '';
+                      const calculationMethod = (s.calculationMethod || '').toUpperCase();
+                      if (calculationMethod.includes('SECONDARY')) {
+                        // If calculationMethod is SECONDARY, show primary unit
+                        showUnit = getUnitName(s.primaryUnitId);
+                      } else if (calculationMethod.includes('PRIMARY')) {
+                        // If calculationMethod is PRIMARY, show secondary unit
+                        showUnit = getUnitName(s.secondaryUnitId);
+                      } else {
+                        // Default: show primary unit
+                        showUnit = getUnitName(s.primaryUnitId);
+                      }
+                      return (
+                        <div key={idx}>
+                          {s.storageLocation} = <b>{s.quantity.toFixed(2)} {showUnit || '-'}</b>
+                        </div>
+                      );
+                    })}
                   </td>
                   <td className="px-6 py-4 align-top">
                     {`${item.primaryUnitValue ?? 1} ${getUnitName(item.primaryUnitId)} = ${item.secondaryUnitValue ?? ''} ${getUnitName(item.secondaryUnitId)}`}

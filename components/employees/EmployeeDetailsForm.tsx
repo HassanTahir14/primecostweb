@@ -144,6 +144,12 @@ export default function EmployeeDetailsForm({ onNext, initialData, onSave, error
           newErrors.loginId = 'Email is required';
       } else if (formData.loginId.length < 5 || formData.loginId.length > 50) {
           newErrors.loginId = 'Email must be between 5 and 50 characters';
+      } else {
+        // Email format validation
+        const emailRegex = /^[\w-.]+@[\w-]+\.[a-zA-Z]{2,}$/;
+        if (!emailRegex.test(formData.loginId)) {
+          newErrors.loginId = 'Please enter a valid email address';
+        }
       }
 
       // Iqama expiry date validation
@@ -224,6 +230,12 @@ export default function EmployeeDetailsForm({ onNext, initialData, onSave, error
       newErrors.loginId = 'Email is required';
     } else if (formData.loginId.length < 5 || formData.loginId.length > 50) {
       newErrors.loginId = 'Email must be between 5 and 50 characters';
+    } else {
+      // Email format validation
+      const emailRegex = /^[\w-.]+@[\w-]+\.[a-zA-Z]{2,}$/;
+      if (!emailRegex.test(formData.loginId)) {
+        newErrors.loginId = 'Please enter a valid email address';
+      }
     }
 
     // Iqama expiry date validation
