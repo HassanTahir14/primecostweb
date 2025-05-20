@@ -6,6 +6,7 @@ import { Check, ChevronDown, ChevronUp, Search } from 'lucide-react';
 import { forwardRef, useState, useRef, useEffect } from 'react';
 
 import { cn } from '@/lib/utils';
+import { useTranslation } from '@/context/TranslationContext';
 
 const Select = SelectPrimitive.Root;
 
@@ -167,6 +168,8 @@ const SelectComponent = forwardRef<HTMLSelectElement, SelectProps>(
     const selectRef = useRef<HTMLSelectElement>(null);
     const searchInputRef = useRef<HTMLInputElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
+    const { t, language } = useTranslation();
+    const isRtl = language === 'ar';
 
     // Filter options based on search term
     const filteredOptions = options.filter(option => 
@@ -215,36 +218,38 @@ const SelectComponent = forwardRef<HTMLSelectElement, SelectProps>(
     };
 
     return (
-      <div className="flex flex-col gap-1.5" ref={containerRef}>
+      <div className="flex flex-col gap-1.5" ref={containerRef} dir={isRtl ? 'rtl' : 'ltr'}>
         {label && (
           <label className="text-sm text-gray-700 font-medium">
             {label}
           </label>
         )}
-        <div className="relative">
+        <div className={`relative flex ${isRtl ? 'flex-row-reverse' : ''}`}>
           <select
             ref={selectRef}
             className={`
-              px-3 py-2 rounded-lg border border-gray-300 
+              py-2 rounded-lg border border-gray-300 
               focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent
               disabled:bg-gray-100 disabled:cursor-not-allowed
               ${error ? 'border-red-500' : ''}
               ${className}
               appearance-none
               w-full
+              ${isRtl ? 'pr-3 pl-8 text-right rtl:text-right' : 'pl-3 pr-8 text-left'}
             `}
             onClick={handleSelectClick}
             defaultValue=""
+            dir={isRtl ? 'rtl' : 'ltr'}
             {...props}
           >
-            <option value="" disabled>Select</option>
+            <option value="" disabled style={{textAlign: isRtl ? 'right' : 'left'}}>{t('common.select')}</option>
             {options.map((option) => (
-              <option key={option.value} value={option.value} disabled={option.disabled}>
+              <option key={option.value} value={option.value} disabled={option.disabled} style={{textAlign: isRtl ? 'right' : 'left'}}>
                 {option.label}
               </option>
             ))}
           </select>
-          <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+          <div className={`absolute inset-y-0 flex items-center pointer-events-none ${isRtl ? 'left-0 pl-2' : 'right-0 pr-2'}`}>
             <ChevronDown className="h-4 w-4 text-gray-500" />
           </div>
           
@@ -253,14 +258,15 @@ const SelectComponent = forwardRef<HTMLSelectElement, SelectProps>(
             <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg">
               <div className="p-2 border-b border-gray-200">
                 <div className="relative">
-                  <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Search className={`absolute ${isRtl ? 'right-2' : 'left-2'} top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400`} />
                   <input
                     ref={searchInputRef}
                     type="text"
-                    className="w-full pl-8 pr-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                    placeholder="Search..."
+                    className={`w-full ${isRtl ? 'pr-8 pl-2 text-right' : 'pl-8 pr-2 text-left'} py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-emerald-500`}
+                    placeholder={t('common.search')}
                     value={searchTerm}
                     onChange={handleSearchChange}
+                    dir={isRtl ? 'rtl' : 'ltr'}
                   />
                 </div>
               </div>
@@ -271,14 +277,14 @@ const SelectComponent = forwardRef<HTMLSelectElement, SelectProps>(
                       key={option.value}
                       className={`px-3 py-2 text-sm cursor-pointer hover:bg-gray-100 ${
                         option.disabled ? 'opacity-50 cursor-not-allowed' : ''
-                      }`}
+                      } ${isRtl ? 'text-right' : 'text-left'}`}
                       onClick={() => !option.disabled && handleOptionClick(option.value)}
                     >
                       {option.label}
                     </div>
                   ))
                 ) : (
-                  <div className="px-3 py-2 text-sm text-gray-500">No results found</div>
+                  <div className={`px-3 py-2 text-sm text-gray-500 ${isRtl ? 'text-right' : 'text-left'}`}>{t('common.noResults')}</div>
                 )}
               </div>
             </div>

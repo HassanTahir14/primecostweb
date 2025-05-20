@@ -27,36 +27,25 @@ export default function Settings() {
         {/* Settings Options */}
         <div className="space-y-4">
           {/* Language Setting */}
-          <div className="bg-white rounded-lg shadow-sm p-4 flex justify-between items-center border border-gray-200 mb-4">
-            <span className="text-gray-700 font-medium">{t('settings.language.title')}</span>
-            <div className="flex items-center gap-2 text-gray-600">
-              <span>{t('settings.language.selected', { language })}</span>
-              <Globe size={20} />
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            <h2 className="text-xl font-semibold text-gray-800">{t('settings.language.title')}</h2>
-            <p className="text-gray-600">{t('settings.language.description')}</p>
-            
-            <div className="flex gap-4 mt-4">
-              <Button
-                variant={language === 'en' ? 'default' : 'outline'}
-                onClick={() => handleLanguageChange('en')}
-                className="flex items-center gap-2"
-              >
-                <span className="text-lg">🇺🇸</span>
-                {t('settings.language.english')}
-              </Button>
-              
-              <Button
-                variant={language === 'ar' ? 'default' : 'outline'}
-                onClick={() => handleLanguageChange('ar')}
-                className="flex items-center gap-2"
-              >
-                <span className="text-lg">🇸🇦</span>
-                {t('settings.language.arabic')}
-              </Button>
+          <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-200 mb-4">
+            <div className="flex justify-between items-center">
+              <span className="text-gray-700 font-medium">{t('settings.language.title')}</span>
+              <div className="flex items-center gap-2">
+                <select
+                  value={language}
+                  onChange={(e) => handleLanguageChange(e.target.value as 'en' | 'ar')}
+                  className="text-gray-600 bg-transparent border-none focus:outline-none focus:ring-0 cursor-pointer"
+                  dir={language === 'ar' ? 'rtl' : 'ltr'}
+                >
+                  <option value="en" className="flex items-center gap-2">
+                    🇺🇸 {t('settings.language.english')}
+                  </option>
+                  <option value="ar" className="flex items-center gap-2">
+                    🇸🇦 {t('settings.language.arabic')}
+                  </option>
+                </select>
+                <Globe size={20} className="text-gray-600" />
+              </div>
             </div>
           </div>
 

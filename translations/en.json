@@ -28,7 +28,8 @@
         "primaryUnit": "Primary Unit",
         "secondaryUnit": "Secondary Unit",
         "createOrder": "Create order",
-        "discard": "Discard"
+        "discard": "Discard",
+        "select": "Select"
     },
     "auth": {
         "email": "Email",

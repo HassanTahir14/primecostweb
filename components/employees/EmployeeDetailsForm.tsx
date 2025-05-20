@@ -346,7 +346,7 @@ export default function EmployeeDetailsForm({ onNext, initialData, onSave, error
           value={formData.mobileNumber} 
           onChange={handleChange} 
           placeholder={t('employees.details.enterValue')} 
-          type="tel" 
+          // type="tel" 
           error={getFieldError('mobileNumber')} 
         />
         <Select 

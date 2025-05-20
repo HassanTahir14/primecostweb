@@ -29,7 +29,8 @@
         "primaryUnit": "الوحدة الأساسية",
         "secondaryUnit": "الوحدة الثانوية",
         "createOrder": "إنشاء طلب",
-        "discard": "تجاهل"
+        "discard": "تجاهل",
+        "select": "اختر"
     },
     "auth": {
         "email": "البريد الإلكتروني",
