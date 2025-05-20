@@ -1665,5 +1665,29 @@
     "update": "Update Recipe",
     "createSuccess": "Recipe created successfully!",
     "updateSuccess": "Recipe updated successfully!"
+  },
+  "sidebar": {
+    "menu": {
+      "home": "Home",
+      "itemsMasterList": "Items Master List",
+      "recipes": "Recipes",
+      "servingSize": "Serving Size",
+      "assignOrder": "Assign Order",
+      "purchaseOrders": "Purchase Orders",
+      "transfers": "Transfers",
+      "kitchenEmployees": "Kitchen Employees",
+      "suppliers": "Suppliers",
+      "serviceLevelAgreement": "Service Level Agreement",
+      "branches": "Branches",
+      "taxes": "Taxes",
+      "inventory": "Inventory",
+      "tokens": "Tokens",
+      "printLabels": "Print Labels",
+      "openMenu": "Open Menu",
+      "showMore": "Show More Menu Items",
+      "more": "MORE",
+      "logout": "Logout",
+      "menu": "Menu"
+    }
   }
 }

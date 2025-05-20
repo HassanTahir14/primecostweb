@@ -32,31 +32,35 @@ const getDashboardRoute = (role?: string): string => {
 };
 
 // Base configuration mapping menu names to icons and paths
-const menuConfig: { [key: string]: { icon: string; href: string; label: string } } = {
-  'Home': { icon: '/assets/svgs/home.svg', href: 'dynamic', label: 'Home' }, // href will be set dynamically
-  'Items Master List': { icon: '/assets/svgs/fishSimple.svg', href: '/items', label: 'Items Master List' },
-  'Recipes': { icon: '/assets/svgs/recipes.svg', href: '/recipes', label: 'Recipes' },
-  'Serving Size': { icon: '/assets/svgs/scales.svg', href: '/serving-size', label: 'Serving Size' },
-  'Assign Order': { icon: '/assets/svgs/assign_order.svg', href: '/assign-order', label: 'Assign Order' },
-  'Purchase Orders': { icon: '/assets/svgs/purchaseOrder.svg', href: '/purchase-orders', label: 'Purchase Orders' },
-  'Transfers': { icon: '/assets/svgs/transfers.svg', href: '/transfers', label: 'Transfers' },
-  'Kitchen Employees': { icon: '/assets/svgs/kitchenEmployees.svg', href: '/employees', label: 'Kitchen Employees' },
-  'Suppliers': { icon: '/assets/svgs/suppliers.svg', href: '/suppliers', label: 'Suppliers' },
-  'Service Level Agreement': { icon: '/assets/svgs/serviceLevelAgreements.svg', href: '/sla-report', label: 'Service Level Agreement' },
-  'Branches': { icon: '/assets/svgs/branches.svg', href: '/branches', label: 'Branches' },
-  'Taxes': { icon: '/assets/svgs/taxes.svg', href: '/taxes', label: 'Taxes' },
-  'Inventory': { icon: '/assets/svgs/inventory.svg', href: '/inventory', label: 'Inventory' },
-  'Tokens': { icon: '/assets/svgs/tokens.svg', href: '/tokens', label: 'Tokens' },
-  'Finished Orders': { icon: '/assets/svgs/orders.svg', href: '/finished-orders', label: 'Print Labels' },
-  // Add other potential menu items here if needed
-};
 
 export default function Sidebar({ isOpen, onOpenChange }: SidebarProps) {
   const pathname = usePathname();
   const currentUser = useSelector(selectCurrentUser);
   const dispatch = useDispatch();
   const router = useRouter();
-  const { isRTL } = useTranslation();
+  const { isRTL, t } = useTranslation();
+
+  
+
+// Update menuConfig to use translation keys for labels
+const menuConfig: { [key: string]: { icon: string; href: string; label: string } } = {
+  'Home': { icon: '/assets/svgs/home.svg', href: 'dynamic', label: t('sidebar.menu.home') },
+  'Items Master List': { icon: '/assets/svgs/fishSimple.svg', href: '/items', label: t('sidebar.menu.itemsMasterList') },
+  'Recipes': { icon: '/assets/svgs/recipes.svg', href: '/recipes', label: t('sidebar.menu.recipes') },
+  'Serving Size': { icon: '/assets/svgs/scales.svg', href: '/serving-size', label: t('sidebar.menu.servingSize') },
+  'Assign Order': { icon: '/assets/svgs/assign_order.svg', href: '/assign-order', label: t('sidebar.menu.assignOrder') },
+  'Purchase Orders': { icon: '/assets/svgs/purchaseOrder.svg', href: '/purchase-orders', label: t('sidebar.menu.purchaseOrders') },
+  'Transfers': { icon: '/assets/svgs/transfers.svg', href: '/transfers', label: t('sidebar.menu.transfers') },
+  'Kitchen Employees': { icon: '/assets/svgs/kitchenEmployees.svg', href: '/employees', label: t('sidebar.menu.kitchenEmployees') },
+  'Suppliers': { icon: '/assets/svgs/suppliers.svg', href: '/suppliers', label: t('sidebar.menu.suppliers') },
+  'Service Level Agreement': { icon: '/assets/svgs/serviceLevelAgreements.svg', href: '/sla-report', label: t('sidebar.menu.serviceLevelAgreement') },
+  'Branches': { icon: '/assets/svgs/branches.svg', href: '/branches', label: t('sidebar.menu.branches') },
+  'Taxes': { icon: '/assets/svgs/taxes.svg', href: '/taxes', label: t('sidebar.menu.taxes') },
+  'Inventory': { icon: '/assets/svgs/inventory.svg', href: '/inventory', label: t('sidebar.menu.inventory') },
+  'Tokens': { icon: '/assets/svgs/tokens.svg', href: '/tokens', label: t('sidebar.menu.tokens') },
+  'Finished Orders': { icon: '/assets/svgs/orders.svg', href: '/finished-orders', label: t('sidebar.menu.printLabels') },
+};
+
 
   // Get the dashboard route based on user role
   const dashboardRoute = getDashboardRoute(currentUser?.role);
@@ -96,7 +100,7 @@ export default function Sidebar({ isOpen, onOpenChange }: SidebarProps) {
           onClick={() => onOpenChange(true)}
           className="text-white mb-8"
         >
-          <Image src="/assets/svgs/menu.svg" alt="Menu" width={24} height={24} className="brightness-0 invert" />
+          <Image src="/assets/svgs/menu.svg" alt={t('sidebar.menu.openMenu')} width={24} height={24} className="brightness-0 invert" />
         </button>
 
         <div className="flex flex-col items-center space-y-5 md:space-y-7">
@@ -106,7 +110,7 @@ export default function Sidebar({ isOpen, onOpenChange }: SidebarProps) {
               key={index}
               href={item.href}
               className={`text-white hover:bg-[#2b8274] p-2 rounded-lg ${pathname === item.href ? 'bg-[#2b8274]' : ''}`}
-              title={item.label} // Add title for tooltip on hover
+              title={item.label} // Already translated
             >
               <Image src={item.icon} alt={item.label} width={20} height={20} className="brightness-0 invert" />
             </Link>
@@ -118,9 +122,9 @@ export default function Sidebar({ isOpen, onOpenChange }: SidebarProps) {
           <button
             onClick={() => onOpenChange(true)}
             className="text-white text-[10px] md:text-xs mt-6 md:mt-8"
-            title="Show More Menu Items"
+            title={t('sidebar.menu.showMore')}
           >
-            MORE
+            {t('sidebar.menu.more')}
           </button>
         )}
 
@@ -128,9 +132,9 @@ export default function Sidebar({ isOpen, onOpenChange }: SidebarProps) {
         <button
           onClick={handleLogout}
           className="text-white mt-auto mb-4 md:mb-6"
-          title="Logout"
+          title={t('sidebar.menu.logout')}
         >
-          <Image src="/assets/svgs/logout.svg" alt="Logout" width={20} height={20} className="brightness-0 invert" />
+          <Image src="/assets/svgs/logout.svg" alt={t('sidebar.menu.logout')} width={20} height={20} className="brightness-0 invert" />
         </button>
       </div>
     );
@@ -152,7 +156,7 @@ export default function Sidebar({ isOpen, onOpenChange }: SidebarProps) {
             className="flex items-center gap-2"
           >
             <Image src="/assets/svgs/menu.svg" alt="Menu" width={24} height={24} className="brightness-0 invert" />
-            <span>Menu</span>
+            <span>{t('sidebar.menu.menu')}</span>
           </button>
         </div>
 
@@ -177,7 +181,7 @@ export default function Sidebar({ isOpen, onOpenChange }: SidebarProps) {
           className={`flex items-center gap-2 text-white absolute bottom-4 md:bottom-6 ${isRTL ? 'right-4 md:right-6' : 'left-4 md:left-6'} hover:opacity-80`}
         >
           <Image src="/assets/svgs/logout.svg" alt="Logout" width={20} height={20} className="brightness-0 invert" />
-          <span className="text-xs md:text-sm">Logout</span>
+          <span className="text-xs md:text-sm">{t('sidebar.menu.logout')}</span>
         </button>
       </div>
     </>

@@ -1644,5 +1644,29 @@
     "update": "تحديث الوصفة",
     "createSuccess": "تم إنشاء الوصفة بنجاح!",
     "updateSuccess": "تم تحديث الوصفة بنجاح!"
+  },
+  "sidebar": {
+    "menu": {
+      "home": "الرئيسية",
+      "itemsMasterList": "قائمة المواد الرئيسية",
+      "recipes": "الوصفات",
+      "servingSize": "حجم الحصة",
+      "assignOrder": "تعيين الطلب",
+      "purchaseOrders": "طلبات الشراء",
+      "transfers": "التحويلات",
+      "kitchenEmployees": "موظفو المطبخ",
+      "suppliers": "الموردون",
+      "serviceLevelAgreement": "اتفاقية مستوى الخدمة",
+      "branches": "الفروع",
+      "taxes": "الضرائب",
+      "inventory": "المخزون",
+      "tokens": "الرموز",
+      "printLabels": "طباعة الملصقات",
+      "openMenu": "فتح القائمة",
+      "showMore": "عرض المزيد من عناصر القائمة",
+      "more": "المزيد",
+      "logout": "تسجيل الخروج",
+      "menu": "القائمة"
+    }
   }
 }
