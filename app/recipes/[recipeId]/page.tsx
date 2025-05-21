@@ -17,6 +17,7 @@ import { DetailFieldConfig } from '@/components/common/GenericDetailPage';
 import { formatCurrencyValue } from '@/utils/currencyUtils';
 import { useCurrency } from '@/context/CurrencyContext';
 import { useTranslation } from '@/context/TranslationContext';
+import Timer from '@/components/common/Timer';
 
 // Add interface for auth user
 interface AuthUser {
@@ -48,6 +49,10 @@ export default function RecipeDetailPage() {
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const [formattedCosts, setFormattedCosts] = useState<any>({});
   const [formattedIngredientCosts, setFormattedIngredientCosts] = useState<any>({});
+
+  // Timer state for preparation mode
+  const [prepStart, setPrepStart] = useState<number | null>(null);
+  const [prepEnd, setPrepEnd] = useState<number | null>(null);
 
   // Get user role from localStorage
   useEffect(() => {
@@ -213,6 +218,31 @@ export default function RecipeDetailPage() {
     }
   };
 
+  // Set timer start from localStorage or now when entering preparation mode
+  useEffect(() => {
+    if (isPreparationMode && orderId) {
+      const key = `prep-timer-${orderId}`;
+      let start = localStorage.getItem(key);
+      if (!start) {
+        const now = Date.now();
+        localStorage.setItem(key, String(now));
+        setPrepStart(now);
+      } else {
+        setPrepStart(Number(start));
+      }
+    }
+  }, [isPreparationMode, orderId]);
+
+  // Listen for finish event from PreparationFields
+  function handlePrepFinish() {
+    if (isPreparationMode && orderId) {
+      const key = `prep-timer-${orderId}`;
+      const end = Date.now();
+      setPrepEnd(end);
+      localStorage.setItem(`${key}-end`, String(end));
+    }
+  }
+
   if (loading) {
     return (
       <PageLayout title={t('recipes.detail.title')}>
@@ -247,7 +277,11 @@ export default function RecipeDetailPage() {
             >
               <ArrowLeft className="h-5 w-5" />
             </Button>
-            <h1 className="text-2xl font-bold">{recipe.name}</h1>
+            <h1 className="text-2xl font-bold">{recipe.name}
+              {isPreparationMode && prepStart && (
+                <Timer startTime={prepStart} endTime={prepEnd || undefined} />
+              )}
+            </h1>
           </div>
           
           {/* Download PDF Button */}
@@ -467,10 +501,11 @@ export default function RecipeDetailPage() {
               type="recipe" 
               id={recipeId} 
               branchId={branchId}
+              onFinishPreparation={handlePrepFinish}
             />
           </div>
         )}
       </div>
     </PageLayout>
   );
-} 
+}

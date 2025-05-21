@@ -14,9 +14,10 @@ interface PreparationFieldsProps {
   type: 'recipe' | 'sub-recipe';
   id: string | number;
   branchId?: number;
+  onFinishPreparation?: () => void;
 }
 
-export default function PreparationFields({ type, id, branchId }: PreparationFieldsProps) {
+export default function PreparationFields({ type, id, branchId, onFinishPreparation }: PreparationFieldsProps) {
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
   const searchParams = useSearchParams();
@@ -57,7 +58,23 @@ export default function PreparationFields({ type, id, branchId }: PreparationFie
   console.log('Unit:', unit);
 
   // Calculate sum of all ingredient recipeCost values
-  const sumOfIngredientRecipeCost = currentItem?.ingredientsItems?.reduce((sum: number, ing: any) => sum + (parseFloat(ing.recipeCost) || 0), 0) || 0;
+  let sumOfIngredientRecipeCost = 0;
+  if (currentItem) {
+    if (Array.isArray(currentItem.ingredientsItems) && currentItem.ingredientsItems.length > 0) {
+      sumOfIngredientRecipeCost = currentItem.ingredientsItems.reduce((sum: number, ing: any) => {
+        const val = parseFloat(ing.recipeCost);
+        console.log('ingredientsItems recipeCost:', ing.recipeCost, 'parsed:', val);
+        return sum + (isNaN(val) ? 0 : val);
+      }, 0);
+    } else if (Array.isArray(currentItem.ingredients) && currentItem.ingredients.length > 0) {
+      sumOfIngredientRecipeCost = currentItem.ingredients.reduce((sum: number, ing: any) => {
+        const val = parseFloat(ing.recipeCost);
+        console.log('ingredients recipeCost:', ing.recipeCost, 'parsed:', val);
+        return sum + (isNaN(val) ? 0 : val);
+      }, 0);
+    }
+  }
+  console.log('sumOfIngredientRecipeCost:', sumOfIngredientRecipeCost);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -114,6 +131,7 @@ export default function PreparationFields({ type, id, branchId }: PreparationFie
     }
 
     try {
+      console.log('Sending sumOfIngredientRecipeCost:', sumOfIngredientRecipeCost, 'unitOfMeasurement:', `37@recipecost${sumOfIngredientRecipeCost.toFixed(4)}`);
       await api.post('/orders/finish', { 
         orderId,
         quantity: parseFloat(quantity),
@@ -124,6 +142,7 @@ export default function PreparationFields({ type, id, branchId }: PreparationFie
       setModalMessage('Order finished successfully');
       setIsSuccess(true);
       setIsModalOpen(true);
+      if (onFinishPreparation) onFinishPreparation();
       // Navigate back to the same page without preparation mode after a short delay
       setTimeout(() => {
         router.push(`/finished-orders`);
@@ -241,4 +260,4 @@ export default function PreparationFields({ type, id, branchId }: PreparationFie
       />
     </div>
   );
-} 
+}
