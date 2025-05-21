@@ -53,7 +53,8 @@ export default function PurchaseByCategoryReportPage() {
             dispatch(fetchPurchaseByCategory({ 
                 startDate, 
                 endDate, 
-                category: selectedCategory
+                category: selectedCategory,
+                "size": 1000 // Adjust size as needed
             }));
         }
     }, [selectedCategory]); // Only run when category changes
@@ -102,7 +103,8 @@ export default function PurchaseByCategoryReportPage() {
         dispatch(fetchPurchaseByCategory({ 
             startDate, 
             endDate, 
-            category: selectedCategory
+            category: selectedCategory,
+            size: 1000 // Adjust size as needed
         }));
     };
 

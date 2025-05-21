@@ -45,7 +45,7 @@ export default function RejectedPurchaseOrdersReportPage() {
         }
         setValidationError(null);
         dispatch(clearReportError('rejectedPOs')); // Clear previous errors
-        dispatch(fetchRejectedPOs({ startDate, endDate }));
+        dispatch(fetchRejectedPOs({ startDate, endDate, size: 1000 }));
     };
 
     const handleCloseErrorModal = () => {

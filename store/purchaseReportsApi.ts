@@ -4,6 +4,7 @@ import api from './api';
 interface DateRangePayload {
     startDate: string; // "YYYY-MM-DD"
     endDate: string; // "YYYY-MM-DD"
+    size: number; // Optional for pagination
 }
 
 interface CategoryPayload extends DateRangePayload {

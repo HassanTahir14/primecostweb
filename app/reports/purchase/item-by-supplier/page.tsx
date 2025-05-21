@@ -39,7 +39,7 @@ export default function ItemsBySupplierReportPage() {
     // Fetch data on first load
     useEffect(() => {
         dispatch(clearReportError('itemsBySupplier'));
-        dispatch(fetchItemsBySupplier({ startDate, endDate }));
+        dispatch(fetchItemsBySupplier({ startDate, endDate, "size": 1000 }));
     }, []); // Empty dependency array means this runs once on mount
 
     useEffect(() => {
@@ -75,7 +75,7 @@ export default function ItemsBySupplierReportPage() {
         }
         setValidationError(null);
         dispatch(clearReportError('itemsBySupplier'));
-        dispatch(fetchItemsBySupplier({ startDate, endDate }));
+        dispatch(fetchItemsBySupplier({ startDate, endDate, "size": 1000 }));
     };
 
     const handleCloseErrorModal = () => {

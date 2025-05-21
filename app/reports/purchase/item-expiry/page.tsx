@@ -34,7 +34,7 @@ const ItemExpiryReportPage = () => {
     // Fetch data on first load
     useEffect(() => {
         dispatch(clearReportError('itemExpiries'));
-        dispatch(fetchItemExpiries({ startDate, endDate }));
+        dispatch(fetchItemExpiries({ startDate, endDate, "size": 1000 }));
     }, []); // Empty dependency array means this runs once on mount
 
     const handleFetchReport = () => {
@@ -44,7 +44,7 @@ const ItemExpiryReportPage = () => {
         }
         setValidationError(null);
         dispatch(clearReportError('itemExpiries'));
-        dispatch(fetchItemExpiries({ startDate, endDate }));
+        dispatch(fetchItemExpiries({ startDate, endDate, "size": 1000 }));
     };
 
     const handleCloseErrorModal = () => {
