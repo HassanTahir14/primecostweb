@@ -666,6 +666,7 @@
     "cancel": "Cancel",
     "actions": "Actions",
     "recipeName": "Recipe Name",
+    "startOrderError": "Some Error occurred",
     "orderId": "Order ID",
     "loadingOrders": "Loading orders...",
     "noOrdersFound": "No orders found. {isAdmin, select, true {Assign one to get started.} false {No orders assigned yet.}}",

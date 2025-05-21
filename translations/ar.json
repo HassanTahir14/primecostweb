@@ -564,6 +564,7 @@
     }
   },
   "assignOrder": {
+    "startOrderError": "حدث خطأ ما",
     "actions": "الإجراءات",
     "recipeName": "اسم الوصفة",
     "orderId": "معرف الطلب",
