@@ -36,7 +36,7 @@
     "validationError": "خطأ في التحقق",
     "export": "تصدير إلى PDF",
     "fetchReport": "استرجاع التقرير",
-    "processing":"جاري المعالجة..."
+    "processing": "جاري المعالجة..."
   },
   "auth": {
     "email": "البريد الإلكتروني",
@@ -683,7 +683,6 @@
     "employeeName": "اسم الموظف",
     "userId": "معرف المستخدم",
     "type": "النوع",
-    "approveTheToken": "الموافقة على التوكن",
     "date": "التاريخ",
     "amount": "المبلغ",
     "next": "التالي",
@@ -1020,6 +1019,7 @@
     "costWithVat": "التكلفة مع الضريبة",
     "tokenStatus": "حالة الرمز",
     "orderStatus": "حالة الطلب",
+    "approveTheToken": "الموافقة على التوكن",
     "orderDate": "تاريخ الطلب",
     "itemName": "اسم العنصر",
     "orderReceived": "تم استلام الطلب",
