@@ -52,7 +52,11 @@ export default function RecipeIngredientsForm({ onNext, onBack, initialData, onS
   const { t } = useTranslation();
 
   useEffect(() => {
-    dispatch(fetchAllItems({}))
+    dispatch(fetchAllItems({page: 0, 
+      size: 200000, 
+      searchQuery: '',
+      sortBy: 'name',
+      direction: 'asc'}))
       .unwrap()
       .then((res) => {
         // Filter items to only show those with quantity > 0 in any branch
