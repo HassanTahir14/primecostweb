@@ -5,6 +5,7 @@ import Button from '@/components/common/button';
 import { Download } from 'lucide-react';
 import { exportToCSV } from '@/utils/exportUtils';
 import Loader from '../common/Loader';
+import { useTranslation } from '@/context/TranslationContext';
 
 // Generic Column Definition
 export interface ColumnDefinition<T> {
@@ -43,6 +44,7 @@ function ReportTypeTable<T extends { [key: string]: any }>({
 
   // Ensure data is always an array
   const safeData = Array.isArray(data) ? data : [];
+  const { t } = useTranslation();
 
   const handleExport = () => {
     if (safeData.length === 0) {
@@ -79,7 +81,7 @@ function ReportTypeTable<T extends { [key: string]: any }>({
         {showExportButton && safeData.length > 0 && (
           <Button onClick={handleExport} variant="outline" size="sm">
             <Download size={16} className="mr-2" />
-            Export to PDF
+            {t('common.export')}
           </Button>
         )}
       </div>

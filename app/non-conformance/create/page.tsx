@@ -10,6 +10,7 @@ import Link from 'next/link';
 import ConfirmationModal from '@/components/common/ConfirmationModal';
 import { AppDispatch } from '@/store/store'; // Import AppDispatch
 import { addNonConformanceReport, clearError } from '@/store/nonConformanceSlice'; // Import actions
+import { useTranslation } from '@/context/TranslationContext';
 
 export default function CreateNonConformanceReportPage() {
   const router = useRouter();
@@ -20,6 +21,7 @@ export default function CreateNonConformanceReportPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [modalMessage, setModalMessage] = useState('');
   const [isSuccess, setIsSuccess] = useState(false);
+  const { t } = useTranslation();
 
   const handleFormSubmit = async (formData: any) => {
     setIsLoading(true);
@@ -76,11 +78,11 @@ export default function CreateNonConformanceReportPage() {
   };
 
   return (
-    <PageLayout title="Non Conformance Report">
+    <PageLayout title={t('nonConformance.title')}>
       <div className="mb-4">
          <Link href="/non-conformance" className="text-gray-500 hover:text-gray-700 flex items-center gap-2 w-fit">
             <ArrowLeft size={20} />
-            <span>Back to Reports List</span>
+            <span>{t('nonConformance.backToList')}</span>
           </Link>
       </div>
       <NonConformanceReportForm 

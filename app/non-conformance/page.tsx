@@ -10,6 +10,7 @@ import Link from 'next/link';
 import { AppDispatch, RootState } from '@/store/store'; // Import store types
 import { fetchAllNonConformanceReports, clearError } from '@/store/nonConformanceSlice'; // Import actions
 import ConfirmationModal from '@/components/common/ConfirmationModal'; // For error display
+import { useTranslation } from '@/context/TranslationContext'; // For translation
 
 // This page will display the list/table of non-conformance reports.
 // Data fetching logic (e.g., using Redux or local state with useEffect)
@@ -22,7 +23,7 @@ export default function NonConformanceReportsPage() {
     loading: isLoading, 
     error 
   } = useSelector((state: RootState) => state.nonConformance);
-
+  const { t } = useTranslation();
   useEffect(() => {
     dispatch(fetchAllNonConformanceReports());
     // Optional: Clear error on component mount if needed
@@ -39,13 +40,13 @@ export default function NonConformanceReportsPage() {
   };
 
   return (
-    <PageLayout title="Non Conformance Reports">
+    <PageLayout title={t('nonConformance.title')}>
       <div className="space-y-6">
         <div className="flex justify-end">
            <Link href="/non-conformance/create"> 
             <Button>
               <Plus size={18} className="mr-2" />
-              Create Report
+              {t('nonConformance.createReport')}
             </Button>
           </Link>
         </div>
