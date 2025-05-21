@@ -125,7 +125,7 @@ const ReceiveOrderModal: React.FC<ReceiveOrderModalProps> = ({
       size="md" // Adjust size as needed
     >
       <form onSubmit={handleSubmit} className="w-full">
-        <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
+        <div className="space-y-4 pr-2"> {/* Removed max-h-[60vh] overflow-y-auto */}
           <p className="text-sm text-gray-600">
             Item: <span className="font-medium">{orderData.itemName} ({orderData.itemCode})</span><br/>
             Ordered: <span className="font-medium">{orderData.quantity} {orderData.unitName}</span>
@@ -180,6 +180,7 @@ const ReceiveOrderModal: React.FC<ReceiveOrderModalProps> = ({
               options={storageLocationOptions} 
               className={`w-full bg-white ${errors.storageLocationId ? 'border-red-500' : ''}`}
               disabled={loading || !formData.branchId || storageLocationOptions.length === 0}
+              // To allow dropdown to break out of modal, update Select to use a portal for its dropdown menu
             />
             {errors.storageLocationId && <p className="mt-1 text-red-500 text-xs">{errors.storageLocationId}</p>}
           </div>
@@ -208,4 +209,4 @@ const ReceiveOrderModal: React.FC<ReceiveOrderModalProps> = ({
   );
 };
 
-export default ReceiveOrderModal; 
+export default ReceiveOrderModal;

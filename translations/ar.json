@@ -35,7 +35,8 @@
     "next": "التالي",
     "validationError": "خطأ في التحقق",
     "export": "تصدير إلى PDF",
-    "fetchReport": "استرجاع التقرير"
+    "fetchReport": "استرجاع التقرير",
+    "processing":"جاري المعالجة..."
   },
   "auth": {
     "email": "البريد الإلكتروني",
@@ -684,6 +685,7 @@
     "type": "النوع",
     "date": "التاريخ",
     "amount": "المبلغ",
+    "next": "التالي",
     "noOtherPayrollData": "لا توجد بيانات رواتب أخرى.",
     "loadingPayroll": "جاري تحميل الرواتب...",
     "errorLoadingPayroll": "حدث خطأ أثناء تحميل الرواتب.",

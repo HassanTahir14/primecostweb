@@ -35,7 +35,8 @@
     "next": "Next",
     "validationError": "Validation Error",
     "export": "Export to PDF",
-    "fetchReport":"Fetch Report"
+    "fetchReport":"Fetch Report",
+    "processing": "Processing..."
   },
   "auth": {
     "email": "Email",
@@ -731,6 +732,7 @@
       "dateOfBirth": "Date of Birth",
       "password": "Password",
       "enterValue": "Enter value",
+      "next": "Next",
       "errors": {
         "firstnameRequired": "First name is required.",
         "firstnameLength": "First name must be between 1 and 50 characters.",
@@ -1022,6 +1024,7 @@
   "purchaseOrders": {
     "orderReceived": "Order Received",
     "title": "Purchase Orders",
+    "approveTheToken": "Approve the Token",
     "createNewOrder": "Create New Purchase Order",
     "editOrder": "Edit Purchase Order",
     "selectSupplier": "Select Supplier",
