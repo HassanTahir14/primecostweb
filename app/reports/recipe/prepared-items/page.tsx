@@ -6,6 +6,7 @@ import PageLayout from '@/components/PageLayout';
 import Button from '@/components/common/button';
 import Input from '@/components/common/input';
 import { AppDispatch, RootState } from '@/store/store';
+import { useTranslation } from '@/context/TranslationContext';
 import {
     fetchPreparedItems,
     clearRecipeReportError,
@@ -29,7 +30,7 @@ export default function PreparedItemsReportPage() {
     const [endDate, setEndDate] = useState(defaultEndDate);
     const [validationError, setValidationError] = useState<string | null>(null);
     const { data, loading, error } = useSelector((state: RootState) => state.recipeReports.preparedItems);
-
+    const { t } = useTranslation();
     // Fetch data on first load
     useEffect(() => {
         dispatch(clearRecipeReportError('preparedItems'));
@@ -130,7 +131,7 @@ export default function PreparedItemsReportPage() {
                         value={endDate} onChange={(e) => setEndDate(e.target.value)}
                     />
                     <Button onClick={handleFetchReport} disabled={loading}>
-                        {loading ? 'Loading...' : 'Fetch Report'}
+                        {loading ? t('common.loading') : t('common.fetchReport')}
                     </Button>
                 </div>
                  {validationError && (<p className="mt-2 text-sm text-red-600">{validationError}</p>)}

@@ -205,7 +205,7 @@ export default function EmployeesPage() {
         {/* Employees Table - Updated with Redux data and actions */} 
         <div className="overflow-x-auto bg-white rounded-lg border border-gray-200">
           {employeesLoading && employees.length === 0 ? ( // Show loading only if list is empty initially
-            <div className="text-center py-10 text-gray-500">Loading employees...</div>
+            <div className="text-center py-10 text-gray-500">{t('common.loading')}</div>
           ) : (
             <table className="w-full text-left">
               <thead>

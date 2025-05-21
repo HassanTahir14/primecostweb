@@ -34,7 +34,8 @@
     "back": "Back",
     "next": "Next",
     "validationError": "Validation Error",
-    "export": "Export to PDF"
+    "export": "Export to PDF",
+    "fetchReport":"Fetch Report"
   },
   "auth": {
     "email": "Email",

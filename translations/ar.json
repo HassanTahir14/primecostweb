@@ -34,7 +34,8 @@
     "noResults": "لم يتم العثور على نتائج",
     "next": "التالي",
     "validationError": "خطأ في التحقق",
-    "export": "تصدير إلى PDF"
+    "export": "تصدير إلى PDF",
+    "fetchReport": "استرجاع التقرير"
   },
   "auth": {
     "email": "البريد الإلكتروني",
