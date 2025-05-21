@@ -121,13 +121,13 @@ const ReceiveOrderModal: React.FC<ReceiveOrderModalProps> = ({
     <Modal 
       isOpen={isOpen}
       onClose={() => !loading && onClose()}
-      title={`Receive Order #${orderData.id} - ${orderData.itemName}`}
+      title={`Receive Order #${orderData.id} - ${orderData.itemName?.split('@')[0] || orderData.itemName}`}
       size="md" // Adjust size as needed
     >
       <form onSubmit={handleSubmit} className="w-full">
         <div className="space-y-4 pr-2"> {/* Removed max-h-[60vh] overflow-y-auto */}
           <p className="text-sm text-gray-600">
-            Item: <span className="font-medium">{orderData.itemName} ({orderData.itemCode})</span><br/>
+            Item: <span className="font-medium">{orderData.itemName?.split('@')[0] || orderData.itemName} ({orderData.itemCode})</span><br/>
             Ordered: <span className="font-medium">{orderData.quantity} {orderData.unitName}</span>
           </p>
 
