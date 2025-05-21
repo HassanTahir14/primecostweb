@@ -233,9 +233,17 @@ export default function RecipeIngredientsForm({ onNext, onBack, initialData, onS
 
   const handleNextClick = () => {
     if (validateForm()) {
+      // Map itemId from itemList for each ingredient
+      const ingredientsWithItemId = ingredients.map(ing => {
+        const matchedItem = itemList.find(item => item.name.split('@')[0] === ing.item);
+        return {
+          ...ing,
+          itemId: matchedItem ? matchedItem.itemId : ing.id // fallback to id if not found
+        };
+      });
       onNext({ 
         ...initialData, // Preserve all previous data
-        ingredients 
+        ingredients: ingredientsWithItemId
       });
     }
   };

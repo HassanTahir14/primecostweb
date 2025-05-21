@@ -59,24 +59,37 @@ export default function InventoryByRecipe() {
         const response = await api.post('/inventory/view/prepared-main-recipe', {page: 0, size: 100000, sortBy: 'preparedDate', direction: 'asc'});
         const list = response?.data?.preparedMainRecipeList || [];
 
-        const mapped = list.map((item: any) => {
-          // Map all inventory locations
+        // Flatten recipes by inventory location
+        const mapped = list.flatMap((item: any) => {
           const inventoryLocations = item.inventoryLocations || [];
-          const storageLocations = inventoryLocations.map((loc: InventoryLocation) => loc.storageLocationWithCode).join(', ');
-          
-          return {
-          id: item.preparedMainRecipeId,
-          date: moment(item.preparedDate).format('DD/MM/YYYY hh:mm A'),
-          name: item.mainRecipeNameAndDescription,
-          preparedBy: item.preparedByUserId,
-            storageAndBranch: storageLocations || 'N/A',
-            quantity: item.totalQuantityAcrossLocations,
+          if (inventoryLocations.length === 0) {
+            return [{
+              id: item.preparedMainRecipeId + '-none',
+              date: moment(item.preparedDate).format('DD/MM/YYYY hh:mm A'),
+              name: item.mainRecipeNameAndDescription,
+              preparedBy: item.preparedByUserId,
+              storageAndBranch: 'N/A',
+              quantity: item.totalQuantityAcrossLocations, // fallback to total if no locations
+              uom: item.uom,
+              batchNumber: item.mainRecipeBatchNumber,
+              expirationDate: moment(item.expirationDate).format('DD/MM/YYYY'),
+              status: item.preparedMainRecipeStatus,
+              inventoryLocations: []
+            }];
+          }
+          return inventoryLocations.map((loc: InventoryLocation) => ({
+            id: item.preparedMainRecipeId + '-' + loc.inventoryId,
+            date: moment(item.preparedDate).format('DD/MM/YYYY hh:mm A'),
+            name: item.mainRecipeNameAndDescription,
+            preparedBy: item.preparedByUserId,
+            storageAndBranch: loc.storageLocationWithCode,
+            quantity: loc.quantity,
             uom: item.uom,
             batchNumber: item.mainRecipeBatchNumber,
             expirationDate: moment(item.expirationDate).format('DD/MM/YYYY'),
             status: item.preparedMainRecipeStatus,
-            inventoryLocations: inventoryLocations
-          };
+            inventoryLocations: [loc]
+          }));
         });
 
         setRecipes(mapped);

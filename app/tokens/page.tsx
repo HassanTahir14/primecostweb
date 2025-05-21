@@ -75,7 +75,12 @@ export default function TokensPage() {
         endDate: new Date().toISOString().split('T')[0],   // 'YYYY-MM-DD'
       });
       
-      
+      if (response.data && response.data.responseCode === '1500') {
+        setModalMessage('Transfer would leave source inventory below minimum quantity threshold');
+        setIsErrorModalOpen(true);
+        setIsLoading(false);
+        return;
+      }
       if (response.data && response.data.tokens) {
         let fetchedTokens: Token[] = response.data.tokens;
 
@@ -105,10 +110,15 @@ export default function TokensPage() {
           approved: approvedCount
         });
       }
-    } catch (error) {
-      console.error('Error fetching tokens:', error);
-      setModalMessage('Failed to load tokens. Please try again later.');
-      setIsErrorModalOpen(true);
+    } catch (error: any) {
+      if (error?.response?.data?.responseCode === '1500') {
+        setModalMessage('Transfer would leave source inventory below minimum quantity threshold');
+        setIsErrorModalOpen(true);
+      } else {
+        console.error('Error fetching tokens:', error);
+        setModalMessage('Failed to load tokens. Please try again later.');
+        setIsErrorModalOpen(true);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -174,12 +184,17 @@ export default function TokensPage() {
     setIsConfirmModalOpen(false); // Close confirmation modal immediately
 
     try {
-      await api.post('/tokens/action', {
+      const response = await api.post('/tokens/action', {
         tokenId: tokenIdToAction,
         action: action,
       });
-      // Refresh tokens after successful action
-      await fetchTokens();
+      if (response.data && response.data.responseCode === '1500') {
+        setModalMessage('Transfer would leave source inventory below minimum quantity threshold');
+        setIsErrorModalOpen(true);
+      } else {
+        // Refresh tokens after successful action
+        await fetchTokens();
+      }
     } catch (error) {
       console.error(`Error performing action ${action} on token:`, error);
       setModalMessage(`Failed to perform action ${action}. Please try again.`);
@@ -270,6 +285,7 @@ export default function TokensPage() {
         onClose={() => setIsErrorModalOpen(false)}
         title={t('common.error')}
         message={modalMessage}
+        isAlert={true}
         okText={t('common.ok')}
       />
 
