@@ -192,7 +192,7 @@ export default function FinishedOrdersPage() {
                           {recipe.mainRecipeBatchNumber}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {loc.quantity} {recipe.uom.split('@')[0]}
+                          {loc.quantity} {recipe.uom.split('@')[0] === '37' ? 'kg' : recipe.uom.split('@')[0]}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                           {loc.storageLocationWithCode}
@@ -225,7 +225,7 @@ export default function FinishedOrdersPage() {
                           {recipe.subRecipeBatchNumber}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {loc.quantity} {recipe.uom.split('@')[0]}
+                          {loc.quantity} {recipe.uom.split('@')[0] === '37' ? 'kg' : recipe.uom.split('@')[0]}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                           {loc.storageLocationWithCode}
