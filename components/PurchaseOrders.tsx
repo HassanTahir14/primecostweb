@@ -595,7 +595,7 @@ export default function PurchaseOrders({ onClose }: PurchaseOrdersProps) {
         setIsFeedbackAlert(true);
         setFeedbackModalOpen(true);
         // Optionally refetch orders if status change isn't handled optimistically
-        dispatch(fetchAllPurchaseOrders({ page: 0, size: 10, sortBy: 'dateOfOrder', direction: 'asc' }));
+        dispatch(fetchAllPurchaseOrders({ page: 0, size: 1000, sortBy: 'dateOfOrder', direction: 'asc' }));
       } else if (resultAction.type === receivePurchaseOrder.rejected.type) {
          setFeedbackMessage((resultAction.payload as any)?.description || (resultAction.payload as any)?.errors || (resultAction.payload as any)?.message || 'Failed to receive order.');
          setIsSuccess(false);
