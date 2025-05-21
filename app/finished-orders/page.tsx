@@ -127,7 +127,7 @@ export default function FinishedOrdersPage() {
         preparedBy: currentUser?.username || 'Unknown User',
         itemName: isSubRecipe ? recipe.subRecipeNameAndDescription : recipe.mainRecipeNameAndDescription,
         batchNumber: isSubRecipe ? recipe.subRecipeBatchNumber : recipe.mainRecipeBatchNumber,
-        quantity: `${recipe.totalQuantityAcrossLocations} ${recipe.uom.split('@')[0]}`,
+        quantity: `${recipe.totalQuantityAcrossLocations} ${recipe.uom.split('@')[0] === '37' ? 'kg' : recipe.uom.split('@')[0]}`,
         producedOn: new Date(recipe.preparedDate).toLocaleString(),
         bestBefore: new Date(recipe.expirationDate).toLocaleString(),
       };
