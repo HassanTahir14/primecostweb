@@ -160,7 +160,15 @@ export default function RecipeIngredientsForm({ onNext, onBack, initialData, onS
   };
 
   const handleDeleteIngredient = (index: number) => {
-    setIngredients(ingredients.filter((_, i) => i !== index));
+    const updatedIngredients = ingredients.filter((_, i) => i !== index);
+    setIngredients(updatedIngredients);
+    // Persist deletion to parent
+    if (onSave) {
+      onSave({
+        ...initialData, // Preserve all previous data
+        ingredients: updatedIngredients
+      });
+    }
   };
 
   // Update error messages to use translation keys
@@ -235,7 +243,9 @@ export default function RecipeIngredientsForm({ onNext, onBack, initialData, onS
     if (validateForm()) {
       // Map itemId from itemList for each ingredient
       const ingredientsWithItemId = ingredients.map(ing => {
-        const matchedItem = itemList.find(item => item.name.split('@')[0] === ing.item);
+        // Use itemName to match, fallback to ing.item if needed
+        const itemNameKey = ing.itemName ? ing.itemName.split('@')[0] : ing.item;
+        const matchedItem = itemList.find(item => item.name.split('@')[0] === itemNameKey);
         return {
           ...ing,
           itemId: matchedItem ? matchedItem.itemId : ing.id // fallback to id if not found

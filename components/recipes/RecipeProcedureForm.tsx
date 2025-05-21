@@ -312,7 +312,7 @@ export default function RecipeProcedureForm({ onNext, onBack, initialData, isEdi
         isOpen={showSuccessModal}
         onClose={() => {
           setShowSuccessModal(false);
-          router.push('/mainRecipes');
+          router.push('/recipes');
         }}
         title={t('common.success')}
         message={isEditMode ? t('recipeProcedure.updateSuccess') : t('recipeProcedure.createSuccess')}

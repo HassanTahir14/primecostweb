@@ -158,7 +158,18 @@ export default function RecipeIngredientsForm({ onNext, onBack, initialData, onS
   };
 
   const handleDeleteIngredient = (index: number) => {
-    setIngredients(ingredients.filter((_, i) => i !== index));
+    const updatedIngredients = ingredients.filter((_, i) => i !== index);
+    setIngredients(updatedIngredients);
+    // Persist deletion to parent
+    if (onSave) {
+      onSave({
+        ingredients: updatedIngredients,
+        recipeCode: initialData.recipeCode,
+        images: initialData.images,
+        newImages: initialData.newImages,
+        imageIdsToRemove: initialData.imageIdsToRemove
+      });
+    }
   };
 
   const validateFields = () => {
@@ -226,12 +237,16 @@ export default function RecipeIngredientsForm({ onNext, onBack, initialData, onS
   const handleNextClick = () => {
     // Map itemId from itemList for each ingredient
     const ingredientsWithItemId = ingredients.map(ing => {
-      const matchedItem = itemList.find(item => item.name.split('@')[0] === ing.item);
+      // Use itemName to match, fallback to ing.item if needed
+      const itemNameKey = ing.itemName ? ing.itemName.split('@')[0] : ing.item;
+      const matchedItem = itemList.find(item => item.name.split('@')[0] === itemNameKey);
+      console.log('Ingredient:', ing, 'Matched Item:', matchedItem);
       return {
         ...ing,
-        itemId: matchedItem ? matchedItem.itemId : ing.id // fallback to id if not found
+        itemId: matchedItem ? matchedItem.itemId : ing.id // fallback to ing.itemId or id if not found
       };
     });
+    console.log('ingredientsWithItemId:', ingredientsWithItemId);
     onNext({ 
       ingredients: ingredientsWithItemId,
       recipeCode: initialData.recipeCode,
