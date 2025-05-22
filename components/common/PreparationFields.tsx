@@ -39,23 +39,18 @@ export default function PreparationFields({ type, id, branchId, onFinishPreparat
   const storageLocations = currentBranch?.storageLocations || [];
 
   // Get the current recipe/sub-recipe
+  console.log('All recipe IDs:', recipes.map(r => r.id));
+  console.log('All subRecipe IDs:', subRecipes.map(sr => sr.id));
+  console.log('Looking for ID:', id, 'Type:', type);
   const currentItem = type === 'recipe' 
-    ? recipes.find(r => r.id.toString() === id.toString())
-    : subRecipes.find(sr => sr.id.toString() === id.toString());
-
-  console.log('Current Item:', currentItem);
-  console.log('Type:', type);
-  console.log('ID:', id);
+    ? recipes.find(r => String(r.id).trim() === String(id).trim())
+    : subRecipes.find(sr => String(sr.id).trim() === String(id).trim());
 
   // Get the unit and quantity from the first ingredient item
   const firstIngredient = currentItem?.ingredientsItems?.[0] || currentItem?.ingredients?.[0];
-  console.log('First Ingredient:', firstIngredient);
   
   const unit = unitFromUrl || (firstIngredient?.unit || '');
   const firstIngredientQuantity = firstIngredient?.quantity || '';
-
-  console.log('First Ingredient Quantity:', firstIngredientQuantity);
-  console.log('Unit:', unit);
 
   // Calculate sum of all ingredient recipeCost values
   let sumOfIngredientRecipeCost = 0;
@@ -63,18 +58,29 @@ export default function PreparationFields({ type, id, branchId, onFinishPreparat
     if (Array.isArray(currentItem.ingredientsItems) && currentItem.ingredientsItems.length > 0) {
       sumOfIngredientRecipeCost = currentItem.ingredientsItems.reduce((sum: number, ing: any) => {
         const val = parseFloat(ing.recipeCost);
-        console.log('ingredientsItems recipeCost:', ing.recipeCost, 'parsed:', val);
         return sum + (isNaN(val) ? 0 : val);
       }, 0);
     } else if (Array.isArray(currentItem.ingredients) && currentItem.ingredients.length > 0) {
       sumOfIngredientRecipeCost = currentItem.ingredients.reduce((sum: number, ing: any) => {
         const val = parseFloat(ing.recipeCost);
-        console.log('ingredients recipeCost:', ing.recipeCost, 'parsed:', val);
         return sum + (isNaN(val) ? 0 : val);
       }, 0);
     }
+    // Fallback for sub-recipe: use cost property if sum is zero or not available
+    if (type === 'sub-recipe' && (!sumOfIngredientRecipeCost || sumOfIngredientRecipeCost === 0)) {
+      const fallbackCost = parseFloat(currentItem.cost);
+      if (!isNaN(fallbackCost)) {
+        sumOfIngredientRecipeCost = fallbackCost;
+      }
+    }
+    // Fallback for recipe: use recipeCost property if sum is zero or not available
+    if (type === 'recipe' && (!sumOfIngredientRecipeCost || sumOfIngredientRecipeCost === 0)) {
+      const fallbackRecipeCost = parseFloat(currentItem.recipeCost);
+      if (!isNaN(fallbackRecipeCost)) {
+        sumOfIngredientRecipeCost = fallbackRecipeCost;
+      }
+    }
   }
-  console.log('sumOfIngredientRecipeCost:', sumOfIngredientRecipeCost);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -89,14 +95,14 @@ export default function PreparationFields({ type, id, branchId, onFinishPreparat
         if (type === 'recipe') {
           await dispatch(fetchRecipes({
             page: 0,
-            size: 10,
+            size: 1000, // Fetch more recipes to ensure all IDs are included
             sortBy: "createdAt",
             direction: "asc"
           }));
         } else {
           await dispatch(fetchSubRecipes({
             page: 0,
-            size: 10,
+            size: 1000, // Fetch more sub-recipes
             sortBy: "createdAt",
             direction: "asc"
           }));
@@ -117,7 +123,6 @@ export default function PreparationFields({ type, id, branchId, onFinishPreparat
   useEffect(() => {
     // Set the quantity from the first ingredient when we have the data
     if (firstIngredientQuantity) {
-      console.log('Setting quantity to:', firstIngredientQuantity);
       setQuantity(firstIngredientQuantity.toString());
     }
   }, [firstIngredientQuantity]);
@@ -131,7 +136,6 @@ export default function PreparationFields({ type, id, branchId, onFinishPreparat
     }
 
     try {
-      console.log('Sending sumOfIngredientRecipeCost:', sumOfIngredientRecipeCost, 'unitOfMeasurement:', `37@recipecost${sumOfIngredientRecipeCost.toFixed(4)}`);
       await api.post('/orders/finish', { 
         orderId,
         quantity: parseFloat(quantity),
@@ -165,6 +169,17 @@ export default function PreparationFields({ type, id, branchId, onFinishPreparat
       <div className="flex-1 flex flex-col p-4 md:p-6 lg:p-8 bg-gray-50">
         <div className="flex justify-center items-center h-64">
           <p className="text-gray-500">Loading preparation details...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Move the early return here, after all hooks
+  if (!currentItem) {
+    return (
+      <div className="flex-1 flex flex-col p-4 md:p-6 lg:p-8 bg-gray-50">
+        <div className="flex justify-center items-center h-64">
+          <p className="text-gray-500">Loading recipe/sub-recipe details... (ID: {id})</p>
         </div>
       </div>
     );
