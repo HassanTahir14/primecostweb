@@ -36,7 +36,8 @@
     "validationError": "خطأ في التحقق",
     "export": "تصدير إلى PDF",
     "fetchReport": "استرجاع التقرير",
-    "processing": "جاري المعالجة..."
+    "processing": "جاري المعالجة...",
+    "noDataFound": "لم يتم العثور على بيانات"
   },
   "auth": {
     "email": "البريد الإلكتروني",

@@ -36,7 +36,8 @@
     "validationError": "Validation Error",
     "export": "Export to PDF",
     "fetchReport": "Fetch Report",
-    "processing": "Processing..."
+    "processing": "Processing...",
+    "noDataFound": "No data found"
   },
   "auth": {
     "email": "Email",
