@@ -597,7 +597,12 @@ export default function PurchaseOrders({ onClose }: PurchaseOrdersProps) {
         // Optionally refetch orders if status change isn't handled optimistically
         dispatch(fetchAllPurchaseOrders({ page: 0, size: 1000, sortBy: 'dateOfOrder', direction: 'asc' }));
       } else if (resultAction.type === receivePurchaseOrder.rejected.type) {
-         setFeedbackMessage((resultAction.payload as any)?.description || (resultAction.payload as any)?.errors || (resultAction.payload as any)?.message || 'Failed to receive order.');
+        console.error("Thunk rejected:", resultAction.payload);
+         setFeedbackMessage(
+          (typeof resultAction.payload === 'string')
+            ? resultAction.payload.replace(/@(Solid Item|Liquid Item)/, '')
+            : (resultAction.payload?.description?.replace(/@(Solid Item|Liquid Item)/, '') || 'Failed to receive order.')
+         );
          setIsSuccess(false);
          setIsFeedbackAlert(true);
          setFeedbackModalOpen(true); 

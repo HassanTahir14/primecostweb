@@ -158,8 +158,11 @@ export default function AssignOrder({ onClose }: AssignOrderProps) {
       fetchOrders();
     } catch (error: any) {
       console.error('Error starting order:', error);
-      const errorMessage = error.response?.data?.description || t('assignOrder.startOrderError');
-      setErrorModal({ isOpen: true, message: errorMessage });
+      const errorMessage = (error.response?.data?.description || t('assignOrder.startOrderError'));
+      setErrorModal({ 
+        isOpen: true, 
+        message: errorMessage.replace(/@(Solid Item|Liquid Item)/, '') 
+      });
     }
   };
 
