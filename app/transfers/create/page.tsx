@@ -414,7 +414,7 @@ function CreateTransferContent() {
           });
           break;
         case 'sub-recipe':
-          endpoint = '/transfer/prepared-sub-recipe'; // Endpoint from image 3
+          endpoint = '/transfer/sub-recipe'; // Endpoint from image 3
           requestBody.preparedSubRecipeTransferRequestList = formData.items.map((item: any) => {
             const quantity = parseFloat(item.quantity || '0');
             const unitCost = parseFloat(item.cost || '0');
