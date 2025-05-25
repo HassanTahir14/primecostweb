@@ -64,10 +64,16 @@ export default function TransferInventoryItemsTable({
       }];
     }
 
-    // Filter items based on selected branch
-    const filteredItems = allItems.filter(item => 
-      item.branchId === parseInt(sourceBranchId)
-    );
+    // Deduplicate items by itemId for the selected branch
+    const seen = new Set();
+    const filteredItems = allItems.filter(item => {
+      const key = `${item.itemId}_${item.branchId}`;
+      if (item.branchId === parseInt(sourceBranchId) && !seen.has(key)) {
+        seen.add(key);
+        return true;
+      }
+      return false;
+    });
     
     const options = filteredItems.map(item => ({ 
         value: String(item.itemId),
