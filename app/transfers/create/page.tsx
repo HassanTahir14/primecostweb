@@ -465,7 +465,7 @@ function CreateTransferContent() {
   const fetchInventoryData = async () => {
     try {
       setLoading(prev => ({ ...prev, inventory: true }));
-      const response = await api.post('/inventory/view/items', {});
+      const response = await api.post('/inventory/view/items', {page: 0, size: 10000000});
       if (response.data?.inventorylist) {
         // Filter items for the selected branch and with quantity > 0
         const filteredItems = response.data.inventorylist.filter(
@@ -473,6 +473,8 @@ function CreateTransferContent() {
             item.branchId === parseInt(formData.sourceBranchId) && 
             item.totalQuantity > 0
         );
+
+        console.log("filteredItems", filteredItems)
         setInventoryItems(filteredItems);
       }
     } catch (error) {

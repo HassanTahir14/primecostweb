@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchRecipes, selectAllRecipes, selectRecipeStatus, selectRecipeError, selectRecipePagination, deleteRecipeThunk } from '@/store/recipeSlice';
 import PageLayout from '@/components/PageLayout';
@@ -46,6 +46,10 @@ export default function RecipesPage() {
   const [currentPage, setCurrentPage] = useState(0);
   const pageSize = 10;
 
+  const [searchResults, setSearchResults] = useState<any[] | null>(null);
+  const [isSearching, setIsSearching] = useState(false);
+  const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
+
   useEffect(() => {
     const loadRecipes = async () => {
       try {
@@ -66,6 +70,43 @@ export default function RecipesPage() {
 
     loadRecipes();
   }, [dispatch, currentPage]);
+
+  useEffect(() => {
+    if (!searchQuery) {
+      setSearchResults(null);
+      setIsSearching(false);
+      return;
+    }
+    // Debounce search
+    if (debounceTimeout.current) {
+      clearTimeout(debounceTimeout.current);
+    }
+    debounceTimeout.current = setTimeout(() => {
+      const fetchAllRecipesForSearch = async () => {
+        setIsSearching(true);
+        try {
+          const response = await dispatch(fetchRecipes({
+            page: 0,
+            size: 1000000,
+            sortBy: "createdAt",
+            direction: "asc"
+          })).unwrap();
+          const allRecipes = response?.recipeList || response?.recipes || [];
+          setSearchResults(allRecipes);
+        } catch (err) {
+          setSearchResults([]);
+        } finally {
+          setIsSearching(false);
+        }
+      };
+      fetchAllRecipesForSearch();
+    }, 400); // 400ms debounce
+    return () => {
+      if (debounceTimeout.current) {
+        clearTimeout(debounceTimeout.current);
+      }
+    };
+  }, [searchQuery, dispatch]);
 
   const handleDeleteClick = (recipe: any) => {
     setSelectedRecipe(recipe);
@@ -118,10 +159,15 @@ export default function RecipesPage() {
 
   const totalPages = Math.ceil((pagination?.total || 0) / pageSize);
 
-  const filteredRecipes = recipes?.filter((recipe: any) =>
-    recipe.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    recipe.categoryName?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredRecipes = (searchQuery && searchResults)
+    ? searchResults.filter((recipe: any) =>
+        recipe.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        recipe.categoryName?.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : recipes?.filter((recipe: any) =>
+        recipe.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        recipe.categoryName?.toLowerCase().includes(searchQuery.toLowerCase())
+      );
 
   console.log('recipes', recipes);
 
@@ -170,7 +216,11 @@ export default function RecipesPage() {
         {/* Recipe List or Empty State */}
         <div className="text-gray-500 text-sm mb-2">{t('recipes.recipeName')}</div>
         <div className="space-y-2">
-          {filteredRecipes?.length > 0 ? (
+          {isSearching ? (
+            <div className="flex justify-center items-center h-32">
+              <Loader size="medium" />
+            </div>
+          ) : filteredRecipes?.length > 0 ? (
             filteredRecipes.map((recipe: any) => (
               <div
                 key={recipe.id}
@@ -227,7 +277,8 @@ export default function RecipesPage() {
             </div>
           )}
         </div>
-        {pagination && pagination.total > 0 && (
+        {/* Hide pagination if searching */}
+        {!searchQuery && pagination && pagination.total > 0 && (
           <div className="flex justify-between items-center pt-4">
             <div className="text-sm text-gray-500">
               {t('recipes.showing')} {pagination.page * pagination.size + 1} {t('recipes.to')} {Math.min((pagination.page + 1) * pagination.size, pagination.total)} {t('recipes.of')} {pagination.total} {t('recipes.recipes')}
@@ -300,4 +351,4 @@ export default function RecipesPage() {
       </div>
     </PageLayout>
   );
-} 
+}

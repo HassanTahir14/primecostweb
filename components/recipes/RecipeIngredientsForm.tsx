@@ -8,6 +8,8 @@ import { AppDispatch } from '@/store/store';
 import { useUnits } from '@/hooks/useUnits';
 import Select from '@/components/common/select';
 import { useTranslation } from '@/context/TranslationContext';
+import { useCurrency } from '@/context/CurrencyContext';
+import { formatCurrencyValue } from '@/utils/currencyUtils';
 
 interface Ingredient {
   id: number;
@@ -50,6 +52,9 @@ export default function RecipeIngredientsForm({ onNext, onBack, initialData, onS
   const { units } = useUnits();
   const dispatch = useDispatch<AppDispatch>();
   const { t } = useTranslation();
+  const { currency } = useCurrency();
+  const [formattedCosts, setFormattedCosts] = useState<{[key: string]: string}>({});
+  const [formattedRecipeCost, setFormattedRecipeCost] = useState<string>('');
 
   useEffect(() => {
     dispatch(fetchAllItems({
@@ -128,6 +133,41 @@ export default function RecipeIngredientsForm({ onNext, onBack, initialData, onS
       setRecipeCost(calculatedCost);
     }
   }, [quantity, epUsdUnit]);
+
+  // Format ingredient costs when currency changes
+  useEffect(() => {
+    if (ingredients.length > 0 && currency) {
+      const formatCosts = async () => {
+        try {
+          const costs: {[key: string]: string} = {};
+          for (const ingredient of ingredients) {
+            costs[ingredient.id] = await formatCurrencyValue(ingredient.recipeCost || 0, currency);
+          }
+          setFormattedCosts(costs);
+        } catch (error) {
+          console.error('Error formatting ingredient costs:', error);
+          setFormattedCosts({});
+        }
+      };
+      formatCosts();
+    }
+  }, [ingredients, currency]);
+
+  // Format current recipe cost
+  useEffect(() => {
+    if (recipeCost && currency) {
+      const formatCurrentCost = async () => {
+        try {
+          const formatted = await formatCurrencyValue(recipeCost, currency);
+          setFormattedRecipeCost(formatted);
+        } catch (error) {
+          console.error('Error formatting recipe cost:', error);
+          setFormattedRecipeCost(`USD ${recipeCost.toFixed(2)}`);
+        }
+      };
+      formatCurrentCost();
+    }
+  }, [recipeCost, currency]);
 
   const resetForm = () => {
     setItem('');
@@ -285,7 +325,7 @@ export default function RecipeIngredientsForm({ onNext, onBack, initialData, onS
                   <p className="text-sm text-gray-600">
                     {t('mainRecipes.ingredients.quantity')}: {ingredient.quantity} {ingredient.unit} | 
                     {t('mainRecipes.ingredients.yield')}: {ingredient.yieldPercentage}% | 
-                    {t('mainRecipes.ingredients.cost')}: USD {ingredient.recipeCost.toFixed(2)}
+                    {t('mainRecipes.ingredients.cost')}: {formattedCosts[ingredient.id] || 'N/A'}
                   </p>
                 </div>
                 <div className="flex gap-2">
@@ -415,7 +455,7 @@ export default function RecipeIngredientsForm({ onNext, onBack, initialData, onS
             <div>
               <label className="block text-gray-700 font-medium mb-2">{t('mainRecipes.ingredients.recipeCost')}</label>
               <div className="w-full p-3 border border-gray-300 rounded-lg bg-gray-100">
-                USD {recipeCost.toFixed(2)}
+                {formattedRecipeCost || 'N/A'}
               </div>
             </div>
 

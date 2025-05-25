@@ -17,14 +17,16 @@ export default function InventoryByItems() {
         const response = await api.post('/inventory/view/items', {page: 0, size: 200000});
         const items = response?.data?.inventorylist || [];
 
-        // Group items by itemId
+        // Group items by itemId and branchLocation
         const itemMap = new Map();
         items.forEach((item: any) => {
-          if (!itemMap.has(item.itemId)) {
-            itemMap.set(item.itemId, {
+          const key = `${item.itemId}_${item.branchLocation}`;
+          if (!itemMap.has(key)) {
+            itemMap.set(key, {
               id: item.itemId,
               code: item.itemCode,
               name: item.itemName?.split('@')[0] || '',
+              branchLocation: item.branchLocation,
               storageInfo: [],
               primaryUnitId: item.primaryUnitId,
               primaryUnitValue: item.primaryUnitValue,
@@ -33,11 +35,11 @@ export default function InventoryByItems() {
               calculationMethod: item.calculationMethod,
             });
           }
-          // Add storage info for this location, including calculationMethod and unit ids for correct unit display
-          itemMap.get(item.itemId).storageInfo.push({
+          // Add storage info for this location
+          itemMap.get(key).storageInfo.push({
             storageLocation: item.storageLocation,
             branchLocation: item.branchLocation,
-            quantity: item.totalQuantity, // Use exact quantity from response
+            quantity: item.totalQuantity,
             calculationMethod: item.calculationMethod,
             primaryUnitId: item.primaryUnitId,
             secondaryUnitId: item.secondaryUnitId,
@@ -78,22 +80,19 @@ export default function InventoryByItems() {
           <tbody className="bg-white divide-y divide-gray-200">
             {filteredItems.length > 0 ? (
               filteredItems.map((item: any) => (
-                <tr key={item.id}>
+                <tr key={`${item.id}_${item.branchLocation}`}>
                   <td className="px-6 py-4 align-top">{item.code}</td>
                   <td className="px-6 py-4 align-top">{item.name}</td>
-                  <td className="px-6 py-4 align-top">{item.storageInfo[0]?.branchLocation || ''}</td>
+                  <td className="px-6 py-4 align-top">{item.branchLocation || ''}</td>
                   <td className="px-6 py-4 align-top">
                     {item.storageInfo.map((s: any, idx: number) => {
                       let showUnit = '';
                       const calculationMethod = (s.calculationMethod || '').toUpperCase();
                       if (calculationMethod.includes('SECONDARY')) {
-                        // If calculationMethod is SECONDARY, show primary unit
                         showUnit = getUnitName(s.primaryUnitId);
                       } else if (calculationMethod.includes('PRIMARY')) {
-                        // If calculationMethod is PRIMARY, show secondary unit
                         showUnit = getUnitName(s.secondaryUnitId);
                       } else {
-                        // Default: show primary unit
                         showUnit = getUnitName(s.primaryUnitId);
                       }
                       return (

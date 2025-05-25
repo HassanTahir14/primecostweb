@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import PageLayout from '@/components/PageLayout';
 import Button from '@/components/common/button';
 import { Search, Edit, Trash2, ArrowLeft } from 'lucide-react';
@@ -92,6 +92,10 @@ export default function SubRecipesPage() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editModalMessage, setEditModalMessage] = useState('');
 
+  const [searchResults, setSearchResults] = useState<SubRecipe[] | null>(null);
+  const [isSearching, setIsSearching] = useState(false);
+  const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
+
   const loadSubRecipes = async () => {
     try {
       const response = await dispatch(fetchSubRecipes({
@@ -159,11 +163,59 @@ export default function SubRecipesPage() {
     setIsSuccessMessage(false);
   };
 
-  const filteredSubRecipes = subRecipes.filter((recipe: SubRecipe) =>
-    recipe.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    recipe.categoryName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    recipe.subRecipeCode.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Debounced search and fetch all sub-recipes for search
+  useEffect(() => {
+    if (!searchQuery) {
+      setSearchResults(null);
+      setIsSearching(false);
+      return;
+    }
+    if (debounceTimeout.current) {
+      clearTimeout(debounceTimeout.current);
+    }
+    debounceTimeout.current = setTimeout(async () => {
+      setIsSearching(true);
+      try {
+        const response = await dispatch(fetchSubRecipes({
+          page: 0,
+          size: 1000000,
+          sortBy: "createdAt",
+          direction: "asc"
+        })).unwrap();
+        // Use subRecipeList for search, fallback to subRecipes for backward compatibility
+        const allSubRecipes = response?.subRecipeList || response?.subRecipes || [];
+        setSearchResults(allSubRecipes);
+      } catch (err) {
+        setSearchResults([]);
+      } finally {
+        setIsSearching(false);
+      }
+    }, 400);
+    return () => {
+      if (debounceTimeout.current) {
+        clearTimeout(debounceTimeout.current);
+      }
+    };
+  }, [searchQuery, dispatch]);
+
+  // Normal paginated fetch
+  useEffect(() => {
+    if (!searchQuery) {
+      loadSubRecipes();
+    }
+  }, [dispatch, currentPage, searchQuery]);
+
+  const filteredSubRecipes = (searchQuery && searchResults)
+    ? searchResults.filter((recipe: SubRecipe) =>
+        recipe.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        recipe.categoryName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        recipe.subRecipeCode.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : subRecipes.filter((recipe: SubRecipe) =>
+        recipe.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        recipe.categoryName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        recipe.subRecipeCode.toLowerCase().includes(searchQuery.toLowerCase())
+      );
 
   if (status === 'loading') {
     return (
@@ -205,7 +257,11 @@ export default function SubRecipesPage() {
         
         <div className="text-gray-500 text-sm mb-2">{t('recipes.subRecipes.title')}</div>
         <div className="space-y-2">
-          {filteredSubRecipes.length > 0 ? (
+          {isSearching ? (
+            <div className="flex justify-center items-center h-32">
+              <Loader size="medium" />
+            </div>
+          ) : filteredSubRecipes.length > 0 ? (
             filteredSubRecipes.map((recipe: SubRecipe) => (
               <div
                 key={recipe.id}
@@ -252,7 +308,8 @@ export default function SubRecipesPage() {
           )}
         </div>
 
-        {pagination && pagination.total > 0 && (
+        {/* Hide pagination if searching */}
+        {!searchQuery && pagination && pagination.total > 0 && (
           <div className="flex justify-between items-center pt-4">
             <div className="text-sm text-gray-500">
               {t('recipes.subRecipes.showing')} {pagination.page * pagination.size + 1} {t('recipes.subRecipes.to')} {Math.min((pagination.page + 1) * pagination.size, pagination.total)} {t('recipes.subRecipes.of')} {pagination.total} {t('recipes.subRecipes.recipes')}
@@ -342,4 +399,4 @@ export default function SubRecipesPage() {
       />
     </PageLayout>
   );
-} 
+}
