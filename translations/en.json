@@ -932,6 +932,7 @@
     "validationEmpty": "Category name cannot be empty."
   },
   "finishedOrders": {
+    "printAllLabels": "Print All Labels",
     "pageTitle": "Prepared Recipes",
     "loading": "Loading recipes...",
     "userIdNotFound": "User ID not found",

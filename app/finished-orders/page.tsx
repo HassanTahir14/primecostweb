@@ -5,7 +5,7 @@ import PageLayout from '@/components/PageLayout';
 import Button from '@/components/common/button';
 import { Printer } from 'lucide-react';
 import api from '@/store/api';
-import { generateRecipeLabel } from '@/utils/pdfUtils';
+import { generateRecipeLabel, drawRecipeLabelOnDoc } from '@/utils/pdfUtils';
 import { useSelector } from 'react-redux';
 import { selectCurrentUser } from '@/store/authSlice';
 import { getUserIdFromToken } from '@/utils/authUtils';
@@ -139,6 +139,44 @@ export default function FinishedOrdersPage() {
     }
   };
 
+  const handlePrintAllLabels = async () => {
+    try {
+      const { jsPDF } = await import('jspdf');
+      const allLabels = [
+        ...mainRecipes.map(r => ({
+          id: r.preparedMainRecipeId,
+          itemName: r.mainRecipeNameAndDescription,
+          batchNumber: r.mainRecipeBatchNumber,
+          quantity: `${r.totalQuantityAcrossLocations} ${r.uom.split('@')[0] === '37' ? 'kg' : r.uom.split('@')[0]}`,
+          producedOn: new Date(r.preparedDate).toLocaleString(),
+          bestBefore: new Date(r.expirationDate).toLocaleString(),
+        })),
+        ...subRecipes.map(r => ({
+          id: r.preParedSubRecipeId,
+          itemName: r.subRecipeNameAndDescription,
+          batchNumber: r.subRecipeBatchNumber,
+          quantity: `${r.totalQuantityAcrossLocations} ${r.uom.split('@')[0] === '37' ? 'kg' : r.uom.split('@')[0]}`,
+          producedOn: new Date(r.preparedDate).toLocaleString(),
+          bestBefore: new Date(r.expirationDate).toLocaleString(),
+        })),
+      ];
+      if (allLabels.length === 0) return;
+      const labelWidth = 90; // mm
+      const labelHeight = 60; // mm
+      const doc = new jsPDF({ unit: 'mm', format: [labelWidth, labelHeight], orientation: 'landscape' });
+      for (let i = 0; i < allLabels.length; i++) {
+        if (i > 0) doc.addPage([labelWidth, labelHeight], 'landscape');
+        drawRecipeLabelOnDoc(doc, {
+          preparedBy: currentUser?.username || 'Unknown User',
+          ...allLabels[i],
+        }, { marginX: 0, marginY: 0, labelWidth, labelHeight, visualOffset: 0 });
+      }
+      doc.save('all-recipe-labels.pdf');
+    } catch (error) {
+      console.error('Error generating all labels PDF:', error);
+    }
+  };
+
   if (loading) {
     return (
       <PageLayout title={t('finishedOrders.pageTitle')}>
@@ -163,7 +201,18 @@ export default function FinishedOrdersPage() {
     <PageLayout title={t('finishedOrders.pageTitle')}>
       <div className="container mx-auto">
         <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-xl font-semibold mb-4">{t('finishedOrders.myPreparedRecipes')}</h2>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold">{t('finishedOrders.myPreparedRecipes')}</h2>
+            <Button
+              variant="default"
+              size="sm"
+              className="rounded-full bg-[#339A89] text-white text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-1.5"
+              onClick={handlePrintAllLabels}
+            >
+              <Printer size={16} className="mr-1" />
+              {t('finishedOrders.printAllLabels')}
+            </Button>
+          </div>
           
           {mainRecipes.length === 0 && subRecipes.length === 0 ? (
             <p className="text-gray-500">{t('finishedOrders.noPreparedRecipes')}</p>

@@ -851,6 +851,7 @@
     "validationEmpty": "لا يمكن أن يكون اسم التصنيف فارغًا."
   },
   "finishedOrders": {
+    "printAllLabels": "طباعة جميع الملصقات",
     "pageTitle": "الوصفات المحضرة",
     "loading": "جاري تحميل الوصفات...",
     "userIdNotFound": "لم يتم العثور على معرف المستخدم",
