@@ -257,7 +257,7 @@ export default function TransferInventoryItemsTable({
             <tbody>
             {items.map((item, index) => (
                 <tr key={index} className="border-b last:border-none">
-                    <td className="p-2 align-top">
+                    <td className="p-2 align-top min-w-[200px] w-2/5 md:w-auto">
                         <Select 
                             value={String(item.itemId || '')}
                             onChange={(e) => handleItemChange(index, 'itemId', e.target.value)}
