@@ -855,6 +855,7 @@
       "nextButton": "Next"
     },
     "salary": {
+      "saving": "Saving...",
       "title": "Salary",
       "basicSalary": "Basic Salary",
       "enterBasicSalary": "Enter basic salary",
