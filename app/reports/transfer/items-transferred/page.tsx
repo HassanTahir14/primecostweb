@@ -76,6 +76,11 @@ const ItemsTransferredReportPage: React.FC = () => {
 
   // Column definitions moved inside component to access formattedCosts
   const itemColumns: ColumnDefinition<ItemTransferRecord>[] = [
+    {
+      header: t('transferItemsTransferred.colItemName'),
+      accessorKey: 'itemName',
+      cell: (value) => (typeof value === 'string' ? value.split('@')[0] : value)
+    },
     { header: t('transferItemsTransferred.colTransferDate'), accessorKey: 'transferDate' },
     { header: t('transferItemsTransferred.colTransferCode'), accessorKey: 'transferCode' },
     { header: t('transferItemsTransferred.colRequestedBy'), accessorKey: 'requestedBy' },

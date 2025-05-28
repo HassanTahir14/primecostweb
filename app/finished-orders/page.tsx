@@ -69,6 +69,7 @@ export default function FinishedOrdersPage() {
   const [copiesModalOpen, setCopiesModalOpen] = useState(false);
   const [copiesCount, setCopiesCount] = useState(1);
   const [pendingPrintRecipe, setPendingPrintRecipe] = useState<PreparedRecipe | PreparedSubRecipe | null>(null);
+  const [pendingPrintLocation, setPendingPrintLocation] = useState<InventoryLocation | null>(null);
   const currentUser = useSelector(selectCurrentUser);
   const userId = getUserIdFromToken();
   const { t } = useTranslation();
@@ -124,9 +125,10 @@ export default function FinishedOrdersPage() {
     fetchPreparedRecipes();
   }, [userId, t]);
 
-  const handlePrintLabel = (recipe: PreparedRecipe | PreparedSubRecipe) => {
+  const handlePrintLabel = (recipe: PreparedRecipe | PreparedSubRecipe, location: InventoryLocation) => {
     setPendingPrintRecipe(recipe);
-    setCopiesCount(1);
+    setPendingPrintLocation(location);
+    setCopiesCount(location.quantity || 1);
     setCopiesModalOpen(true);
     setTimeout(() => {
       inputRef.current?.focus();
@@ -134,21 +136,23 @@ export default function FinishedOrdersPage() {
   };
 
   const doPrintLabel = async () => {
-    if (!pendingPrintRecipe) return;
+    if (!pendingPrintRecipe || !pendingPrintLocation) return;
     try {
       const recipe = pendingPrintRecipe;
+      const location = pendingPrintLocation;
       const isSubRecipe = 'subeRecipeCode' in recipe;
       const labelData = {
         preparedBy: currentUser?.username || 'Unknown User',
         itemName: isSubRecipe ? recipe.subRecipeNameAndDescription : recipe.mainRecipeNameAndDescription,
         batchNumber: isSubRecipe ? recipe.subRecipeBatchNumber : recipe.mainRecipeBatchNumber,
-        quantity: `${recipe.totalQuantityAcrossLocations} ${recipe.uom.split('@')[0] === '37' ? 'kg' : recipe.uom.split('@')[0]}`,
+        quantity: `${location.quantity}`,
         producedOn: new Date(recipe.preparedDate).toLocaleString(),
         bestBefore: new Date(recipe.expirationDate).toLocaleString(),
+        storageLocation: location.storageLocationWithCode,
       };
       const { jsPDF } = await import('jspdf');
-      const labelWidth = 90; // mm
-      const labelHeight = 60; // mm
+      const labelWidth = 50; // mm (thermal label width)
+      const labelHeight = 30; // mm (thermal label height)
       const doc = new jsPDF({ unit: 'mm', format: [labelWidth, labelHeight], orientation: 'landscape' });
       for (let i = 0; i < copiesCount; i++) {
         if (i > 0) doc.addPage([labelWidth, labelHeight], 'landscape');
@@ -160,6 +164,7 @@ export default function FinishedOrdersPage() {
     } finally {
       setCopiesModalOpen(false);
       setPendingPrintRecipe(null);
+      setPendingPrintLocation(null);
     }
   };
 
@@ -167,26 +172,32 @@ export default function FinishedOrdersPage() {
     try {
       const { jsPDF } = await import('jspdf');
       const allLabels = [
-        ...mainRecipes.map(r => ({
-          id: r.preparedMainRecipeId,
-          itemName: r.mainRecipeNameAndDescription,
-          batchNumber: r.mainRecipeBatchNumber,
-          quantity: `${r.totalQuantityAcrossLocations} ${r.uom.split('@')[0] === '37' ? 'kg' : r.uom.split('@')[0]}`,
-          producedOn: new Date(r.preparedDate).toLocaleString(),
-          bestBefore: new Date(r.expirationDate).toLocaleString(),
-        })),
-        ...subRecipes.map(r => ({
-          id: r.preParedSubRecipeId,
-          itemName: r.subRecipeNameAndDescription,
-          batchNumber: r.subRecipeBatchNumber,
-          quantity: `${r.totalQuantityAcrossLocations} ${r.uom.split('@')[0] === '37' ? 'kg' : r.uom.split('@')[0]}`,
-          producedOn: new Date(r.preparedDate).toLocaleString(),
-          bestBefore: new Date(r.expirationDate).toLocaleString(),
-        })),
+        ...mainRecipes.flatMap(r =>
+          r.inventoryLocations.map(loc => ({
+            id: r.preparedMainRecipeId,
+            itemName: r.mainRecipeNameAndDescription,
+            batchNumber: r.mainRecipeBatchNumber,
+            quantity: `${loc.quantity}`,
+            producedOn: new Date(r.preparedDate).toLocaleString(),
+            bestBefore: new Date(r.expirationDate).toLocaleString(),
+            storageLocation: loc.storageLocationWithCode,
+          }))
+        ),
+        ...subRecipes.flatMap(r =>
+          r.inventoryLocations.map(loc => ({
+            id: r.preParedSubRecipeId,
+            itemName: r.subRecipeNameAndDescription,
+            batchNumber: r.subRecipeBatchNumber,
+            quantity: `${loc.quantity}`,
+            producedOn: new Date(r.preparedDate).toLocaleString(),
+            bestBefore: new Date(r.expirationDate).toLocaleString(),
+            storageLocation: loc.storageLocationWithCode,
+          }))
+        ),
       ];
       if (allLabels.length === 0) return;
-      const labelWidth = 90; // mm
-      const labelHeight = 60; // mm
+      const labelWidth = 50; // mm (thermal label width)
+      const labelHeight = 30; // mm (thermal label height)
       const doc = new jsPDF({ unit: 'mm', format: [labelWidth, labelHeight], orientation: 'landscape' });
       for (let i = 0; i < allLabels.length; i++) {
         if (i > 0) doc.addPage([labelWidth, labelHeight], 'landscape');
@@ -265,7 +276,7 @@ export default function FinishedOrdersPage() {
                           {recipe.mainRecipeBatchNumber}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {loc.quantity} {recipe.uom.split('@')[0] === '37' ? 'kg' : recipe.uom.split('@')[0]}
+                          {loc.quantity}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                           {loc.storageLocationWithCode}
@@ -278,7 +289,7 @@ export default function FinishedOrdersPage() {
                             variant="default" 
                             size="sm" 
                             className="rounded-full bg-[#339A89] text-white text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-1.5"
-                            onClick={() => handlePrintLabel(recipe)}
+                            onClick={() => handlePrintLabel(recipe, loc)}
                           >
                             <Printer size={16} className="mr-1" />
                             {t('finishedOrders.printLabel')}
@@ -298,7 +309,7 @@ export default function FinishedOrdersPage() {
                           {recipe.subRecipeBatchNumber}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {loc.quantity} {recipe.uom.split('@')[0] === '37' ? 'kg' : recipe.uom.split('@')[0]}
+                          {loc.quantity}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                           {loc.storageLocationWithCode}
@@ -311,7 +322,7 @@ export default function FinishedOrdersPage() {
                             variant="default" 
                             size="sm" 
                             className="rounded-full bg-[#339A89] text-white text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-1.5"
-                            onClick={() => handlePrintLabel(recipe)}
+                            onClick={() => handlePrintLabel(recipe, loc)}
                           >
                             <Printer size={16} className="mr-1" />
                             {t('finishedOrders.printLabel')}

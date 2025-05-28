@@ -47,6 +47,14 @@
 
 /* Add any other RTL-specific styles here */
 
+/* Import Dubai font from CDN */
+@import url('https://fonts.googleapis.com/css2?family=Dubai:wght@400;700&display=swap');
+
+/* Use Dubai font for Arabic (RTL) */
+[dir="rtl"] body, [lang="ar"] body {
+  font-family: 'Dubai', 'Noto Sans Arabic', 'Amiri', Arial, sans-serif;
+}
+
 :root {
   --primary: #339A89;
   --primary-light: #E8FFFE;

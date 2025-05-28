@@ -104,16 +104,9 @@ export default function TransferSubRecipeTable({
             currentItem.availableQuantity = branchLocation?.quantity || 0;
             // Always set uom to '37' and display 'KG'
             currentItem.uom = '37';
-            // Parse cost from uom string (format: '37@recipecost123.45')
-            let cost = 0;
-            if (selectedSubRecipeData.uom && selectedSubRecipeData.uom.includes('@recipecost')) {
-                const parts = selectedSubRecipeData.uom.split('@recipecost');
-                if (parts.length === 2) {
-                    cost = parseFloat(parts[1]);
-                }
-            }
-            currentItem.baseCost = cost;
-            currentItem.cost = cost;
+            // Set cost directly from totalCost in API response
+            currentItem.baseCost = selectedSubRecipeData.totalCost ?? 0;
+            currentItem.cost = selectedSubRecipeData.totalCost ?? 0;
         } else {
             currentItem.subRecipeCode = '';
             currentItem.uom = '37';
@@ -131,8 +124,8 @@ export default function TransferSubRecipeTable({
         } else {
             currentItem.quantity = quantity;
         }
-        // Set cost as unit cost only (do not multiply by quantity)
-        currentItem.cost = (currentItem.baseCost || 0);
+        // Keep cost as unit cost from totalCost, do not multiply by quantity
+        // (no change needed here)
     }
 
     newItems[index] = currentItem;
@@ -179,7 +172,7 @@ export default function TransferSubRecipeTable({
                     <th className="p-3 text-left text-sm font-semibold">{t('transfers.subRecipe')}</th>
                     <th className="p-3 text-left text-sm font-semibold w-24">{t('transfers.code')}</th>
                     <th className="p-3 text-left text-sm font-semibold w-24">{t('transfers.quantity')}</th>
-                    <th className="p-3 text-left text-sm font-semibold w-32">{t('transfers.uom')}</th>
+                    {/* <th className="p-3 text-left text-sm font-semibold w-32">{t('transfers.uom')}</th> */}
                     <th className="p-3 text-left text-sm font-semibold w-24">{t('transfers.cost')}</th>
                     <th className="p-3 text-left text-sm font-semibold w-16"></th>
                 </tr>
@@ -228,15 +221,15 @@ export default function TransferSubRecipeTable({
                             step="any"
                         />
                     </td>
-                    <td className="p-2 align-top">
-                         {/* UOM: Always show KG, disabled */}
+                    {/* <td className="p-2 align-top">
+                       
                          <Input
                             value="KG"
                             readOnly
                             className="bg-gray-100"
                             disabled
                          />
-                    </td>
+                    </td> */}
                     <td className="p-2 align-top">
                         <Input
                             type="number"

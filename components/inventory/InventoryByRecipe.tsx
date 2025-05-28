@@ -41,14 +41,14 @@ export default function InventoryByRecipe() {
 
   // Helper to get formatted quantity with unit
   const getFormattedQuantity = (uom: string, quantity: number) => {
-    if (uom.includes('@')) {
+    if (typeof uom === 'string' && uom.includes('@')) {
       const [unitId] = uom.split('@');
       const unit = units.find(u => u.unitOfMeasurementId === Number(unitId));
       if (unit) {
         return `${quantity} ${unit.unitName}`;
       }
     }
-    return `${quantity} ${uom}`;
+    return `${quantity}`;
   };
 
   useEffect(() => {

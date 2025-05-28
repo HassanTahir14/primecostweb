@@ -138,10 +138,11 @@ export default function PreparationFields({ type, id, branchId, onFinishPreparat
     try {
       await api.post('/orders/finish', { 
         orderId,
-        quantity: parseFloat(quantity),
+        // quantity: currentItem.numberOfPortions, // Use numberOfPortions from recipe/sub-recipe
         expiryDate,
         storageLocationId: parseInt(selectedStorageLocation),
-        unitOfMeasurement: `37@recipecost${sumOfIngredientRecipeCost.toFixed(4)}`
+        totalCost: Number(sumOfIngredientRecipeCost.toFixed(4)),
+        // unitOfMeasurement: `37@recipecost${sumOfIngredientRecipeCost.toFixed(4)}`
       });
       setModalMessage('Order finished successfully');
       setIsSuccess(true);
@@ -204,11 +205,11 @@ export default function PreparationFields({ type, id, branchId, onFinishPreparat
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-500 mb-1">
-                Total Prepared Quantity ({unit})
+                Total Prepared Quantity
               </label>
               <input
                 type="number"
-                value={quantity}
+                value={currentItem?.numberOfPortions ?? ''}
                 readOnly
                 className="w-full px-3 py-2 border rounded-md text-sm text-gray-900 bg-gray-100"
                 placeholder={`Quantity in ${unit}`}

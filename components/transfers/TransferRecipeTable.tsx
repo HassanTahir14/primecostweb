@@ -28,6 +28,7 @@ interface Recipe {
     recipeCode: string;
     mainRecipeBatchNumber: string;
     mainRecipeNameAndDescription: string;
+    totalCost?: number | null;
 }
 
 interface TransferRecipeTableProps {
@@ -74,7 +75,7 @@ export default function TransferRecipeTable({
     
     const options = filteredRecipes.map(recipe => ({ 
         value: String(recipe.preparedMainRecipeId),
-        label: `${recipe.mainRecipeNameAndDescription} (${recipe.recipeCode})`,
+        label: `${recipe.mainRecipeNameAndDescription} (${recipe.inventoryLocations[0].storageLocationWithCode})`,
         disabled: false
     }));
     return [ ...options];
@@ -97,16 +98,9 @@ export default function TransferRecipeTable({
             currentItem.availableQuantity = branchLocation?.quantity || 0;
             // Always set uom to '37' and display 'KG'
             currentItem.uom = '37';
-            // Parse cost from uom string (format: '37@recipecost5725.4112')
-            let cost = 0;
-            if (selectedRecipeData.uom && selectedRecipeData.uom.includes('@recipecost')) {
-                const parts = selectedRecipeData.uom.split('@recipecost');
-                if (parts.length === 2) {
-                    cost = parseFloat(parts[1]);
-                }
-            }
-            currentItem.baseCost = cost;
-            currentItem.cost = cost;
+            // Set cost directly from totalCost in API response
+            currentItem.baseCost = selectedRecipeData.totalCost ?? 0;
+            currentItem.cost = selectedRecipeData.totalCost ?? 0;
         } else {
             currentItem.recipeCode = '';
             currentItem.uom = '37';
@@ -124,8 +118,8 @@ export default function TransferRecipeTable({
         } else {
             currentItem.quantity = quantity;
         }
-        // Set cost as unit cost only (do not multiply by quantity)
-        currentItem.cost = (currentItem.baseCost || 0);
+        // Keep cost as unit cost from totalCost, do not multiply by quantity
+        // (no change needed here)
     }
 
     newItems[index] = currentItem;
@@ -172,7 +166,7 @@ export default function TransferRecipeTable({
                     <th className="p-3 text-left text-sm font-semibold">{t('transfers.recipe')}</th>
                     <th className="p-3 text-left text-sm font-semibold w-24">{t('transfers.code')}</th>
                     <th className="p-3 text-left text-sm font-semibold w-24">{t('transfers.quantity')}</th>
-                    <th className="p-3 text-left text-sm font-semibold w-32">{t('transfers.uom')}</th>
+                    {/* <th className="p-3 text-left text-sm font-semibold w-32">{t('transfers.uom')}</th> */}
                     <th className="p-3 text-left text-sm font-semibold w-24">{t('transfers.cost')}</th>
                     <th className="p-3 text-left text-sm font-semibold w-16"></th>
                 </tr>
@@ -221,19 +215,18 @@ export default function TransferRecipeTable({
                             step="any"
                         />
                     </td>
-                    <td className="p-2 align-top">
-                         {/* UOM: Always show KG, disabled */}
+                    {/* <td className="p-2 align-top">
                          <Input
                             value="KG"
                             readOnly
                             className="bg-gray-100"
                             disabled
                          />
-                    </td>
+                    </td> */}
                     <td className="p-2 align-top">
                         <Input
                             type="number"
-                            value={(item.cost * item.quantity || 0).toFixed(2)}
+                            value={item.cost ?? 0}
                             placeholder={t('transfers.cost')}
                             readOnly
                             className="bg-gray-100"
