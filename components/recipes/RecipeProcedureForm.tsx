@@ -223,8 +223,19 @@ export default function RecipeProcedureForm({ onNext, onBack, initialData, isEdi
       } else {
         result = await dispatch(createRecipe(formData)).unwrap();
       }
-      console.log(result, 'result');
-      
+
+      // Check for backend validation errors
+      if (result && (result.responseCode === '1500' || result.errors)) {
+        // Show backend error(s) in modal
+        let backendErrorMsg = result.description || t('mainRecipes.procedure.createError');
+        if (result.errors && typeof result.errors === 'object') {
+          backendErrorMsg += '\n' + Object.entries(result.errors).map(([k, v]) => `• ${v}`).join('\n');
+        }
+        setErrorMessage(backendErrorMsg);
+        setShowErrorModal(true);
+        return;
+      }
+
       setShowSuccessModal(true);
     } catch (error: any) {
       setErrorMessage(error.message || t('mainRecipes.procedure.createError'));

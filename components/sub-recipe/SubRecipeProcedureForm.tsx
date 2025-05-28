@@ -242,8 +242,18 @@ export default function RecipeProcedureForm({ onNext, onBack, initialData, isEdi
       } else {
         result = await dispatch(createSubRecipe(formData)).unwrap();
       }
-      console.log(result, 'result');
-      
+
+      // Check for backend validation errors
+      if (result && (result.responseCode === '1500' || result.errors)) {
+        let backendErrorMsg = result.description || t('recipes.subRecipes.procedureForm.failedToCreate');
+        if (result.errors && typeof result.errors === 'object') {
+          backendErrorMsg += '\n' + Object.entries(result.errors).map(([k, v]) => `• ${v}`).join('\n');
+        }
+        setErrorMessage(backendErrorMsg);
+        setShowErrorModal(true);
+        return;
+      }
+
       setShowSuccessModal(true);
     } catch (error: any) {
       setErrorMessage(error.message || t('recipes.subRecipes.procedureForm.failedToCreate'));
