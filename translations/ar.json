@@ -852,6 +852,7 @@
     "validationEmpty": "لا يمكن أن يكون اسم التصنيف فارغًا."
   },
   "finishedOrders": {
+    "howManyCopies": "كم عدد النسخ التي تريد طباعتها؟",
     "printAllLabels": "طباعة جميع الملصقات",
     "pageTitle": "الوصفات المحضرة",
     "loading": "جاري تحميل الوصفات...",

@@ -933,6 +933,7 @@
     "validationEmpty": "Category name cannot be empty."
   },
   "finishedOrders": {
+    "howManyCopies": "How many copies do you want to print?",
     "printAllLabels": "Print All Labels",
     "pageTitle": "Prepared Recipes",
     "loading": "Loading recipes...",

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import PageLayout from '@/components/PageLayout';
 import Button from '@/components/common/button';
 import { Printer } from 'lucide-react';
@@ -66,9 +66,13 @@ export default function FinishedOrdersPage() {
   const [subRecipes, setSubRecipes] = useState<PreparedSubRecipe[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [copiesModalOpen, setCopiesModalOpen] = useState(false);
+  const [copiesCount, setCopiesCount] = useState(1);
+  const [pendingPrintRecipe, setPendingPrintRecipe] = useState<PreparedRecipe | PreparedSubRecipe | null>(null);
   const currentUser = useSelector(selectCurrentUser);
   const userId = getUserIdFromToken();
   const { t } = useTranslation();
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const fetchPreparedRecipes = async () => {
@@ -120,8 +124,19 @@ export default function FinishedOrdersPage() {
     fetchPreparedRecipes();
   }, [userId, t]);
 
-  const handlePrintLabel = async (recipe: PreparedRecipe | PreparedSubRecipe) => {
+  const handlePrintLabel = (recipe: PreparedRecipe | PreparedSubRecipe) => {
+    setPendingPrintRecipe(recipe);
+    setCopiesCount(1);
+    setCopiesModalOpen(true);
+    setTimeout(() => {
+      inputRef.current?.focus();
+    }, 100);
+  };
+
+  const doPrintLabel = async () => {
+    if (!pendingPrintRecipe) return;
     try {
+      const recipe = pendingPrintRecipe;
       const isSubRecipe = 'subeRecipeCode' in recipe;
       const labelData = {
         preparedBy: currentUser?.username || 'Unknown User',
@@ -131,11 +146,20 @@ export default function FinishedOrdersPage() {
         producedOn: new Date(recipe.preparedDate).toLocaleString(),
         bestBefore: new Date(recipe.expirationDate).toLocaleString(),
       };
-
-      const doc = await generateRecipeLabel(labelData);
+      const { jsPDF } = await import('jspdf');
+      const labelWidth = 90; // mm
+      const labelHeight = 60; // mm
+      const doc = new jsPDF({ unit: 'mm', format: [labelWidth, labelHeight], orientation: 'landscape' });
+      for (let i = 0; i < copiesCount; i++) {
+        if (i > 0) doc.addPage([labelWidth, labelHeight], 'landscape');
+        drawRecipeLabelOnDoc(doc, labelData, { marginX: 0, marginY: 0, labelWidth, labelHeight, visualOffset: 0 });
+      }
       doc.save(`recipe-label-${isSubRecipe ? recipe.preParedSubRecipeId : recipe.preparedMainRecipeId}.pdf`);
     } catch (error) {
       console.error('Error generating PDF:', error);
+    } finally {
+      setCopiesModalOpen(false);
+      setPendingPrintRecipe(null);
     }
   };
 
@@ -302,6 +326,27 @@ export default function FinishedOrdersPage() {
           )}
         </div>
       </div>
+
+      {/* Copies Modal */}
+      {copiesModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+          <div className="bg-white rounded-lg shadow-lg p-6 w-80">
+            <h3 className="text-lg font-semibold mb-4">{t('finishedOrders.howManyCopies') || 'How many copies do you want?'}</h3>
+            <input
+              ref={inputRef}
+              type="number"
+              min={1}
+              value={copiesCount}
+              onChange={e => setCopiesCount(Math.max(1, Number(e.target.value)))}
+              className="border rounded px-3 py-2 w-full mb-4 focus:outline-none focus:ring-2 focus:ring-[#00997B]"
+            />
+            <div className="flex justify-end gap-2">
+              <Button variant="secondary" onClick={() => { setCopiesModalOpen(false); setPendingPrintRecipe(null); }}>{t('common.cancel')}</Button>
+              <Button onClick={doPrintLabel}>{t('common.ok')}</Button>
+            </div>
+          </div>
+        </div>
+      )}
     </PageLayout>
   );
 }
