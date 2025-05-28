@@ -21,7 +21,7 @@ const tabs: { name: TransferTab; param: string }[] = [
 
 const DEFAULT_PAYLOAD = {
   page: 0,
-  size: 10,
+  size: 10000000,
   sortBy: "createdAt",
   direction: "asc"
 };
