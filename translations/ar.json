@@ -142,6 +142,7 @@
       "addProduct": "إضافة المنتج"
     },
     "form": {
+      "currentImages": "الصور الحالية",
       "generateItemCode": "توليد رمز العنصر",
       "uploadImages": "رفع صورة/صور",
       "imagePreviewAlt": "معاينة {index}",
@@ -868,6 +869,7 @@
     "printLabel": "طباعة الملصق"
   },
   "inventory": {
+    
     "pageTitle": "المخزون",
     "tabs": {
       "items": "عرض المخزون حسب العناصر",
@@ -875,6 +877,7 @@
       "subrecipe": "عرض المخزون حسب الوصفة الفرعية"
     },
     "items": {
+      "searchPlaceholder": "ابحث عن عنصر أو وصفة فرعية...",
       "header": {
         "code": "رمز العنصر",
         "name": "اسم العنصر والوصف",
@@ -885,6 +888,7 @@
       "noItems": "لم يتم العثور على عناصر في المخزون."
     },
     "recipe": {
+      "searchPlaceholder": "ابحث عن وصفة أو وصفة فرعية...",
       "header": {
         "preparedDate": "تاريخ التحضير",
         "name": "اسم الوصفة والوصف",
@@ -896,6 +900,7 @@
       }
     },
     "subrecipe": {
+      "searchPlaceholder": "ابحث عن وصفة فرعية...",
       "header": {
         "preparedDate": "تاريخ التحضير",
         "name": "اسم الوصفة الفرعية والوصف",
@@ -1518,6 +1523,7 @@
     "colFromBranch": "من الفرع",
     "colToBranch": "إلى الفرع",
     "colTransferCost": "تكلفة التحويل",
+     "colItemName": "اسم العنصر",
     "colOtherCharges": "رسوم أخرى",
     "colTotalCost": "إجمالي التكلفة",
     "na": "غير متوفر",

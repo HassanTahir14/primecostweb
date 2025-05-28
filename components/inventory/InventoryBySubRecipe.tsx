@@ -104,6 +104,15 @@ export default function InventoryBySubRecipe() {
 
   return (
     <div className="bg-white rounded-lg shadow">
+      <div className="flex justify-between items-center p-4 border-b bg-white">
+        <input
+          type="text"
+          placeholder={t('inventory.subrecipe.searchPlaceholder') || 'Search by name...'}
+          value={searchQuery}
+          onChange={e => setSearchQuery(e.target.value)}
+          className="border rounded px-3 py-2 w-72 focus:outline-none focus:ring-2 focus:ring-[#00997B]"
+        />
+      </div>
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead className="bg-[#00997B] text-white text-sm">

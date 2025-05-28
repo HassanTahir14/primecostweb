@@ -142,6 +142,7 @@
       "addProduct": "Add Product"
     },
     "form": {
+      "currentImages": "Current Images",
       "itemName": "Item Name",
       "itemNameRequired": "Item Name *",
       "itemNamePlaceholder": "Enter item name",
@@ -950,12 +951,14 @@
   },
   "inventory": {
     "pageTitle": "Inventory",
+    
     "tabs": {
       "items": "View Inventory by Items",
       "recipe": "View Inventory by Recipe",
       "subrecipe": "View Inventory by Sub Recipe"
     },
     "items": {
+      "searchPlaceholder": "Search Inventory",
       "header": {
         "code": "Item Code",
         "name": "Item Name & Description",
@@ -966,6 +969,7 @@
       "noItems": "No inventory items found."
     },
     "recipe": {
+      "searchPlaceholder": "Search Recipe",
       "header": {
         "preparedDate": "Prepared Date",
         "name": "Recipe Name & Description",
@@ -977,6 +981,7 @@
       }
     },
     "subrecipe": {
+      "searchPlaceholder": "Search Sub Recipe",
       "header": {
         "preparedDate": "Prepared Date",
         "name": "Recipe Name & Description",
@@ -1609,6 +1614,7 @@
     "colTransferredBy": "Transferred By",
     "colFromBranch": "From Branch",
     "colToBranch": "To Branch",
+    "colItemName": "Item Name",
     "colTransferCost": "Transfer Cost",
     "colOtherCharges": "Other Charges",
     "colTotalCost": "Total Cost",

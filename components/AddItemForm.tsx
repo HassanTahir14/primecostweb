@@ -205,13 +205,13 @@ export default function AddItemForm({ onClose, onSuccess }: AddItemFormProps) {
     setFormData((prev: any) => ({ ...prev, images: [...prev.images, ...files] }));
   };
 
-  // TODO: Implement image removal logic if needed
-  // const handleRemoveImage = (indexToRemove: number) => {
-  //   setFormData((prev: any) => ({ 
-  //     ...prev, 
-  //     images: prev.images.filter((_: File, index: number) => index !== indexToRemove)
-  //   }));
-  // };
+  // Add image removal logic
+  const handleRemoveImage = (indexToRemove: number) => {
+    setFormData((prev: any) => ({ 
+      ...prev, 
+      images: prev.images.filter((_: File, index: number) => index !== indexToRemove)
+    }));
+  };
 
   const generateItemCode = () => {
     const code = Math.random().toString(36).substring(2, 8).toUpperCase();
@@ -593,6 +593,18 @@ export default function AddItemForm({ onClose, onSuccess }: AddItemFormProps) {
                       alt={t('items.form.imagePreviewAlt', { index: index + 1 })}
                       className="w-full h-full object-cover rounded-lg"
                     />
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveImage(index)}
+                      className="absolute top-1 right-1 w-7 h-7 flex items-center justify-center bg-red-600 rounded-full shadow-md hover:bg-red-700 transition"
+                      aria-label={t('items.form.removeImage')}
+                    >
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="8" cy="8" r="8" fill="red" />
+                        <path d="M5.5 5.5L10.5 10.5" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
+                        <path d="M10.5 5.5L5.5 10.5" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
+                      </svg>
+                    </button>
                   </div>
                 ))}
               </div>

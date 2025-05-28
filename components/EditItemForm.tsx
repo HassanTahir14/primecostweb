@@ -250,20 +250,20 @@ export default function EditItemForm({ itemToEdit, onClose, onSuccess }: EditIte
     setFormData((prev: any) => ({ ...prev, newImages: [...prev.newImages, ...files] }));
   };
 
-  const handleRemoveExistingImage = (imageIdToRemove: number) => {
-    setFormData((prev: any) => ({ 
-      ...prev, 
-      // Add ID to removal list
-      imageIdsToRemove: [...prev.imageIdsToRemove, imageIdToRemove],
-      // Visually remove from displayed existing images
-      existingImages: prev.existingImages.filter((img: ItemImage) => img.imageId !== imageIdToRemove)
-    }));
-  };
-
+  // Add image removal logic for new images
   const handleRemoveNewImage = (indexToRemove: number) => {
     setFormData((prev: any) => ({ 
       ...prev, 
       newImages: prev.newImages.filter((_: File, index: number) => index !== indexToRemove)
+    }));
+  };
+
+  // Add image removal logic for existing images
+  const handleRemoveExistingImage = (imageIdToRemove: number) => {
+    setFormData((prev: any) => ({ 
+      ...prev, 
+      imageIdsToRemove: [...prev.imageIdsToRemove, imageIdToRemove],
+      existingImages: prev.existingImages.filter((img: ItemImage) => img.imageId !== imageIdToRemove)
     }));
   };
 
@@ -665,39 +665,62 @@ export default function EditItemForm({ itemToEdit, onClose, onSuccess }: EditIte
                
                {/* Display Existing Images */} 
                {formData.existingImages.length > 0 && (
-                 <div className="mb-4">
-                   <h4 className="text-sm font-medium mb-2 text-gray-600">{t('items.form.currentImages')}</h4>
-                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                     {formData.existingImages.map((img: ItemImage) => (
-                       <div
-                         key={img.imageId}
-                         className="relative aspect-square bg-gray-100 rounded-lg group"
+                 <div className="mb-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                   {formData.existingImages.map((img: ItemImage, idx: number) => (
+                     <div key={img.imageId} className="relative aspect-square bg-gray-100 rounded-lg group">
+                       <img
+                         src={`${imageBaseUrl}/${img.path}`}
+                         alt={t('items.form.imagePreviewAlt', { index: String(idx + 1) })}
+                         className="w-full h-full object-cover rounded-lg"
+                       />
+                       <button
+                         type="button"
+                         onClick={() => handleRemoveExistingImage(img.imageId)}
+                         className="absolute top-1 right-1 w-7 h-7 flex items-center justify-center bg-red-600 rounded-full shadow-md hover:bg-red-700 transition"
+                         aria-label={t('items.form.removeImage')}
                        >
-                         <AuthImage
-                           src={getImageUrlWithAuth(img.path, imageBaseUrl)}
-                           alt={`Image ${img.imageId}`}
-                           className="w-full h-full object-cover rounded-lg"
-                           fallbackSrc="/placeholder-image.jpg"
-                         />
-                         <button 
-                            type="button" 
-                            onClick={() => handleRemoveExistingImage(img.imageId)} 
-                            className="absolute top-1 right-1 bg-red-600 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-700"
-                            aria-label="Remove image"
-                            disabled={isLoading}
-                         >
-                           <X size={14} /> 
-                         </button>
-                       </div>
-                     ))}
-                   </div>
+                         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                           <circle cx="8" cy="8" r="8" fill="red" />
+                           <path d="M5.5 5.5L10.5 10.5" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
+                           <path d="M10.5 5.5L5.5 10.5" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
+                         </svg>
+                       </button>
+                     </div>
+                   ))}
                  </div>
                )}
 
-               {/* Upload New Images */} 
+               {/* Display New Images */}
+               {formData.newImages.length > 0 && (
+                 <div className="mb-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                   {formData.newImages.map((file: File, idx: number) => (
+                     <div key={idx} className="relative aspect-square bg-gray-100 rounded-lg group">
+                       <img
+                         src={URL.createObjectURL(file)}
+                         alt={t('items.form.imagePreviewAlt', { index: String(idx + 1) })}
+                         className="w-full h-full object-cover rounded-lg"
+                       />
+                       <button
+                         type="button"
+                         onClick={() => handleRemoveNewImage(idx)}
+                         className="absolute top-1 right-1 w-7 h-7 flex items-center justify-center bg-red-600 rounded-full shadow-md hover:bg-red-700 transition"
+                         aria-label={t('items.form.removeImage')}
+                       >
+                         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                           <circle cx="8" cy="8" r="8" fill="red" />
+                           <path d="M5.5 5.5L10.5 10.5" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
+                           <path d="M10.5 5.5L5.5 10.5" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
+                         </svg>
+                       </button>
+                     </div>
+                   ))}
+                 </div>
+               )}
+
+               {/* Upload New Images */}
                <div>
                  <label htmlFor="file-upload" className="inline-block px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors cursor-pointer">
-                   {t('items.form.uploadNewImages')}
+                   {t('items.form.uploadImages')}
                  </label>
                  <input
                    id="file-upload"
@@ -709,36 +732,6 @@ export default function EditItemForm({ itemToEdit, onClose, onSuccess }: EditIte
                    disabled={isLoading}
                  />
                </div>
-
-               {/* Display New Image Previews */} 
-               {formData.newImages.length > 0 && (
-                 <div className="mt-4">
-                    <h4 className="text-sm font-medium mb-2 text-gray-600">{t('items.form.newImagesToUpload')}</h4>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                     {formData.newImages.map((file: File, index: number) => (
-                       <div
-                         key={index}
-                         className="relative aspect-square bg-gray-100 rounded-lg group"
-                       >
-                         <AuthImage
-                           src={URL.createObjectURL(file)}
-                           alt={`New Preview ${index + 1}`}
-                           className="w-full h-full object-cover rounded-lg"
-                         />
-                          <button 
-                            type="button" 
-                            onClick={() => handleRemoveNewImage(index)} 
-                            className="absolute top-1 right-1 bg-red-600 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-700"
-                            aria-label="Remove new image"
-                            disabled={isLoading}
-                         >
-                           <X size={14} /> 
-                         </button>
-                       </div>
-                     ))}
-                   </div>
-                 </div>
-               )}
              </div>
 
              {/* Back and Submit Buttons */}
