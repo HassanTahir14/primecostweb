@@ -17,36 +17,37 @@ export function drawRecipeLabelOnDoc(doc: jsPDF, data: LabelData, opts?: { margi
   const marginY = opts?.marginY ?? (doc.internal.pageSize.getHeight() - labelHeight - 5);
   const visualOffset = opts?.visualOffset ?? -10;
 
-  // Add logo
-  const logoWidth = 25;
-  const logoHeight = 12;
+  // Add logo (increase size by 10% from previous size)
+  const logoWidth = 17.1875; // 15.625 * 1.1
+  const logoHeight = 8.25;   // 7.5 * 1.1
   const logoX = marginX + (labelWidth - logoWidth) / 2 + visualOffset;
   const logoY = marginY;
   const logoPath = '/assets/images/logo.png';
   doc.addImage(logoPath, 'PNG', logoX, logoY, logoWidth, logoHeight);
 
-  // Set font for title
+  // Set font for title (increase by 10% from previous size)
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(11);
+  doc.setFontSize(4.8125); // 4.375 * 1.1
   const title = 'RECIPE LABEL';
-  const titleWidth = doc.getStringUnitWidth(title) * 11 / doc.internal.scaleFactor;
+  const titleWidth = doc.getStringUnitWidth(title) * 4.8125 / doc.internal.scaleFactor;
   const titleX = marginX + (labelWidth - titleWidth) / 2 + visualOffset;
-  doc.text(title, titleX, logoY + logoHeight + 5);
+  doc.text(title, titleX, logoY + logoHeight + 2.75);
 
-  // Add prepared by
+  // Add prepared by (increase by 10% from previous size)
   doc.setFont('helvetica', 'normal');
-  doc.setFontSize(9);
+  doc.setFontSize(4.125); // 3.75 * 1.1
   const preparedByText = `Prepared By: ${data.preparedBy}`;
-  const preparedByWidth = doc.getStringUnitWidth(preparedByText) * 9 / doc.internal.scaleFactor;
+  const preparedByWidth = doc.getStringUnitWidth(preparedByText) * 4.125 / doc.internal.scaleFactor;
   const preparedByX = marginX + (labelWidth - preparedByWidth) / 2 + visualOffset;
-  doc.text(preparedByText, preparedByX, logoY + logoHeight + 10);
+  doc.text(preparedByText, preparedByX, logoY + logoHeight + 5.5);
 
-  // Set smaller font size for content
-  doc.setFontSize(9);
-  const startY = logoY + logoHeight + 15;
-  const lineHeight = 5;
-  const col1X = marginX + 2;
-  const col2X = marginX + 40;
+  // Set smaller font size for content (increase by 10% from previous size)
+  doc.setFontSize(4.125); // 3.75 * 1.1
+  const startY = logoY + logoHeight + 8.25;
+  const lineHeight = 2.40625; // 2.1875 * 1.1
+  const col1X = marginX + 0.6875; // 0.625 * 1.1
+  // Increase gap between label and value by 20% more (from previous gap)
+  const col2X = marginX + 19.25 * 1.15 * 1.2;  // previous gap * 1.2
   let currentY = startY;
   const addRow = (label: string, value: string, y: number) => {
     doc.setFont('helvetica', 'bold');
@@ -55,13 +56,13 @@ export function drawRecipeLabelOnDoc(doc: jsPDF, data: LabelData, opts?: { margi
     doc.text(value, col2X, y);
   };
   addRow('Item Name:', data.itemName, currentY);
-  currentY += lineHeight + 1;
+  currentY += lineHeight + 0.34375; // 0.3125 * 1.1
   addRow('Batch Number:', data.batchNumber, currentY);
-  currentY += lineHeight + 1;
+  currentY += lineHeight + 0.34375;
   addRow('Quantity:', data.quantity, currentY);
-  currentY += lineHeight + 1;
+  currentY += lineHeight + 0.34375;
   addRow('Produced On:', data.producedOn, currentY);
-  currentY += lineHeight + 1;
+  currentY += lineHeight + 0.34375;
   addRow('Best Before:', data.bestBefore, currentY);
 }
 

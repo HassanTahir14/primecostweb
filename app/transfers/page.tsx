@@ -127,7 +127,7 @@ export default function TransfersPage() {
                   <th className="p-3 text-left text-sm font-semibold">{t('transfersList.colStatus')}</th>
                   <th className="p-3 text-left text-sm font-semibold">{t('transfersList.colTransferredBy')}</th>
                   <th className="p-3 text-left text-sm font-semibold">{t('transfersList.colQuantity')}</th>
-                  {/* <th className="p-3 text-left text-sm font-semibold">{t('transfersList.colUom')}</th> */}
+                  <th className="p-3 text-left text-sm font-semibold">{t('transfersList.colUom')}</th>
                   <th className="p-3 text-left text-sm font-semibold">{t('transfersList.colCost')}</th>
                 </tr>
               </thead>
@@ -152,7 +152,12 @@ export default function TransfersPage() {
                   const itemQuantity = firstItem ? (firstItem.itemQuantity ?? firstItem.quantity ?? 'N/A') : 'N/A';
 
                   // UOM
-                  const uom = firstItem ? (firstItem.uom || 'N/A') : 'N/A';
+                  let uom = 'N/A';
+                  if (item.preparedMainRecipeTransferList || item.preparedSubRecipeTransferList) {
+                    uom = 'Portion(s)';
+                  } else if (firstItem) {
+                    uom = firstItem.uom || 'N/A';
+                  }
 
                   // Cost
                   const cost = transferList.length > 0
@@ -170,7 +175,7 @@ export default function TransfersPage() {
                       <td className="p-3 text-sm">{item.transferStatus}</td>
                       <td className="p-3 text-sm">{item.transferredBy}</td>
                       <td className="p-3 text-sm">{itemQuantity}</td>
-                      {/* <td className="p-3 text-sm">{uom}</td> */}
+                      <td className="p-3 text-sm">{uom}</td>
                       <td className="p-3 text-sm">{formattedCosts[item.transferReferenceNumber] || 'N/A'}</td>
                     </tr>
                   );

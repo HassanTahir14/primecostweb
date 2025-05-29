@@ -48,7 +48,7 @@ export default function InventoryByRecipe() {
         return `${quantity} ${unit.unitName}`;
       }
     }
-    return `${quantity}`;
+    return `${quantity} Portion(s)`;
   };
 
   useEffect(() => {

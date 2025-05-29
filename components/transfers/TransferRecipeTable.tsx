@@ -150,7 +150,7 @@ export default function TransferRecipeTable({
       {/* Show available quantity in the top right, outside the table, as in the screenshot */}
       {items && items[0] && items[0].availableQuantity !== undefined && (
         <div className="absolute right-4 top-2 text-base font-semibold text-black">
-          {t('transfers.availableQuantity')}: <span className="font-bold">{items[0].availableQuantity}</span>
+          {t('transfers.availableQuantity')}: <span className="font-bold">{items[0].availableQuantity} Portion(s)</span>
         </div>
       )}
       <h3 className="text-lg font-semibold p-4 border-b">{t('transfers.recipes')}</h3>

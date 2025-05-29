@@ -145,7 +145,7 @@ export default function FinishedOrdersPage() {
         preparedBy: currentUser?.username || 'Unknown User',
         itemName: isSubRecipe ? recipe.subRecipeNameAndDescription : recipe.mainRecipeNameAndDescription,
         batchNumber: isSubRecipe ? recipe.subRecipeBatchNumber : recipe.mainRecipeBatchNumber,
-        quantity: `${location.quantity}`,
+        quantity: `${location.quantity} Portion(s)`,
         producedOn: new Date(recipe.preparedDate).toLocaleString(),
         bestBefore: new Date(recipe.expirationDate).toLocaleString(),
         storageLocation: location.storageLocationWithCode,
@@ -153,10 +153,12 @@ export default function FinishedOrdersPage() {
       const { jsPDF } = await import('jspdf');
       const labelWidth = 50; // mm (thermal label width)
       const labelHeight = 30; // mm (thermal label height)
+      const contentScale = 0.55; // Reduce content size to fit 90x60mm design into 50x30mm
       const doc = new jsPDF({ unit: 'mm', format: [labelWidth, labelHeight], orientation: 'landscape' });
       for (let i = 0; i < copiesCount; i++) {
         if (i > 0) doc.addPage([labelWidth, labelHeight], 'landscape');
-        drawRecipeLabelOnDoc(doc, labelData, { marginX: 0, marginY: 0, labelWidth, labelHeight, visualOffset: 0 });
+        // Reduce content size by adjusting margins and font size in drawRecipeLabelOnDoc
+        drawRecipeLabelOnDoc(doc, labelData, { marginX: 0, marginY: 0, labelWidth, labelHeight, visualOffset: 0, scale: contentScale });
       }
       doc.save(`recipe-label-${isSubRecipe ? recipe.preParedSubRecipeId : recipe.preparedMainRecipeId}.pdf`);
     } catch (error) {
@@ -177,7 +179,7 @@ export default function FinishedOrdersPage() {
             id: r.preparedMainRecipeId,
             itemName: r.mainRecipeNameAndDescription,
             batchNumber: r.mainRecipeBatchNumber,
-            quantity: `${loc.quantity}`,
+            quantity: `${loc.quantity} Portion(s)`,
             producedOn: new Date(r.preparedDate).toLocaleString(),
             bestBefore: new Date(r.expirationDate).toLocaleString(),
             storageLocation: loc.storageLocationWithCode,
@@ -188,7 +190,7 @@ export default function FinishedOrdersPage() {
             id: r.preParedSubRecipeId,
             itemName: r.subRecipeNameAndDescription,
             batchNumber: r.subRecipeBatchNumber,
-            quantity: `${loc.quantity}`,
+            quantity: `${loc.quantity} Portion(s)`,
             producedOn: new Date(r.preparedDate).toLocaleString(),
             bestBefore: new Date(r.expirationDate).toLocaleString(),
             storageLocation: loc.storageLocationWithCode,
@@ -198,13 +200,14 @@ export default function FinishedOrdersPage() {
       if (allLabels.length === 0) return;
       const labelWidth = 50; // mm (thermal label width)
       const labelHeight = 30; // mm (thermal label height)
+      const contentScale = 0.55; // Reduce content size to fit 90x60mm design into 50x30mm
       const doc = new jsPDF({ unit: 'mm', format: [labelWidth, labelHeight], orientation: 'landscape' });
       for (let i = 0; i < allLabels.length; i++) {
         if (i > 0) doc.addPage([labelWidth, labelHeight], 'landscape');
         drawRecipeLabelOnDoc(doc, {
           preparedBy: currentUser?.username || 'Unknown User',
           ...allLabels[i],
-        }, { marginX: 0, marginY: 0, labelWidth, labelHeight, visualOffset: 0 });
+        }, { marginX: 0, marginY: 0, labelWidth, labelHeight, visualOffset: 0, scale: contentScale });
       }
       doc.save('all-recipe-labels.pdf');
     } catch (error) {
@@ -276,7 +279,7 @@ export default function FinishedOrdersPage() {
                           {recipe.mainRecipeBatchNumber}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {loc.quantity}
+                          {loc.quantity} Portion(s)
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                           {loc.storageLocationWithCode}
@@ -309,7 +312,7 @@ export default function FinishedOrdersPage() {
                           {recipe.subRecipeBatchNumber}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {loc.quantity}
+                          {loc.quantity} Portion(s)
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                           {loc.storageLocationWithCode}
