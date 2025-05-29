@@ -996,6 +996,7 @@
     }
   },
   "login": {
+    "failedTitle": "Login Failed",
     "emailLabel": "Email",
     "emailPlaceholder": "Enter email",
     "passwordLabel": "Password",

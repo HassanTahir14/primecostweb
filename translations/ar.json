@@ -914,6 +914,7 @@
     }
   },
   "login": {
+    "failedTitle": "فشل تسجيل الدخول",
     "emailLabel": "البريد الإلكتروني",
     "emailPlaceholder": "أدخل البريد الإلكتروني",
     "passwordLabel": "كلمة المرور",
