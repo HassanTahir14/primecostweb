@@ -509,7 +509,7 @@
         "title": "إجراءات الوصفة الفرعية",
         "addStep": "إضافة خطوة",
         "steps": "خطوات الإجراءات",
-        "stepLabel": "الخطوة {{number}}:",
+        "stepLabel": "الخطوة {number}:",
         "enterDescription": "أدخل وصف الإجراء",
         "stepDescriptionRequired": "يجب أن يكون وصف الخطوة 3 أحرف على الأقل",
         "stepDescriptionTooLong": "يجب ألا يتجاوز وصف الخطوة 2000 حرف",
@@ -1166,7 +1166,7 @@
     "errorOccurred": "حدث خطأ ما"
   },
   "transfers": {
-    "createTitle": "إنشاء تحويل - {{type}}",
+    "createTitle": "إنشاء تحويل - {type}",
     "backToTransfers": "العودة إلى التحويلات",
     "submitTransfer": "إرسال التحويل",
     "submitting": "جاري الإرسال...",
@@ -1239,7 +1239,7 @@
     "colQuantity": "الكمية",
     "colUom": "الوحدة",
     "colCost": "التكلفة",
-    "tab": "تحويل {{tab}}"
+    "tab": "تحويل {tab}"
   },
   "employeeReportGeneral": {
     "pageTitle": "تقرير الموظفين العام",
@@ -1398,7 +1398,7 @@
     "labelEndDate": "تاريخ الانتهاء",
     "loading": "جاري التحميل...",
     "fetchReport": "جلب التقرير",
-    "tableTitle": "العناصر المشتراة (إجمالي العناصر: {{totalItems}}، إجمالي التكلفة: {{totalCost}})",
+    "tableTitle": "العناصر المشتراة (إجمالي العناصر: {totalItems}، إجمالي التكلفة: {totalCost})",
     "colItemName": "اسم العنصر",
     "colQuantity": "الكمية",
     "colUnit": "الوحدة",

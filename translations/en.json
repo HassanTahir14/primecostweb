@@ -501,7 +501,7 @@
         "title": "Sub Recipe Procedures",
         "addStep": "Add Step",
         "steps": "Procedure Steps",
-        "stepLabel": "Step {{number}}:",
+        "stepLabel": "Step {number}:",
         "enterDescription": "Enter procedure description",
         "stepDescriptionRequired": "Step description must be at least 3 characters",
         "stepDescriptionTooLong": "Step description must not exceed 2000 characters",
@@ -597,7 +597,7 @@
           "title": "Sub Recipe Procedures",
           "addStep": "Add Step",
           "steps": "Procedure Steps",
-          "stepLabel": "Step {{number}}:",
+          "stepLabel": "Step {number}:",
           "enterDescription": "Enter procedure description",
           "stepDescriptionRequired": "Step description must be at least 3 characters long",
           "stepDescriptionTooLong": "Step description must not exceed 2000 characters",
@@ -1251,7 +1251,7 @@
     "errorOccurred": "An error occurred"
   },
   "transfers": {
-    "detailsTitle": "Transfer Details #{{id}}",
+    "detailsTitle": "Transfer Details #{id}",
     "invalidDetails": "Invalid transfer details",
     "referenceNumber": "Reference Number",
     "transferType": "Transfer Type",
@@ -1266,7 +1266,7 @@
     "code": "Code",
     "quantity": "Quantity",
     "cost": "Cost",
-    "createTitle": "Create Transfer - {{type}}",
+    "createTitle": "Create Transfer - {type}",
     "backToTransfers": "Back to Transfers",
     "submitTransfer": "Submit Transfer",
     "submitting": "Submitting...",
@@ -1332,7 +1332,7 @@
     "colQuantity": "Quantity",
     "colUom": "UOM",
     "colCost": "Cost",
-    "tab": "Transfer {{tab}}"
+    "tab": "Transfer {tab}"
   },
   "employeeReportGeneral": {
     "pageTitle": "General Employee Report",
@@ -1491,7 +1491,7 @@
     "labelEndDate": "End Date",
     "loading": "Loading...",
     "fetchReport": "Fetch Report",
-    "tableTitle": "Items Purchased (Total Items: {{totalItems}}, Total Cost: {{totalCost}})",
+    "tableTitle": "Items Purchased (Total Items: {totalItems}, Total Cost: {totalCost})",
     "colItemName": "Item Name",
     "colQuantity": "Quantity",
     "colUnit": "Unit",
