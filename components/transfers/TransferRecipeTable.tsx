@@ -226,7 +226,7 @@ export default function TransferRecipeTable({
                     <td className="p-2 align-top">
                         <Input
                             type="number"
-                            value={item.cost ?? 0}
+                            value={(item.cost * item.quantity || 0).toFixed(2)}
                             placeholder={t('transfers.cost')}
                             readOnly
                             className="bg-gray-100"
