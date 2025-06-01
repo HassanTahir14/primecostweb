@@ -47,35 +47,20 @@ async function fetchExchangeRates(): Promise<{ [key: string]: number }> {
 }
 
 export async function convertCurrency(amount: number, fromCurrency: string, toCurrency: string): Promise<number> {
-  if (fromCurrency === toCurrency) return amount;
-  
-  const rates = await fetchExchangeRates();
-  
-  if (fromCurrency === 'USD') {
-    return amount * (rates[toCurrency] || 1);
-  } else if (toCurrency === 'USD') {
-    return amount / (rates[fromCurrency] || 1);
-  } else {
-    // Convert through USD as base currency
-    const usdAmount = amount / (rates[fromCurrency] || 1);
-    return usdAmount * (rates[toCurrency] || 1);
-  }
+  // No conversion, always return the original amount
+  return amount;
 }
 
 export async function formatCurrencyValue(value: number | null | undefined, currency: string = 'USD'): Promise<string> {
   if (value === null || value === undefined) return 'N/A';
-  
-  // Convert the value to the target currency
-  const convertedValue = await convertCurrency(value, 'USD', currency);
-  
+  // No conversion, just format the value as currency
   const formatter = new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: currency,
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   });
-
-  return formatter.format(convertedValue);
+  return formatter.format(value);
 }
 
 export function getCurrencySymbol(currency: string = 'USD'): string {
@@ -96,4 +81,4 @@ export function getCurrencyFromStorage(): string {
     return localStorage.getItem('currency') || 'USD';
   }
   return 'USD';
-} 
+}
