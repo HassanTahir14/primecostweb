@@ -33,16 +33,24 @@ export default function SubRecipeDetailsForm({ onNext, initialData, isEditMode =
   const router = useRouter();
   const imageBaseUrl = process.env.NEXT_PUBLIC_IMAGE_URL || 'http://212.85.26.46:8082/api/v1/images/view';
   const { t } = useTranslation();
+   const generateRecipeCode = () => {
+  const prefix = 'RCP';
+  const randomNum = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+  return `${prefix}${randomNum}`;
+};
   const [formData, setFormData] = useState({
     name: initialData.name || '',
     category: initialData.category || '',
     portions: initialData.portions || '',
     servingSize: initialData.servingSize || '',
-    recipeCode: "recipe code",
+    recipeCode: initialData.recipeCode || generateRecipeCode(),
     images: initialData.images || [],
     newImages: initialData.newImages || [],
     imageIdsToRemove: initialData.imageIdsToRemove || []
   });
+
+ 
+
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
