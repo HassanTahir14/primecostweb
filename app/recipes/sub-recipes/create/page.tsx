@@ -21,22 +21,36 @@ const steps = [
 export default function CreateRecipePage() {
   const { t } = useTranslation();
   const [activeStep, setActiveStep] = useState('details');
-  const [recipeData, setRecipeData] = useState({
+  // Initialize recipeData with all required properties and explicit any type
+  const [recipeData, setRecipeData] = useState<any>({
     existingImages: [],
     newImages: [],
-    imageIdsToRemove: []
+    imageIdsToRemove: [],
+    ingredients: [],
+    images: [],
+    itemList: []
   });
   const [isValid, setIsValid] = useState(false);
 
   const handleNext = (data: any) => {
-    setRecipeData(prev => ({
+    let newData = { ...data };
+    if (data.ingredients && recipeData.itemList) {
+      newData.ingredients = mapIngredientsWithItemId(data.ingredients, recipeData.itemList);
+    }
+    setRecipeData((prev: any) => ({
       ...prev,
-      ...data,
-      images: data.images || prev.images,
+      ...newData,
+      existingImages: data.images || prev.existingImages,
       newImages: data.newImages || prev.newImages,
       imageIdsToRemove: data.imageIdsToRemove || prev.imageIdsToRemove
     }));
-    setActiveStep(prev => prev === 'details' ? 'ingredients' : prev === 'ingredients' ? 'costing' : prev === 'costing' ? 'procedure' : 'details');
+    setActiveStep(prev => {
+      const currentIndex = steps.findIndex(step => step.id === prev);
+      if (currentIndex < steps.length - 1) {
+        return steps[currentIndex + 1].id;
+      }
+      return prev;
+    });
   };
 
   const handleBack = () => {
@@ -47,13 +61,21 @@ export default function CreateRecipePage() {
   };
 
   const handleTabClick = (stepId: string) => {
+    setRecipeData((prev: any) => {
+      let updated = { ...prev };
+      if (prev.ingredients && prev.itemList) {
+        updated.ingredients = mapIngredientsWithItemId(prev.ingredients, prev.itemList);
+      }
+      return updated;
+    });
     setActiveStep(stepId);
   };
 
   const handleSave = (data: any) => {
-    setRecipeData(prev => ({
+    setRecipeData((prev: any) => ({
       ...prev,
       ...data,
+      ...(data.itemList ? { itemList: data.itemList } : {}),
       existingImages: data.images || prev.existingImages,
       newImages: data.newImages || prev.newImages,
       imageIdsToRemove: data.imageIdsToRemove || prev.imageIdsToRemove
@@ -107,4 +129,17 @@ export default function CreateRecipePage() {
       </div>
     </PageLayout>
   );
-} 
+}
+
+// Helper to map itemId for all ingredients
+function mapIngredientsWithItemId(ingredients: any[], itemList: any[]) {
+  if (!Array.isArray(ingredients) || !Array.isArray(itemList)) return ingredients;
+  return ingredients.map(ing => {
+    const itemNameKey = ing.itemName ? ing.itemName.split('@')[0] : ing.item;
+    const matchedItem = itemList.find(item => item.name.split('@')[0] === itemNameKey);
+    return {
+      ...ing,
+      itemId: matchedItem ? matchedItem.itemId : ing.id // fallback to id if not found
+    };
+  });
+}

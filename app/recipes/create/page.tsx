@@ -29,10 +29,14 @@ export default function CreateRecipePage() {
   const [isValid, setIsValid] = useState(false);
 
   const handleNext = (data: any) => {
+    let newData = { ...data };
+    if (data.ingredients && recipeData.itemList) {
+      newData.ingredients = mapIngredientsWithItemId(data.ingredients, recipeData.itemList);
+    }
     setRecipeData(prev => ({
       ...prev,
-      ...data,
-      images: data.images || prev.images,
+      ...newData,
+      existingImages: data.images || prev.existingImages,
       newImages: data.newImages || prev.newImages,
       imageIdsToRemove: data.imageIdsToRemove || prev.imageIdsToRemove
     }));
@@ -53,6 +57,13 @@ export default function CreateRecipePage() {
   };
 
   const handleTabClick = (stepId: string) => {
+    setRecipeData(prev => {
+      let updated = { ...prev };
+      if (prev.ingredients && prev.itemList) {
+        updated.ingredients = mapIngredientsWithItemId(prev.ingredients, prev.itemList);
+      }
+      return updated;
+    });
     setActiveStep(stepId);
   };
 
@@ -60,6 +71,7 @@ export default function CreateRecipePage() {
     setRecipeData(prev => ({
       ...prev,
       ...data,
+      ...(data.itemList ? { itemList: data.itemList } : {}),
       existingImages: data.images || prev.existingImages,
       newImages: data.newImages || prev.newImages,
       imageIdsToRemove: data.imageIdsToRemove || prev.imageIdsToRemove
@@ -113,4 +125,17 @@ export default function CreateRecipePage() {
       </div>
     </PageLayout>
   );
-} 
+}
+
+// Helper to map itemId for all ingredients
+function mapIngredientsWithItemId(ingredients: any[], itemList: any[]) {
+  if (!Array.isArray(ingredients) || !Array.isArray(itemList)) return ingredients;
+  return ingredients.map(ing => {
+    const itemNameKey = ing.itemName ? ing.itemName.split('@')[0] : ing.item;
+    const matchedItem = itemList.find(item => item.name.split('@')[0] === itemNameKey);
+    return {
+      ...ing,
+      itemId: matchedItem ? matchedItem.itemId : ing.id // fallback to id if not found
+    };
+  });
+}

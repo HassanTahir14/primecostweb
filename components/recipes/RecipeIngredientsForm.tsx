@@ -209,7 +209,8 @@ export default function RecipeIngredientsForm({ onNext, onBack, initialData, onS
     if (onSave) {
       onSave({
         ...initialData, // Preserve all previous data
-        ingredients: updatedIngredients
+        ingredients: updatedIngredients,
+        itemList // <-- always include itemList
       });
     }
   };
@@ -267,7 +268,8 @@ export default function RecipeIngredientsForm({ onNext, onBack, initialData, onS
     if (onSave) {
       onSave({ 
         ...initialData, // Preserve all previous data
-        ingredients: updatedIngredients
+        ingredients: updatedIngredients,
+        itemList // <-- always include itemList
       });
     }
 

@@ -207,7 +207,8 @@ export default function RecipeIngredientsForm({ onNext, onBack, initialData, onS
         recipeCode: initialData.recipeCode,
         images: initialData.images,
         newImages: initialData.newImages,
-        imageIdsToRemove: initialData.imageIdsToRemove
+        imageIdsToRemove: initialData.imageIdsToRemove,
+        itemList // <-- always include itemList
       });
     }
   };
@@ -267,7 +268,8 @@ export default function RecipeIngredientsForm({ onNext, onBack, initialData, onS
         recipeCode: initialData.recipeCode,
         images: initialData.images,
         newImages: initialData.newImages,
-        imageIdsToRemove: initialData.imageIdsToRemove
+        imageIdsToRemove: initialData.imageIdsToRemove,
+        itemList // <-- always include itemList
       });
     }
 
