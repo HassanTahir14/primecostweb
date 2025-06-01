@@ -74,7 +74,7 @@ export const fetchRejectedPOs = createAsyncThunk(
 // Fetch Item Expiries
 export const fetchItemExpiries = createAsyncThunk(
     'purchaseReports/fetchItemExpiries',
-    async (payload: { startDate: string; endDate: string, size: number }, { rejectWithValue }) => {
+    async (payload: { startDate: string; endDate: string; size: number; direction: 'asc' | 'desc' }, { rejectWithValue }) => {
         try {
             const response = await purchaseReportsApi.fetchItemExpiries(payload);
             return response.itemDetails; // Return just the data array
@@ -87,7 +87,7 @@ export const fetchItemExpiries = createAsyncThunk(
 // Fetch Items by Supplier
 export const fetchItemsBySupplier = createAsyncThunk(
     'purchaseReports/fetchItemsBySupplier',
-    async (payload: { startDate: string; endDate: string, size: number}, { rejectWithValue }) => {
+    async (payload: { startDate: string; endDate: string; size: number; direction: 'asc' | 'desc' }, { rejectWithValue }) => {
         try {
             const response = await purchaseReportsApi.fetchItemsBySupplier(payload);
              if (response.responseCode !== '0000') {
@@ -103,7 +103,7 @@ export const fetchItemsBySupplier = createAsyncThunk(
 // Fetch Purchase by Category
 export const fetchPurchaseByCategory = createAsyncThunk(
     'purchaseReports/fetchPurchaseByCategory',
-    async (payload: { category: string; startDate: string; endDate: string, size: number }, { rejectWithValue }) => {
+    async (payload: { category: string; startDate: string; endDate: string, size: number, direction: 'asc' | 'desc' }, { rejectWithValue }) => {
         try {
             const response = await purchaseReportsApi.fetchPurchaseByCategory(payload);
             if (response.responseCode !== '0000') {

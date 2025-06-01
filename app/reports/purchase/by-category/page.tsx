@@ -54,7 +54,8 @@ export default function PurchaseByCategoryReportPage() {
                 startDate, 
                 endDate, 
                 category: selectedCategory,
-                "size": 1000 // Adjust size as needed
+                "size": 1000, // Adjust size as needed
+                "direction": "desc"
             }));
         }
     }, [selectedCategory]); // Only run when category changes
@@ -104,7 +105,8 @@ export default function PurchaseByCategoryReportPage() {
             startDate, 
             endDate, 
             category: selectedCategory,
-            size: 1000 // Adjust size as needed
+            size: 1000,// Adjust size as needed
+            direction: "desc"
         }));
     };
 

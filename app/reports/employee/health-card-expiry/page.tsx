@@ -36,7 +36,7 @@ const HealthCardExpiryReportPage: React.FC = () => {
   // Fetch data on first load
   useEffect(() => {
     dispatch(clearEmployeeReportError('healthCardExpiry'));
-    const payload = { startDate, endDate, sortBy: "createdAt", page: 0, size: 1000, direction: "asc" };
+    const payload = { startDate, endDate, sortBy: "createdAt", page: 0, size: 1000, direction: "desc" };
     dispatch(fetchHealthCardExpiry(payload));
   }, []); // Empty dependency array means this runs once on mount
 
@@ -47,7 +47,7 @@ const HealthCardExpiryReportPage: React.FC = () => {
     }
     setValidationError(null);
     dispatch(clearEmployeeReportError('healthCardExpiry'));
-    const payload = { startDate, endDate, sortBy: "createdAt", page: 0, size: 1000, direction: "asc" };
+    const payload = { startDate, endDate, sortBy: "createdAt", page: 0, size: 1000, direction: "desc" };
     dispatch(fetchHealthCardExpiry(payload));
   };
 

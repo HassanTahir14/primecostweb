@@ -36,7 +36,7 @@ const PerformanceReportPage: React.FC = () => {
   // Fetch data on first load
   useEffect(() => {
     dispatch(clearEmployeeReportError('performanceReport'));
-    const payload = { startDate, endDate, sortBy: "createdAt", page: 0, size: 1000, direction: "asc" };
+    const payload = { startDate, endDate, sortBy: "createdAt", page: 0, size: 1000, direction: "desc" };
     dispatch(fetchPerformanceReport(payload));
   }, []); // Empty dependency array means this runs once on mount
 
@@ -47,7 +47,7 @@ const PerformanceReportPage: React.FC = () => {
     }
     setValidationError(null);
     dispatch(clearEmployeeReportError('performanceReport'));
-    const payload = { startDate, endDate, sortBy: "createdAt", page: 0, size: 1000, direction: "asc" };
+    const payload = { startDate, endDate, sortBy: "createdAt", page: 0, size: 1000, direction: "desc" };
     dispatch(fetchPerformanceReport(payload));
   };
 

@@ -33,7 +33,7 @@ export default function RejectedPurchaseOrdersReportPage() {
 
     useEffect(() => {
         dispatch(clearReportError('rejectedPOs'));
-        const payload = { startDate, endDate, sortBy: "createdAt", page: 0, size: 1000, direction: "asc" };
+        const payload = { startDate, endDate, sortBy: "createdAt", page: 0, size: 1000, direction: "desc" };
         dispatch(fetchRejectedPOs(payload));
     }, []);
 
@@ -45,7 +45,8 @@ export default function RejectedPurchaseOrdersReportPage() {
         }
         setValidationError(null);
         dispatch(clearReportError('rejectedPOs')); // Clear previous errors
-        dispatch(fetchRejectedPOs({ startDate, endDate, size: 1000 }));
+        const payload = { startDate, endDate, sortBy: "createdAt", page: 0, size: 1000, direction: "desc" };
+        dispatch(fetchRejectedPOs(payload));
     };
 
     const handleCloseErrorModal = () => {

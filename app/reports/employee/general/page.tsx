@@ -67,7 +67,7 @@ const GeneralEmployeeReportPage: React.FC = () => {
   // Fetch data on first load
   useEffect(() => {
     dispatch(clearEmployeeReportError('general'));
-    const payload = { startDate, endDate, sortBy: "createdAt", page: 0, size: 1000, direction: "asc"};
+    const payload = { startDate, endDate, sortBy: "createdAt", page: 0, size: 1000, direction: "desc"};
     dispatch(fetchGeneralEmployeeReport(payload));
   }, []); // Empty dependency array means this runs once on mount
 
@@ -99,7 +99,7 @@ const GeneralEmployeeReportPage: React.FC = () => {
     }
     setValidationError(null);
     dispatch(clearEmployeeReportError('general'));
-    const payload = { startDate, endDate, sortBy: "createdAt", page: 0, size: 1000, direction: "asc"};
+    const payload = { startDate, endDate, sortBy: "createdAt", page: 0, size: 1000, direction: "desc"};
     dispatch(fetchGeneralEmployeeReport(payload));
   };
 

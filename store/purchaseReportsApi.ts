@@ -5,6 +5,7 @@ interface DateRangePayload {
     startDate: string; // "YYYY-MM-DD"
     endDate: string; // "YYYY-MM-DD"
     size: number; // Optional for pagination
+    direction?: 'asc' | 'desc'; // Optional for sorting
 }
 
 interface CategoryPayload extends DateRangePayload {

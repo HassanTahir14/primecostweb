@@ -31,7 +31,7 @@ const SubRecipesTransferredReportPage: React.FC = () => {
 
   useEffect(() => {
     dispatch(clearTransferReportError('subRecipesTransferred'));
-    dispatch(fetchSubRecipesTransferred({ startDate, endDate, sortBy: "createdAt", page: 0, size: 1000, direction: "asc" }));
+    dispatch(fetchSubRecipesTransferred({ startDate, endDate, sortBy: "createdAt", page: 0, size: 1000, direction: "desc" }));
   }, []); 
 
   useEffect(() => {
@@ -61,7 +61,7 @@ const SubRecipesTransferredReportPage: React.FC = () => {
     }
     setValidationError(null);
     dispatch(clearTransferReportError('subRecipesTransferred'));
-    dispatch(fetchSubRecipesTransferred({ startDate, endDate, sortBy: "preparedDate", page: 0, size: 1000, direction: "asc" }));
+    dispatch(fetchSubRecipesTransferred({ startDate, endDate, sortBy: "preparedDate", page: 0, size: 1000, direction: "desc" }));
   };
 
   const handleCloseErrorModal = () => {

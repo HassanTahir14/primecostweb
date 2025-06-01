@@ -35,7 +35,7 @@ export default function YieldAnalysisReportPage() {
     // Fetch data on first load
     useEffect(() => {
         dispatch(clearRecipeReportError('yieldAnalysis'));
-        dispatch(fetchYieldAnalysis({ startDate, endDate, sortBy: "preparedDate" }));
+        dispatch(fetchYieldAnalysis({ startDate, endDate, sortBy: "preparedDate", direction: "desc", page: 0, size: 1000 }));
     }, []); // Empty dependency array means this runs once on mount
 
     useEffect(() => {
@@ -67,7 +67,7 @@ export default function YieldAnalysisReportPage() {
         }
         setValidationError(null);
         dispatch(clearRecipeReportError('yieldAnalysis')); 
-        dispatch(fetchYieldAnalysis({ startDate, endDate, sortBy: "preparedDate" }));
+        dispatch(fetchYieldAnalysis({ startDate, endDate, sortBy: "preparedDate", direction: "desc",  page: 0, size: 1000 }));
     };
 
     const handleCloseErrorModal = () => {

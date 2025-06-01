@@ -34,7 +34,7 @@ export default function PreparedItemsReportPage() {
     // Fetch data on first load
     useEffect(() => {
         dispatch(clearRecipeReportError('preparedItems'));
-        dispatch(fetchPreparedItems({ startDate, endDate, sortBy: "preparedDate" }));
+        dispatch(fetchPreparedItems({ startDate, endDate, sortBy: "preparedDate", direction: "desc", page: 0, size: 1000 }));
     }, []); // Empty dependency array means this runs once on mount
 
     useEffect(() => {
@@ -65,7 +65,7 @@ export default function PreparedItemsReportPage() {
         }
         setValidationError(null);
         dispatch(clearRecipeReportError('preparedItems'));
-        dispatch(fetchPreparedItems({ startDate, endDate, sortBy: "preparedDate" }));
+        dispatch(fetchPreparedItems({ startDate, endDate, sortBy: "preparedDate", direction: "desc", page: 0, size: 1000 }));
     };
 
     const handleCloseErrorModal = () => {

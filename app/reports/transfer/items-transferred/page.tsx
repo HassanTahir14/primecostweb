@@ -32,7 +32,7 @@ const ItemsTransferredReportPage: React.FC = () => {
 
   useEffect(() => {
     dispatch(clearTransferReportError('itemsTransferred'));
-    dispatch(fetchItemsTransferred({ startDate, endDate, sortBy: "createdAt", page: 0, size: 1000, direction: "asc" }));
+    dispatch(fetchItemsTransferred({ startDate, endDate, sortBy: "createdAt", page: 0, size: 1000, direction: "desc" }));
   }, []);   
 
   useEffect(() => {
@@ -65,7 +65,7 @@ const ItemsTransferredReportPage: React.FC = () => {
     }
     setValidationError(null);
     dispatch(clearTransferReportError('itemsTransferred'));
-    dispatch(fetchItemsTransferred({ startDate, endDate, sortBy: "createdAt", page: 0, size: 1000, direction: "asc" }));
+    dispatch(fetchItemsTransferred({ startDate, endDate, sortBy: "createdAt", page: 0, size: 1000, direction: "desc" }));
   };
 
   const handleCloseErrorModal = () => {

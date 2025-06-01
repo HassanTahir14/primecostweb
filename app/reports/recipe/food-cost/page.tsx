@@ -35,7 +35,7 @@ export default function FoodCostReportPage() {
     // Fetch data on first load
     useEffect(() => {
         dispatch(clearRecipeReportError('foodCost'));
-        dispatch(fetchFoodCost({ startDate, endDate, sortBy: "preparedDate" }));
+        dispatch(fetchFoodCost({ startDate, endDate, sortBy: "preparedDate", direction: "desc", page: 0, size: 1000 }));
     }, []); // Empty dependency array means this runs once on mount
 
     useEffect(() => {
@@ -66,7 +66,7 @@ export default function FoodCostReportPage() {
         }
         setValidationError(null);
         dispatch(clearRecipeReportError('foodCost'));
-        dispatch(fetchFoodCost({ startDate, endDate, sortBy: "preparedDate" }));
+        dispatch(fetchFoodCost({ startDate, endDate, sortBy: "preparedDate", direction: "desc", page: 0, size: 1000 }));
     };
 
     const handleCloseErrorModal = () => {

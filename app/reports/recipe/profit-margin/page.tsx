@@ -58,7 +58,7 @@ export default function ProfitMarginReportPage() {
     // Fetch data on first load
     useEffect(() => {
         dispatch(clearRecipeReportError('profitMargin'));
-        dispatch(fetchProfitMargin({ startDate, endDate, sortBy: "preparedDate" }));
+        dispatch(fetchProfitMargin({ startDate, endDate, sortBy: "preparedDate", direction: "desc",  page: 0, size: 1000 }));
     }, []); // Empty dependency array means this runs once on mount
 
     useEffect(() => {
@@ -91,7 +91,7 @@ export default function ProfitMarginReportPage() {
         }
         setValidationError(null);
         dispatch(clearRecipeReportError('profitMargin'));
-        dispatch(fetchProfitMargin({ startDate, endDate, sortBy: "preparedDate" }));
+        dispatch(fetchProfitMargin({ startDate, endDate, sortBy: "preparedDate", direction: "desc", page: 0, size: 1000 }));
     };
 
      const handleCloseErrorModal = () => {

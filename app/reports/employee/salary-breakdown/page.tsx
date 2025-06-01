@@ -44,7 +44,7 @@ const SalaryBreakdownReportPage: React.FC = () => {
   // Fetch data on first load
   useEffect(() => {
     dispatch(clearEmployeeReportError('salaryBreakdown'));
-    const payload = { startDate, endDate, sortBy: "createdAt", page: 0, size: 1000, direction: "asc" };
+    const payload = { startDate, endDate, sortBy: "createdAt", page: 0, size: 1000, direction: "desc" };
     dispatch(fetchSalaryBreakdown(payload));
   }, []); // Empty dependency array means this runs once on mount
 
@@ -74,7 +74,7 @@ const SalaryBreakdownReportPage: React.FC = () => {
     }
     setValidationError(null);
     dispatch(clearEmployeeReportError('salaryBreakdown'));
-    const payload = { startDate, endDate, sortBy: "createdAt", page: 0, size: 1000, direction: "asc" };
+    const payload = { startDate, endDate, sortBy: "createdAt", page: 0, size: 1000, direction: "desc" };
     dispatch(fetchSalaryBreakdown(payload));
   };
 

@@ -36,7 +36,7 @@ const IqamaExpiryReportPage: React.FC = () => {
   // Fetch data on first load
   useEffect(() => {
     dispatch(clearEmployeeReportError('iqamaExpiry'));
-    const payload = { startDate, endDate, sortBy: "createdAt", page: 0, size: 1000, direction: "asc" };
+    const payload = { startDate, endDate, sortBy: "createdAt", page: 0, size: 1000, direction: "desc" };
     dispatch(fetchIqamaExpiry(payload));
   }, []); // Empty dependency array means this runs once on mount
 
@@ -47,7 +47,7 @@ const IqamaExpiryReportPage: React.FC = () => {
     }
     setValidationError(null);
     dispatch(clearEmployeeReportError('iqamaExpiry'));
-    const payload = { startDate, endDate, sortBy: "createdAt", page: 0, size: 1000, direction: "asc" };
+    const payload = { startDate, endDate, sortBy: "createdAt", page: 0, size: 1000, direction: "desc" };
     dispatch(fetchIqamaExpiry(payload));
   };
 

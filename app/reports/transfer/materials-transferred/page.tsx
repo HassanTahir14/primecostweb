@@ -36,7 +36,7 @@ const MaterialsTransferredReportPage: React.FC = () => {
   useEffect(() => {
     dispatch(fetchAllCategories());
     dispatch(clearTransferReportError('materialsTransferred'));
-    dispatch(fetchMaterialsTransferred({ startDate, endDate }));
+    dispatch(fetchMaterialsTransferred({ startDate, endDate, direction: 'desc', page: 0, size: 1000 } as any));
   }, []);
 
   useEffect(() => {
@@ -67,7 +67,7 @@ const MaterialsTransferredReportPage: React.FC = () => {
     }
     setValidationError(null);
     dispatch(clearTransferReportError('materialsTransferred'));
-    dispatch(fetchMaterialsTransferred({ startDate, endDate, categoryName: selectedCategory } as any));
+    dispatch(fetchMaterialsTransferred({ startDate, endDate, categoryName: selectedCategory, direction: 'desc', page: 0, size: 1000 } as any));
   };
 
   const handleCloseErrorModal = () => {
