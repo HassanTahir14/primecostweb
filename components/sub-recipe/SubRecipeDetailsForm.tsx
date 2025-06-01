@@ -223,7 +223,7 @@ export default function SubRecipeDetailsForm({ onNext, initialData, isEditMode =
       images: existingImages,
       newImages,
       imageIdsToRemove,
-      recipeCode: "recipe code"
+      recipeCode: initialData.recipeCode || generateRecipeCode(),
     };
 
     onNext(dataToSubmit);
