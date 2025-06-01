@@ -1737,5 +1737,37 @@
     "ascending": "تصاعدي",
     "descending": "تنازلي",
     "apply": "تطبيق"
+  },
+  "transferDetail": {
+    "loading": "جاري التحميل...",
+    "invalidDetails": "تفاصيل التحويل غير صالحة",
+    "detailsTitle": "تفاصيل التحويل #{{id}}",
+    "transferType": "نوع التحويل",
+    "transferBy": "تم التحويل بواسطة",
+    "transferDate": "تاريخ التحويل",
+    "referenceNo": "رقم مرجع التحويل",
+    "table": {
+      "sourceItemName": "اسم العنصر المصدر",
+      "sourceItemCode": "رمز العنصر المصدر",
+      "quantity": "الكمية",
+      "uom": "وحدة القياس",
+      "costWithVat": "التكلفة مع ضريبة القيمة المضافة"
+    },
+    "costs": {
+      "type": "نوع التكلفة",
+      "percentValue": "النسبة المئوية",
+      "taxesAmount": "مبلغ الضرائب",
+      "totalWithTaxes": "الإجمالي مع الضرائب",
+      "transferAmount": "إجمالي مبلغ التحويل",
+      "total": "الإجمالي"
+    },
+    "approval": {
+      "transferredBy": "تم التحويل بواسطة",
+      "approvedBy": "تمت الموافقة بواسطة"
+    },
+    "actions": {
+      "print": "طباعة تقرير التحويل",
+      "back": "رجوع"
+    }
   }
 }

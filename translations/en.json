@@ -1830,5 +1830,38 @@
     "ascending": "Ascending",
     "descending": "Descending",
     "apply": "Apply"
+  },
+  "transferDetail": {
+    "loading": "Loading...",
+    "invalidDetails": "Invalid transfer details",
+    "detailsTitle": "Transfer Details #{id}",
+    "transferType": "Transfer Type",
+    "transferBy": "Transfer By",
+    "transferDate": "Transfer Date",
+    "referenceNo": "Transfer Ref No.",
+    "table": {
+      "sourceItemName": "Source Item Name",
+      "sourceItemCode": "Source Item Code",
+      "quantity": "Quantity",
+      "uom": "UOM",
+      "costWithVat": "Cost With VAT"
+    },
+    "costs": {
+      "type": "Cost Type",
+      "percentValue": "% Value",
+      "taxesAmount": "Taxes Amount",
+      "totalWithTaxes": "Total with Taxes",
+      "transferAmount": "Total Transfer Amount",
+      "total": "Total"
+    },
+    "approval": {
+      "transferredBy": "Transfer By",
+      "approvedBy": "Approved By"
+    },
+    "actions": {
+      "print": "PRINT TRANSFER REPORT",
+      "back": "Back"
+    }
   }
+
 }
