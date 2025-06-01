@@ -55,7 +55,7 @@ export default function YieldAnalysisReportPage() {
                     console.error('Error formatting costs:', error);
                     setFormattedCosts({});
                 }
-            };
+            }; 
             formatCosts();
         }
     }, [data, currency]);
