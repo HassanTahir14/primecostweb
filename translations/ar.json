@@ -1631,8 +1631,8 @@
       "yieldPercent": "نسبة العائد %",
       "yield": "العائد",
       "cost": "التكلفة",
-      "apUsdUnit": "سعر الشراء لكل وحدة (دولار)",
-      "epUsdUnit": "سعر الاستخدام لكل وحدة (دولار)",
+      "apUsdUnit": "سعر الشراء لكل {unit} (دولار)",
+      "epUsdUnit": "سعر الاستخدام لكل {unit} (دولار)",
       "recipeCost": "تكلفة الوصفة",
       "updateIngredient": "تحديث المكون",
       "errors": {

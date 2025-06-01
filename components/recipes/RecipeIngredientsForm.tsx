@@ -48,6 +48,7 @@ export default function RecipeIngredientsForm({ onNext, onBack, initialData, onS
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [selectedUnitId, setSelectedUnitId] = useState<number | null>(null);
   const [availableUnits, setAvailableUnits] = useState<any[]>([]);
+  const [unitType, setUnitType] = useState<any>()
 
   const { units } = useUnits();
   const dispatch = useDispatch<AppDispatch>();
@@ -72,6 +73,8 @@ export default function RecipeIngredientsForm({ onNext, onBack, initialData, onS
         });
         setItemList(availableItems);
       });
+      const result = localStorage.getItem("currency")
+      setUnitType(result)
   }, [dispatch]);
 
   // Update available units when item changes
@@ -424,9 +427,11 @@ export default function RecipeIngredientsForm({ onNext, onBack, initialData, onS
               {errors.yieldPercent && <p className="text-red-500 text-sm mt-1">{errors.yieldPercent}</p>}
             </div>
 
-            {/* AP USD / Unit */}
+            {/* AP Unit / Unit */}
             <div>
-              <label className="block text-gray-700 font-medium mb-2">{t('mainRecipes.ingredients.apUsdUnit')}</label>
+              <label className="block text-gray-700 font-medium mb-2">
+                {t('mainRecipes.ingredients.apUsdUnit', { unit: unitType })}
+              </label>
               <input
                 type="number"
                 className={`w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00997B] ${errors.apUsdUnit ? 'border-red-500' : 'border-gray-300'}`}
@@ -437,9 +442,11 @@ export default function RecipeIngredientsForm({ onNext, onBack, initialData, onS
               {errors.apUsdUnit && <p className="text-red-500 text-sm mt-1">{errors.apUsdUnit}</p>}
             </div>
 
-            {/* EP USD / Unit */}
+            {/* EP Unit / Unit */}
             <div>
-              <label className="block text-gray-700 font-medium mb-2">{t('mainRecipes.ingredients.epUsdUnit')}</label>
+              <label className="block text-gray-700 font-medium mb-2">
+                {t('mainRecipes.ingredients.epUsdUnit', { unit: unitType })}
+              </label>
               <input
                 type="number"
                 className={`w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00997B] ${errors.epUsdUnit ? 'border-red-500' : 'border-gray-300'} bg-gray-100`}
