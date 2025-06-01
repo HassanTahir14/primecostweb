@@ -74,9 +74,17 @@ export default function YieldAnalysisReportPage() {
         dispatch(clearRecipeReportError('yieldAnalysis'));
     };
 
+    const extractItemName = (itemName:any) => {
+        return itemName.includes('@') ? itemName.split('@')[0] : itemName;
+    };
+
     // Column definitions moved inside component to access formattedCosts
     const yieldAnalysisColumns: ColumnDefinition<any>[] = [
-        { header: t('recipeYieldAnalysis.colItemName'), accessorKey: 'itemName' },
+        { 
+            header: t('recipeYieldAnalysis.colItemName'), 
+            accessorKey: 'itemName',
+            cell: (value) => extractItemName(value) // Display item name before "@"
+        },
         { header: t('recipeYieldAnalysis.colQuantityUsed'), accessorKey: 'quantityUsed' },
         { header: t('recipeYieldAnalysis.colYieldPercent'), accessorKey: 'percentageYield' },
         { header: t('recipeYieldAnalysis.colWastePercent'), accessorKey: 'wastePercentage' },
