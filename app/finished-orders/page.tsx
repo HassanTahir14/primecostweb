@@ -237,7 +237,7 @@ export default function FinishedOrdersPage() {
 
   return (
     <PageLayout title={t('finishedOrders.pageTitle')}>
-      <div className="container mx-auto">
+      <div className="container mx-auto px-4 md:px-2">
         <div className="bg-white rounded-lg shadow p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-semibold">{t('finishedOrders.myPreparedRecipes')}</h2>
@@ -256,15 +256,15 @@ export default function FinishedOrdersPage() {
             <p className="text-gray-500">{t('finishedOrders.noPreparedRecipes')}</p>
           ) : (
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
+              <table className="table-auto w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('finishedOrders.recipeName')}</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('finishedOrders.batchNumber')}</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('finishedOrders.quantity')}</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('finishedOrders.storageLocation')}</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('finishedOrders.preparedDate')}</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('finishedOrders.actions')}</th>
+                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[13%]">{t('finishedOrders.recipeName')}</th>
+                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[13%]">{t('finishedOrders.batchNumber')}</th>
+                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[13%]">{t('finishedOrders.quantity')}</th>
+                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[13%]">{t('finishedOrders.storageLocation')}</th>
+                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[13%]">{t('finishedOrders.preparedDate')}</th>
+                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[13%]">{t('finishedOrders.actions')}</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -272,22 +272,22 @@ export default function FinishedOrdersPage() {
                   {mainRecipes.flatMap((recipe) =>
                     recipe.inventoryLocations.map((loc: InventoryLocation) => (
                       <tr key={`main-${recipe.preparedMainRecipeId}-loc-${loc.inventoryId}`}>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        <td className="px-2 py-2 whitespace-nowrap text-sm font-medium text-gray-900">
                           {recipe.mainRecipeNameAndDescription}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <td className="px-2 py-2 whitespace-nowrap text-sm text-gray-500">
                           {recipe.mainRecipeBatchNumber}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <td className="px-2 py-2 whitespace-nowrap text-sm text-gray-500">
                           {loc.quantity} Portion(s)
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <td className="px-2 py-2 whitespace-nowrap text-sm text-gray-500">
                           {loc.storageLocationWithCode}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <td className="px-2 py-2 whitespace-nowrap text-sm text-gray-500">
                           {new Date(recipe.preparedDate).toLocaleString()}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <td className="px-2 py-2 whitespace-nowrap text-sm text-gray-500">
                           <Button 
                             variant="default" 
                             size="sm" 
@@ -305,22 +305,22 @@ export default function FinishedOrdersPage() {
                   {subRecipes.flatMap((recipe) =>
                     recipe.inventoryLocations.map((loc: InventoryLocation) => (
                       <tr key={`sub-${recipe.preParedSubRecipeId}-loc-${loc.inventoryId}`}>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        <td className="px-2 py-2 whitespace-nowrap text-sm font-medium text-gray-900">
                           {recipe.subRecipeNameAndDescription}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <td className="px-2 py-2 whitespace-nowrap text-sm text-gray-500">
                           {recipe.subRecipeBatchNumber}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <td className="px-2 py-2 whitespace-nowrap text-sm text-gray-500">
                           {loc.quantity} Portion(s)
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <td className="px-2 py-2 whitespace-nowrap text-sm text-gray-500">
                           {loc.storageLocationWithCode}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <td className="px-2 py-2 whitespace-nowrap text-sm text-gray-500">
                           {new Date(recipe.preparedDate).toLocaleString()}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <td className="px-2 py-2 whitespace-nowrap text-sm text-gray-500">
                           <Button 
                             variant="default" 
                             size="sm" 
